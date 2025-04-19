@@ -1,0 +1,1 @@
+import 'package:shared_preferences/shared_preferences.dart'; class AuthLocalDataSource { final SharedPreferences sharedPreferences; AuthLocalDataSource(this.sharedPreferences); Future<void> cacheUserDetails(String userId) async { await sharedPreferences.setString('userId', userId); } Future<String?> getCachedUserDetails() async { return sharedPreferences.getString('userId'); } }

@@ -1,0 +1,1 @@
+import 'package:flutter/material.dart'; class SignUpview extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold(body: Center(child: Text('Sign Up'))); } }

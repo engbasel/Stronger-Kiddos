@@ -1,0 +1,1 @@
+class NetworkInfo { Future<bool> isConnected() async { return true; } }
