@@ -5,6 +5,7 @@ import 'package:strongerkiddos/features/authentication/domain/repositories/auth_
 class GetUserUseCase implements UseCase<User, String> {
   final AuthRepository repository;
   GetUserUseCase(this.repository);
+  @override
   Future<User> call(String userId) async {
     return await repository.getUserDetails(userId);
   }

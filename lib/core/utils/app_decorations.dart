@@ -11,7 +11,12 @@ class AppDecorations {
     color: AppColors.backgroundColor,
     borderRadius: BorderRadius.circular(12),
     boxShadow: [
-      BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 6, spreadRadius: 2)
+      BoxShadow(
+        // ignore: deprecated_member_use
+        color: Colors.grey.withOpacity(0.2),
+        blurRadius: 6,
+        spreadRadius: 2,
+      ),
     ],
   );
 }
