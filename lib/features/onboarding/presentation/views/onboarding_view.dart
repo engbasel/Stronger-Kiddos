@@ -3,6 +3,7 @@ import 'package:strongerkiddos/features/onboarding/presentation/widgets/onboardi
 
 class Onboardingview extends StatelessWidget {
   const Onboardingview({super.key});
+  static const routeName = 'onboarding';
 
   @override
   Widget build(BuildContext context) {
