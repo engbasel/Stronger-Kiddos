@@ -27,28 +27,28 @@ class _OnboardingBodyState extends State<OnboardingBody> {
   Widget build(BuildContext context) {
     final List<Map<String, String>> onboardingData = [
       {
-        'image': 'assets/png/image2.jpg',
+        'image': 'assets/png/1.png',
         'title': 'Your Title Goes Here',
         'subtitle': 'Lorem ipsum dolor sit amet,vestibulum .',
         'subtitletwo': 'consectetur adipiscing elit, ',
         'subtitleThree': 'Lorem ipsum dolor sit amet,.',
       },
       {
-        'image': 'assets/png/image2.jpg',
+        'image': 'assets/png/3.png',
         'title': 'Your Title Goes Here',
         'subtitle': 'Lorem ipsum dolor sit amet,vestibulum .',
         'subtitletwo': 'consectetur adipiscing elit, ',
         'subtitleThree': 'Lorem ipsum dolor sit amet,.',
       },
       {
-        'image': 'assets/png/image2.jpg',
+        'image': 'assets/png/5.png',
         'title': 'Your Title Goes Here',
         'subtitle': 'Lorem ipsum dolor sit amet,vestibulum .',
         'subtitletwo': 'consectetur adipiscing elit, ',
         'subtitleThree': 'Lorem ipsum dolor sit amet,.',
       },
       {
-        'image': 'assets/png/image2.jpg',
+        'image': 'assets/png/1.png',
         'title': 'Your Title Goes Here',
         'subtitle': 'Lorem ipsum dolor sit amet,vestibulum .',
         'subtitletwo': 'consectetur adipiscing elit, ',
