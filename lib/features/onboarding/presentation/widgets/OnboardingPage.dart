@@ -7,6 +7,8 @@ class OnboardingPage extends StatelessWidget {
   final String subtitleThree;
   final String subtitletwo;
   final int pageNumber;
+  final int totalPages;
+  final int currentPage;
 
   const OnboardingPage({
     Key? key,
@@ -16,6 +18,8 @@ class OnboardingPage extends StatelessWidget {
     required this.subtitletwo,
     required this.subtitle,
     required this.pageNumber,
+    required this.totalPages,
+    required this.currentPage,
   }) : super(key: key);
 
   @override
@@ -73,9 +77,8 @@ class OnboardingPage extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(
-                        textAlign: TextAlign.start,
-
                         subtitle,
+                        textAlign: TextAlign.start,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xffc4c2c2),
@@ -89,8 +92,8 @@ class OnboardingPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        textAlign: TextAlign.start,
                         subtitletwo,
+                        textAlign: TextAlign.start,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xffc4c2c2),
@@ -104,8 +107,8 @@ class OnboardingPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        textAlign: TextAlign.start,
                         subtitleThree,
+                        textAlign: TextAlign.start,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xffc4c2c2),
@@ -122,8 +125,35 @@ class OnboardingPage extends StatelessWidget {
                   ),
                 ),
                 // Add some space at the bottom
-                SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.2),
               ],
+            ),
+          ),
+        ),
+
+        // Dots Indicator
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                totalPages,
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  width: currentPage == index ? 12.0 : 8.0,
+                  height: 8.0,
+                  decoration: BoxDecoration(
+                    color:
+                        currentPage == index
+                            ? Color(0xffa7773d)
+                            : Color(0xfff4ae59),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+              ),
             ),
           ),
         ),

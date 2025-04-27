@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
+import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding_view.dart';
 
 class OnboardingNavigationFunction {
   static const String _onboardingSeenKey = 'onboarding_seen';
@@ -13,10 +15,10 @@ class OnboardingNavigationFunction {
 
     if (seenOnboarding) {
       // User already saw onboarding, navigate to Home/Loginw
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, Loginview.routeName);
     } else {
       // First time opening app, show onboarding
-      Navigator.pushReplacementNamed(context, '/onboarding');
+      Navigator.pushReplacementNamed(context, Onboardingview.routeName);
     }
   }
 
