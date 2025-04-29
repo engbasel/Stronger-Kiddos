@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildAppleButton.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildCreateAccount.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildDivider.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildEmailForm.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildForgotPassword.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildGoogleButton.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildLoginButton.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildPhoneForm.dart';
 
 // Login tab options
@@ -266,142 +272,6 @@ class _LoginviewState extends State<Loginview>
           ),
         ),
       ],
-    );
-  }
-
-  Widget buildForgotPassword() {
-    return Align(
-      alignment: Alignment.center,
-      child: TextButton(
-        onPressed: () {},
-        child: const Text(
-          'Forgot password?',
-          style: TextStyle(color: Colors.black, fontSize: 14),
-        ),
-      ),
-    );
-  }
-
-  Widget buildLoginButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFF9B356),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          elevation: 0,
-        ),
-        child: const Text(
-          'Login',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
-
-  Widget buildDivider() {
-    return Row(
-      children: [
-        Expanded(child: Divider(color: Colors.grey.shade300)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            'or sign in with',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-          ),
-        ),
-        Expanded(child: Divider(color: Colors.grey.shade300)),
-      ],
-    );
-  }
-
-  Widget buildGoogleButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey.shade200,
-          foregroundColor: Colors.black,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          elevation: 0,
-        ),
-        icon: Image.asset(
-          'assets/png/Google.png',
-          width: 24,
-          height: 24,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              width: 24,
-              height: 24,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-              ),
-              child: const Center(
-                child: Text(
-                  'G',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        label: const Text(
-          'Continue with Google',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-      ),
-    );
-  }
-
-  Widget buildAppleButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          elevation: 0,
-        ),
-        icon: const Icon(Icons.apple, size: 24),
-        label: const Text(
-          'Continue with Apple',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-      ),
-    );
-  }
-
-  Widget buildCreateAccount() {
-    return Center(
-      child: TextButton(
-        onPressed: () {},
-        child: const Text(
-          'Create an account',
-          style: TextStyle(
-            color: Color(0xFFF9B356),
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
     );
   }
 }
