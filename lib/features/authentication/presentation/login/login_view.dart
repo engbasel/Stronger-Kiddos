@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildEmailForm.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildPhoneForm.dart';
 
 // Login tab options
 enum LoginTabOption { email, phone }
@@ -19,9 +21,6 @@ class _LoginviewState extends State<Loginview> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
-  // Country code for phone number
-  String _selectedCountryCode = '+1';
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -37,8 +36,8 @@ class _LoginviewState extends State<Loginview> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
+            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
               const Text(
@@ -51,24 +50,32 @@ class _LoginviewState extends State<Loginview> {
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 30),
-
-              // Tab options
-              _buildTabOptions(),
-
+              buildTabOptions(),
               const SizedBox(height: 20),
-
               // Login form based on selected tab
               if (_selectedTab == LoginTabOption.email)
-                _buildEmailForm()
-              else
-                _buildPhoneForm(),
+                CustomTextField(
+                  controller: _emailController,
+                  label: 'Email',
+                  hintText: 'Enter your email',
+                  keyboardType: TextInputType.emailAddress,
+                  obscureText: false,
+                ),
 
+              if (_selectedTab == LoginTabOption.phone)
+                PhoneNumberField(
+                  onCountryCodeChanged: (value) {
+                    setState(() {});
+                  },
+                  // countryCodes: [],
+                  phoneController: _phoneController,
+                ),
               const SizedBox(height: 16),
 
               // Password field
-              _buildPasswordField(),
+              buildPasswordField(),
 
-              _buildForgotPassword(),
+              buildForgotPassword(),
 
               const SizedBox(height: 10),
 
@@ -99,7 +106,7 @@ class _LoginviewState extends State<Loginview> {
     );
   }
 
-  Widget _buildTabOptions() {
+  Widget buildTabOptions() {
     return Row(
       children: [
         Expanded(
@@ -171,108 +178,9 @@ class _LoginviewState extends State<Loginview> {
     );
   }
 
-  Widget _buildEmailForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Email Address',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _emailController,
-          decoration: InputDecoration(
-            hintText: 'johndoe@email.com',
-            hintStyle: TextStyle(color: Colors.grey.shade400),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-          ),
-          keyboardType: TextInputType.emailAddress,
-        ),
-      ],
-    );
-  }
+  Widget buildPasswordField() {
+    final FocusNode _focusNode = FocusNode();
 
-  Widget _buildPhoneForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Phone Number',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            // Country code dropdown
-            Container(
-              height: 48,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedCountryCode,
-                  items: const [
-                    DropdownMenuItem(value: '+1', child: Text('+1')),
-                    DropdownMenuItem(value: '+44', child: Text('+44')),
-                    DropdownMenuItem(value: '+91', child: Text('+91')),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _selectedCountryCode = value;
-                      });
-                    }
-                  },
-                  icon: const Icon(Icons.keyboard_arrow_down),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Phone number field
-            Expanded(
-              child: TextField(
-                controller: _phoneController,
-                decoration: InputDecoration(
-                  hintText: 'Phone number',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                ),
-                keyboardType: TextInputType.phone,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -284,6 +192,7 @@ class _LoginviewState extends State<Loginview> {
         TextField(
           controller: _passwordController,
           obscureText: _obscureText,
+          focusNode: _focusNode,
           decoration: InputDecoration(
             hintText: '••••••••••••',
             hintStyle: TextStyle(color: Colors.grey.shade400),
@@ -299,36 +208,22 @@ class _LoginviewState extends State<Loginview> {
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
-            suffixIcon: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 16,
-                  height: 16,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.pink),
-                    color: Colors.transparent,
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.circle, size: 8, color: Colors.pink),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    _obscureText
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureText = !_obscureText;
-                    });
-                  },
-                ),
-              ],
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF4B5768)),
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureText
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                color: Colors.grey,
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscureText = !_obscureText;
+                });
+              },
             ),
           ),
         ),
@@ -336,14 +231,14 @@ class _LoginviewState extends State<Loginview> {
     );
   }
 
-  Widget _buildForgotPassword() {
+  Widget buildForgotPassword() {
     return Align(
-      alignment: Alignment.centerRight,
+      alignment: Alignment.center,
       child: TextButton(
         onPressed: () {},
         child: const Text(
           'Forgot password?',
-          style: TextStyle(color: Colors.grey, fontSize: 14),
+          style: TextStyle(color: Colors.black, fontSize: 14),
         ),
       ),
     );
@@ -402,7 +297,7 @@ class _LoginviewState extends State<Loginview> {
           elevation: 0,
         ),
         icon: Image.asset(
-          'assets/images/google_logo.png',
+          'assets/png/Google.png',
           width: 24,
           height: 24,
           errorBuilder: (context, error, stackTrace) {
