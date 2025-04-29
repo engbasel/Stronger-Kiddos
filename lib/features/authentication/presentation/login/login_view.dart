@@ -7,6 +7,7 @@ import 'package:strongerkiddos/features/authentication/presentation/widgets/buil
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildGoogleButton.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildLoginButton.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildPhoneForm.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildTabOptions.dart';
 
 // Login tab options
 enum LoginTabOption { email, phone }
@@ -79,7 +80,20 @@ class _LoginviewState extends State<Loginview>
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 30),
-              buildTabOptions(),
+
+              // buildTabOptions(),
+              TabSelector(
+                selectedTab: _selectedTab,
+                tabs: [
+                  TabOption(label: 'Email', value: LoginTabOption.email),
+                  TabOption(label: 'Phone Number', value: LoginTabOption.phone),
+                ],
+                onTabSelected: (tab) {
+                  setState(() {
+                    _selectedTab = tab;
+                  });
+                },
+              ),
               const SizedBox(height: 20),
 
               // Swipeable content area
@@ -155,70 +169,6 @@ class _LoginviewState extends State<Loginview>
           ),
         ),
       ),
-    );
-  }
-
-  Widget buildTabOptions() {
-    return Row(
-      children: [
-        Expanded(
-          child: GestureDetector(
-            onTap: () => _changeTab(LoginTabOption.email),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Email',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color:
-                        _selectedTab == LoginTabOption.email
-                            ? Colors.orange
-                            : Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Divider(
-                  color:
-                      _selectedTab == LoginTabOption.email
-                          ? Colors.orange
-                          : Colors.grey.withOpacity(0.3),
-                  thickness: 2,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: GestureDetector(
-            onTap: () => _changeTab(LoginTabOption.phone),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Phone Number',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color:
-                        _selectedTab == LoginTabOption.phone
-                            ? Colors.orange
-                            : Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Divider(
-                  color:
-                      _selectedTab == LoginTabOption.phone
-                          ? Colors.orange
-                          : Colors.grey.withOpacity(0.3),
-                  thickness: 2,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 
