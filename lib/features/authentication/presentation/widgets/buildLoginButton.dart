@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/features/onboarding/presentation/views/OnboardingQuestionsView.dart';
 
-Widget buildLoginButton() {
+Widget buildLoginButton(BuildContext context) {
   return SizedBox(
     width: double.infinity,
     child: ElevatedButton(
-      onPressed: () {},
+      onPressed: () {
+        Navigator.pushNamed(context, OnboardingQuestionScreen.routeName);
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFFF9B356),
         foregroundColor: Colors.white,

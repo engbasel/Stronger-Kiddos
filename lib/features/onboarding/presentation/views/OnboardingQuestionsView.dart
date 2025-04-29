@@ -26,15 +26,6 @@ class _OnboardingQuestionScreenState extends State<OnboardingQuestionScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Q1',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        centerTitle: true,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       body: SafeArea(
@@ -43,211 +34,32 @@ class _OnboardingQuestionScreenState extends State<OnboardingQuestionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
               const Text(
-                'What is your baby\'s sex?',
+                'What is your baby sex?',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 8),
+              const Text(
+                'We are expert at utilizing baby names\nand use this data to provide better insights to you',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const Spacer(),
 
               // Option 1: Male
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedOption = 'male';
-                  });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color:
-                          _selectedOption == 'male'
-                              ? const Color(0xFFF9B356)
-                              : Colors.grey.shade300,
-                      width: _selectedOption == 'male' ? 2 : 1,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.male, color: Colors.blue),
-                      ),
-                      const SizedBox(width: 16),
-                      const Text(
-                        'Male',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const Spacer(),
-                      if (_selectedOption == 'male')
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9B356),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            size: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
+              _buildOptionCard('male', 'Male', Icons.male, Colors.blue),
+              const SizedBox(height: 12),
 
               // Option 2: Female
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedOption = 'female';
-                  });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color:
-                          _selectedOption == 'female'
-                              ? const Color(0xFFF9B356)
-                              : Colors.grey.shade300,
-                      width: _selectedOption == 'female' ? 2 : 1,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.female, color: Colors.pink),
-                      ),
-                      const SizedBox(width: 16),
-                      const Text(
-                        'Female',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const Spacer(),
-                      if (_selectedOption == 'female')
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9B356),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            size: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Option 3: I don't know yet
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedOption = 'unknown';
-                  });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color:
-                          _selectedOption == 'unknown'
-                              ? const Color(0xFFF9B356)
-                              : Colors.grey.shade300,
-                      width: _selectedOption == 'unknown' ? 2 : 1,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.help_outline,
-                          color: Colors.purple,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      const Text(
-                        'I don\'t know yet',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const Spacer(),
-                      if (_selectedOption == 'unknown')
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9B356),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            size: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+              _buildOptionCard('female', 'Female', Icons.female, Colors.pink),
 
               const Spacer(),
 
-              // Continue Button
+              // Login Button
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -287,9 +99,12 @@ class _OnboardingQuestionScreenState extends State<OnboardingQuestionScreen> {
                           },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF9B356),
-                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledBackgroundColor: const Color(
+                      0xFFF9B356,
+                    ).withOpacity(0.7),
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(28),
                     ),
                   ),
                   child:
@@ -303,7 +118,7 @@ class _OnboardingQuestionScreenState extends State<OnboardingQuestionScreen> {
                             ),
                           )
                           : const Text(
-                            'Continue',
+                            'continue',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -312,9 +127,48 @@ class _OnboardingQuestionScreenState extends State<OnboardingQuestionScreen> {
                           ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionCard(
+    String value,
+    String label,
+    IconData icon,
+    Color iconColor,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedOption = value;
+        });
+      },
+      child: Container(
+        height: 56,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300, width: 1),
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Text(label, style: TextStyle(fontSize: 16, color: Colors.black87)),
+          ],
         ),
       ),
     );

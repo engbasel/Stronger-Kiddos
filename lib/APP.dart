@@ -1,6 +1,6 @@
 // StrongerKiddos.dart
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/AppRouter.dart';
+import 'package:strongerkiddos/app_router.dart';
 import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding_view.dart';
 import 'package:strongerkiddos/features/splash/presentation/views/splash_view.dart';
 

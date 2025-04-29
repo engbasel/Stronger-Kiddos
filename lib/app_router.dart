@@ -6,6 +6,7 @@ import 'package:strongerkiddos/features/authentication/presentation/signup/creat
 import 'package:strongerkiddos/features/authentication/presentation/login/forgot_password_view.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
 import 'package:strongerkiddos/features/home/presentation/views/home_view.dart';
+import 'package:strongerkiddos/features/onboarding/presentation/views/OnboardingQuestionsView.dart';
 import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding_view.dart';
 import 'package:strongerkiddos/features/splash/presentation/views/splash_view.dart';
 
@@ -26,6 +27,10 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ResetPasswordScreen());
       case CreateAccountScreen.routeName:
         return MaterialPageRoute(builder: (_) => const CreateAccountScreen());
+      case OnboardingQuestionScreen.routeName:
+        return MaterialPageRoute(
+          builder: (_) => const OnboardingQuestionScreen(),
+        );
 
       default:
         return MaterialPageRoute(
