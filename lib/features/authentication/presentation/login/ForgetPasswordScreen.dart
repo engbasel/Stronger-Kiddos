@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildCreateAccount.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
   const ForgetPasswordScreen({super.key});
@@ -169,21 +170,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                 ),
               ),
               const Spacer(),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    // Navigate to create account screen
-                  },
-                  child: const Text(
-                    'Create an account',
-                    style: TextStyle(
-                      color: Color(0xffffba5f),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
+              Center(child: buildCreateAccount(context)),
               const SizedBox(height: 16),
             ],
           ),

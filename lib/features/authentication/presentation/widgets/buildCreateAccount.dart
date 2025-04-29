@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/CreateAccountScreen.dart';
 
-Widget buildCreateAccount() {
+Widget buildCreateAccount(BuildContext context) {
   return Center(
     child: TextButton(
-      onPressed: () {},
+      onPressed: () {
+        // Add your navigation logic here
+        Navigator.pushNamed(context, CreateAccountScreen.routeName);
+      },
       child: const Text(
         'Create an account',
         style: TextStyle(

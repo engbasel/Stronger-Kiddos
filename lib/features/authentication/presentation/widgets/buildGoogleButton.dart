@@ -22,7 +22,7 @@ Widget buildGoogleButton() {
             height: 24,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white,
+              color: Color(0xffe4e7eb),
             ),
             child: const Center(
               child: Text(

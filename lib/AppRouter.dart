@@ -1,6 +1,8 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/CreateAccountScreen.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/Create_an_account.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/ForgetPasswordScreen.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
 import 'package:strongerkiddos/features/home/presentation/home_view.dart';
@@ -20,6 +22,10 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const HomeView());
       case ForgetPasswordScreen.routeName:
         return MaterialPageRoute(builder: (_) => const ForgetPasswordScreen());
+      case ResetPasswordScreen.routeName:
+        return MaterialPageRoute(builder: (_) => const ResetPasswordScreen());
+      case CreateAccountScreen.routeName:
+        return MaterialPageRoute(builder: (_) => const CreateAccountScreen());
 
       default:
         return MaterialPageRoute(
