@@ -82,7 +82,7 @@ class _LoginviewState extends State<Loginview>
               ),
               const SizedBox(height: 30),
 
-              // buildTabOptions(),
+              // Fix: Use the changeTab function when tabs are selected
               TabSelector(
                 selectedTab: _selectedTab,
                 tabs: [
@@ -90,9 +90,9 @@ class _LoginviewState extends State<Loginview>
                   TabOption(label: 'Phone Number', value: LoginTabOption.phone),
                 ],
                 onTabSelected: (tab) {
-                  setState(() {
-                    _selectedTab = tab;
-                  });
+                  changeTab(
+                    tab,
+                  ); // Use the changeTab function to ensure both tab and page change
                 },
               ),
               const SizedBox(height: 20),
@@ -101,6 +101,8 @@ class _LoginviewState extends State<Loginview>
               Expanded(
                 child: PageView(
                   controller: _pageController,
+                  physics:
+                      const PageScrollPhysics(), // Enable smooth physics for swiping
                   onPageChanged: (index) {
                     setState(() {
                       _selectedTab = LoginTabOption.values[index];
