@@ -6,6 +6,7 @@ import 'package:strongerkiddos/features/authentication/presentation/widgets/buil
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildForgotPassword.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildGoogleButton.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildLoginButton.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/buildPasswordField.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildPhoneForm.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/buildTabOptions.dart';
 
@@ -48,7 +49,7 @@ class _LoginviewState extends State<Loginview>
   }
 
   // Change tab and update page controller
-  void _changeTab(LoginTabOption tab) {
+  void changeTab(LoginTabOption tab) {
     setState(() {
       _selectedTab = tab;
       _pageController.animateToPage(
@@ -119,8 +120,18 @@ class _LoginviewState extends State<Loginview>
                             obscureText: false,
                           ),
                           const SizedBox(height: 16),
-                          buildPasswordField(),
-                          buildForgotPassword(),
+
+                          // buildPasswordField(),
+                          PasswordField(
+                            controller: _passwordController,
+                            obscureText: _obscureText,
+                            onToggleVisibility: (isVisible) {
+                              setState(() {
+                                _obscureText = isVisible;
+                              });
+                            },
+                          ),
+                          buildForgotPassword(context),
                           const SizedBox(height: 10),
                           buildLoginButton(),
                           const SizedBox(height: 15),
@@ -147,8 +158,16 @@ class _LoginviewState extends State<Loginview>
                             phoneController: _phoneController,
                           ),
                           const SizedBox(height: 16),
-                          buildPasswordField(),
-                          buildForgotPassword(),
+                          PasswordField(
+                            controller: _passwordController,
+                            obscureText: _obscureText,
+                            onToggleVisibility: (isVisible) {
+                              setState(() {
+                                _obscureText = isVisible;
+                              });
+                            },
+                          ),
+                          buildForgotPassword(context),
                           const SizedBox(height: 10),
                           buildLoginButton(),
                           const SizedBox(height: 15),
@@ -169,59 +188,6 @@ class _LoginviewState extends State<Loginview>
           ),
         ),
       ),
-    );
-  }
-
-  Widget buildPasswordField() {
-    final FocusNode _focusNode = FocusNode();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Password',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _passwordController,
-          obscureText: _obscureText,
-          focusNode: _focusNode,
-          decoration: InputDecoration(
-            hintText: '••••••••••••',
-            hintStyle: TextStyle(color: Colors.grey.shade400),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF4B5768)),
-            ),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureText
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: Colors.grey,
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscureText = !_obscureText;
-                });
-              },
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
