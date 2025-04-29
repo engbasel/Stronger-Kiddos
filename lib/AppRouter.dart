@@ -1,11 +1,11 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/features/authentication/presentation/login/CreateAccountScreen.dart';
-import 'package:strongerkiddos/features/authentication/presentation/login/Create_an_account.dart';
-import 'package:strongerkiddos/features/authentication/presentation/login/ForgetPasswordScreen.dart';
+import 'package:strongerkiddos/features/authentication/presentation/signup/create_account_view.dart';
+import 'package:strongerkiddos/features/authentication/presentation/signup/create_account_widget.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/forgot_password_view.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
-import 'package:strongerkiddos/features/home/presentation/home_view.dart';
+import 'package:strongerkiddos/features/home/presentation/views/home_view.dart';
 import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding_view.dart';
 import 'package:strongerkiddos/features/splash/presentation/views/splash_view.dart';
 

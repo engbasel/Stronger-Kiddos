@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/features/authentication/presentation/login/ForgetPasswordScreen.dart';
-import 'package:strongerkiddos/features/authentication/presentation/login/LoginScreenWith_phone_and_OTP.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/forgot_password_view.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/login_with_phone_and_otp_view.dart';
 
 Widget buildForgotPassword(BuildContext context) {
   return Align(

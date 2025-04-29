@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/features/onboarding/presentation/widgets/onboarding_widget.dart';
+import 'package:strongerkiddos/features/onboarding/presentation/widgets/onboarding_body_widget.dart';
 
 class Onboardingview extends StatelessWidget {
   const Onboardingview({super.key});

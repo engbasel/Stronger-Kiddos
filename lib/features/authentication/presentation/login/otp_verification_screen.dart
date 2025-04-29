@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 
-import 'package:strongerkiddos/features/home/presentation/home_view.dart';
+import 'package:strongerkiddos/features/home/presentation/views/home_view.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;

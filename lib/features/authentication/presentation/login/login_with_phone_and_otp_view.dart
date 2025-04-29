@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:strongerkiddos/features/authentication/presentation/login/ForgetPasswordScreen.dart';
-import 'package:strongerkiddos/features/authentication/presentation/login/OtpVerificationScreen.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/forgot_password_view.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/otp_verification_screen.dart';
 
 class LoginScreenWith_phone_and_OTP extends StatefulWidget {
   const LoginScreenWith_phone_and_OTP({super.key});

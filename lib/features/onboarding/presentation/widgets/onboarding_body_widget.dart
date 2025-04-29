@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
-import 'package:strongerkiddos/features/onboarding/presentation/widgets/OnboardingPage.dart';
+import 'package:strongerkiddos/features/onboarding/presentation/widgets/onboarding_page_widget.dart';
 
 class CustomFAB extends StatelessWidget {
   final VoidCallback onPressed;

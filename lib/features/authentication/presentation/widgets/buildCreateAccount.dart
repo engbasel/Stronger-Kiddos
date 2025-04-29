@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/features/authentication/presentation/login/CreateAccountScreen.dart';
+import 'package:strongerkiddos/features/authentication/presentation/signup/create_account_view.dart';
 
 Widget buildCreateAccount(BuildContext context) {
   return Center(
