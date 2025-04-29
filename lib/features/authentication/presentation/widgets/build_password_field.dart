@@ -6,17 +6,17 @@ class PasswordField extends StatefulWidget {
   final ValueChanged<bool> onToggleVisibility;
 
   const PasswordField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.obscureText,
     required this.onToggleVisibility,
-  }) : super(key: key);
+  });
 
   @override
-  _PasswordFieldState createState() => _PasswordFieldState();
+  PasswordFieldState createState() => PasswordFieldState();
 }
 
-class _PasswordFieldState extends State<PasswordField> {
+class PasswordFieldState extends State<PasswordField> {
   late FocusNode _focusNode;
 
   @override

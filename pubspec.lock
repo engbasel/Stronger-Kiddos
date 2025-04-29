@@ -242,7 +242,7 @@ packages:
     source: hosted
     version: "3.1.2"
   country_code_picker:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: country_code_picker
       sha256: ee216486da1db8e3c5688f9650c99472ab6a4025ed1ea0c5a54ae6063143d90d

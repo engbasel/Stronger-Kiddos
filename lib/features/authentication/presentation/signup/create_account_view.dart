@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:strongerkiddos/features/authentication/presentation/widgets/buildGoogleButton.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/build_google_button.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});

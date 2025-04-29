@@ -4,16 +4,16 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/forgot_password_view.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/otp_verification_screen.dart';
 
-class LoginScreenWith_phone_and_OTP extends StatefulWidget {
-  const LoginScreenWith_phone_and_OTP({super.key});
+class LoginScreenWithPhoneAndOtp extends StatefulWidget {
+  const LoginScreenWithPhoneAndOtp({super.key});
 
   static const routeName = '/login';
 
   @override
-  State<LoginScreenWith_phone_and_OTP> createState() => _LoginScreenState();
+  State<LoginScreenWithPhoneAndOtp> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreenWith_phone_and_OTP> {
+class _LoginScreenState extends State<LoginScreenWithPhoneAndOtp> {
   final TextEditingController _phoneController = TextEditingController();
   String _selectedCountryCode = '+1';
 

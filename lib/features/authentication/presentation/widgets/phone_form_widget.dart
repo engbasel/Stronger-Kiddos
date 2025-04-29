@@ -6,10 +6,10 @@ class PhoneNumberField extends StatelessWidget {
   final ValueChanged<CountryCode> onCountryCodeChanged;
 
   const PhoneNumberField({
-    Key? key,
+    super.key,
     required this.phoneController,
     required this.onCountryCodeChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

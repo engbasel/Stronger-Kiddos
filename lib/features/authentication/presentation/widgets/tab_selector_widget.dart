@@ -24,7 +24,7 @@
 //                 color:
 //                     _selectedTab == LoginTabOption.email
 //                         ? Colors.orange
-//                         : Colors.grey.withOpacity(0.3),
+//                         : Colors.grey.withValues(alpha: 0.3),
 //                 thickness: 2,
 //               ),
 //             ],
@@ -53,7 +53,7 @@
 //                 color:
 //                     _selectedTab == LoginTabOption.phone
 //                         ? Colors.orange
-//                         : Colors.grey.withOpacity(0.3),
+//                         : Colors.grey.withValues(alpha: 0.3),
 //                 thickness: 2,
 //               ),
 //             ],
@@ -79,11 +79,11 @@ class TabSelector extends StatelessWidget {
   final ValueChanged<dynamic> onTabSelected;
 
   const TabSelector({
-    Key? key,
+    super.key,
     required this.selectedTab,
     required this.tabs,
     required this.onTabSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +109,7 @@ class TabSelector extends StatelessWidget {
                       color:
                           isSelected
                               ? Colors.orange
-                              : Colors.grey.withOpacity(0.3),
+                              : Colors.grey.withValues(alpha: 0.3),
                       thickness: 2,
                     ),
                   ],

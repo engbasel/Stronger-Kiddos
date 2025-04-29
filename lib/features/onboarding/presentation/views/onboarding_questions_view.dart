@@ -73,8 +73,6 @@ class _OnboardingQuestionScreenState extends State<OnboardingQuestionScreen> {
                             });
 
                             try {
-                              // TODO: Save the selected option to your data store
-
                               // Navigate to the next question
                               if (mounted) {
                                 Navigator.of(
@@ -101,7 +99,7 @@ class _OnboardingQuestionScreenState extends State<OnboardingQuestionScreen> {
                     backgroundColor: const Color(0xFFF9B356),
                     disabledBackgroundColor: const Color(
                       0xFFF9B356,
-                    ).withOpacity(0.7),
+                    ).withValues(alpha: .7),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),

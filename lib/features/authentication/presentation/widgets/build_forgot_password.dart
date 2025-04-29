@@ -22,7 +22,7 @@ Widget buildForgotPassword(BuildContext context) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const LoginScreenWith_phone_and_OTP(),
+                builder: (context) => const LoginScreenWithPhoneAndOtp(),
               ),
             );
           },

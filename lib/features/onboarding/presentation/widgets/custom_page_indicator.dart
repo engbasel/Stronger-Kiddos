@@ -5,10 +5,10 @@ class CustomPageIndicator extends StatelessWidget {
   final int pageCount;
 
   const CustomPageIndicator({
-    Key? key,
+    super.key,
     required this.currentPage,
     required this.pageCount,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +24,10 @@ class CustomPageIndicator extends StatelessWidget {
             color:
                 index == currentPage
                     ? const Color(0xFFFF9E45)
-                    : const Color(0xFFFF9E45).withOpacity(0.5),
+                    : const Color(0xFFFF9E45).withValues(alpha: .5),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF9E45).withOpacity(0.5),
+                color: const Color(0xFFFF9E45).withValues(alpha: .5),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),

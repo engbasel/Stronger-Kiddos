@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/features/authentication/presentation/widgets/buildAppleButton.dart';
-import 'package:strongerkiddos/features/authentication/presentation/widgets/buildCreateAccount.dart';
-import 'package:strongerkiddos/features/authentication/presentation/widgets/buildDivider.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/build_apple_button.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/build_create_account.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/build_divider.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/email_form_widget.dart';
-import 'package:strongerkiddos/features/authentication/presentation/widgets/buildForgotPassword.dart';
-import 'package:strongerkiddos/features/authentication/presentation/widgets/buildGoogleButton.dart';
-import 'package:strongerkiddos/features/authentication/presentation/widgets/buildLoginButton.dart';
-import 'package:strongerkiddos/features/authentication/presentation/widgets/buildPasswordField.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/build_forgot_password.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/build_google_button.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/build_login_button.dart';
+import 'package:strongerkiddos/features/authentication/presentation/widgets/build_password_field.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/phone_form_widget.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/tab_selector_widget.dart';
 

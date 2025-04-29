@@ -7,11 +7,11 @@ class OnboardingButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   const OnboardingButton({
-    Key? key,
+    super.key,
     required this.currentPage,
     required this.animation,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -11,12 +11,12 @@ class CustomFAB extends StatelessWidget {
   final int totalPages;
 
   const CustomFAB({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.isLastPage,
     required this.currentPage,
     required this.totalPages,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +97,7 @@ class ArcPainter extends CustomPainter {
 }
 
 class OnboardingBody extends StatefulWidget {
-  const OnboardingBody({Key? key}) : super(key: key);
+  const OnboardingBody({super.key});
 
   @override
   State<OnboardingBody> createState() => _OnboardingBodyState();

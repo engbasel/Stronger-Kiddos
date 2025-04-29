@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/features/onboarding/presentation/views/OnboardingQuestionsView.dart';
+import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding_questions_view.dart';
 
 Widget buildLoginButton(BuildContext context) {
   return SizedBox(

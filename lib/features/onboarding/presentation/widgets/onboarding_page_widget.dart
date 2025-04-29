@@ -11,7 +11,7 @@ class OnboardingPage extends StatelessWidget {
   final int currentPage;
 
   const OnboardingPage({
-    Key? key,
+    super.key,
     required this.image,
     required this.title,
     required this.subtitleThree,
@@ -20,7 +20,7 @@ class OnboardingPage extends StatelessWidget {
     required this.pageNumber,
     required this.totalPages,
     required this.currentPage,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +38,8 @@ class OnboardingPage extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withOpacity(0.2),
-                  Colors.black.withOpacity(0.7),
+                  Colors.black.withValues(alpha: .2),
+                  Colors.black.withValues(alpha: .7),
                 ],
               ),
             ),
