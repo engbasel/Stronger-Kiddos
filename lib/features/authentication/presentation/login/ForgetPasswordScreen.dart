@@ -90,15 +90,6 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                       color: Colors.black,
                     ),
                   ),
-                  // Spacer(),
-                  const Text(
-                    'Login Wiht OPT',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -186,7 +177,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                   child: const Text(
                     'Create an account',
                     style: TextStyle(
-                      color: Color(0xFFF9B356),
+                      color: Color(0xffffba5f),
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),

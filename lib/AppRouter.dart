@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/ForgetPasswordScreen.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
 import 'package:strongerkiddos/features/home/presentation/home_view.dart';
 import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding_view.dart';
@@ -17,6 +18,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const Loginview());
       case HomeView.routeName:
         return MaterialPageRoute(builder: (_) => const HomeView());
+      case ForgetPasswordScreen.routeName:
+        return MaterialPageRoute(builder: (_) => const ForgetPasswordScreen());
 
       default:
         return MaterialPageRoute(

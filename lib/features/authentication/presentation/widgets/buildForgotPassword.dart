@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/ForgetPasswordScreen.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/LoginScreenWith_phone_and_OTP.dart';
 
 Widget buildForgotPassword(BuildContext context) {
@@ -7,7 +8,9 @@ Widget buildForgotPassword(BuildContext context) {
     child: Row(
       children: [
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pushNamed(context, ForgetPasswordScreen.routeName);
+          },
           child: const Text(
             'Forgot password?',
             style: TextStyle(color: Colors.black, fontSize: 14),
