@@ -1,107 +1,8 @@
-// import 'package:flutter/material.dart';
-// import 'package:strongerkiddos/core/utils/app_colors.dart';
-// import 'package:strongerkiddos/features/onboarding/presentation/widgets/OnboardingPage.dart';
-// import 'dart:math';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
 import 'package:strongerkiddos/features/onboarding/presentation/widgets/OnboardingPage.dart';
-
-// // Constants
-
-// class OnboardingBody extends StatefulWidget {
-//   const OnboardingBody({Key? key}) : super(key: key);
-
-//   @override
-//   State<OnboardingBody> createState() => _OnboardingBodyState();
-// }
-
-// class _OnboardingBodyState extends State<OnboardingBody> {
-//   final PageController _pageController = PageController();
-//   int _currentPage = 0;
-//   bool _isLastPage = false;
-
-//   @override
-//   void dispose() {
-//     _pageController.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final List<Map<String, String>> onboardingData = [
-//       {
-//         'image': 'assets/png/1.png',
-//         'title': 'Your Title Goes Here',
-//         'subtitle': 'Lorem ipsum dolor sit amet,vestibulum .',
-//         'subtitletwo': 'consectetur adipiscing elit, ',
-//         'subtitleThree': 'Lorem ipsum dolor sit amet,.',
-//       },
-//       {
-//         'image': 'assets/png/3.png',
-//         'title': 'Your Title Goes Here',
-//         'subtitle': 'Lorem ipsum dolor sit amet,vestibulum .',
-//         'subtitletwo': 'consectetur adipiscing elit, ',
-//         'subtitleThree': 'Lorem ipsum dolor sit amet,.',
-//       },
-//       {
-//         'image': 'assets/png/5.png',
-//         'title': 'Your Title Goes Here',
-//         'subtitle': 'Lorem ipsum dolor sit amet,vestibulum .',
-//         'subtitletwo': 'consectetur adipiscing elit, ',
-//         'subtitleThree': 'Lorem ipsum dolor sit amet,.',
-//       },
-//       {
-//         'image': 'assets/png/1.png',
-//         'title': 'Your Title Goes Here',
-//         'subtitle': 'Lorem ipsum dolor sit amet,vestibulum .',
-//         'subtitletwo': 'consectetur adipiscing elit, ',
-//         'subtitleThree': 'Lorem ipsum dolor sit amet,.',
-//       },
-//     ];
-
-//     return Scaffold(
-//       floatingActionButton: CustomFAB(
-//         onPressed: () {
-//           if (_isLastPage) {
-//             Navigator.of(context).pushReplacementNamed('home');
-//           } else {
-//             _pageController.nextPage(
-//               duration: AppColors.pageTransitionDuration,
-//               curve: Curves.easeInOut,
-//             );
-//           }
-//         },
-//         isLastPage: _isLastPage,
-//         currentPage: _currentPage,
-//         totalPages: onboardingData.length,
-//       ),
-//       body: PageView.builder(
-//         controller: _pageController,
-//         onPageChanged: (index) {
-//           setState(() {
-//             _currentPage = index;
-//             _isLastPage = index == onboardingData.length - 1;
-//           });
-//         },
-//         itemCount: onboardingData.length,
-//         itemBuilder: (context, index) {
-//           final data = onboardingData[index];
-//           return OnboardingPage(
-//             image: data['image']!,
-//             subtitletwo: data['subtitle']!,
-//             title: data['title']!,
-//             subtitleThree: data['subtitleThree']!,
-//             subtitle: data['subtitle']!,
-//             pageNumber: index + 1,
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
 
 class CustomFAB extends StatelessWidget {
   final VoidCallback onPressed;
@@ -245,51 +146,6 @@ class _OnboardingBodyState extends State<OnboardingBody> {
         'subtitleThree': 'Lorem ipsum dolor sit amet,.',
       },
     ];
-
-    // return Scaffold(
-    //   floatingActionButton: CustomFAB(
-    //     onPressed: () {
-    //       if (_isLastPage) {
-    //         Navigator.of(context).pushReplacementNamed('home');
-    //       } else {
-    //         _pageController.nextPage(
-    //           duration: AppColors.pageTransitionDuration,
-    //           curve: Curves.easeInOut,
-    //         );
-    //       }
-    //     },
-    //     isLastPage: _isLastPage,
-    //     currentPage: _currentPage,
-    //     totalPages: onboardingData.length,
-    //   ),
-    //   body: Column(
-    //     children: [
-    //       Expanded(
-    //         child: PageView.builder(
-    //           controller: _pageController,
-    //           onPageChanged: (index) {
-    //             setState(() {
-    //               _currentPage = index;
-    //               _isLastPage = index == onboardingData.length - 1;
-    //             });
-    //           },
-    //           itemCount: onboardingData.length,
-    //           itemBuilder: (context, index) {
-    //             final data = onboardingData[index];
-    //             return OnboardingPage(
-    //               image: data['image']!,
-    //               subtitletwo: data['subtitle']!,
-    //               title: data['title']!,
-    //               subtitleThree: data['subtitleThree']!,
-    //               subtitle: data['subtitle']!,
-    //               pageNumber: index + 1,
-    //             );
-    //           },
-    //         ),
-    //       ),
-    //     ],
-    //   ),
-    // );
 
     return Scaffold(
       floatingActionButton: CustomFAB(

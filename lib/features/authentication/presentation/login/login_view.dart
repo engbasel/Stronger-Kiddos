@@ -73,24 +73,24 @@ class _LoginviewState extends State<Loginview> {
               const SizedBox(height: 10),
 
               // Login button
-              _buildLoginButton(),
+              buildLoginButton(),
 
               const SizedBox(height: 15),
 
               // Divider with text
-              _buildDivider(),
+              buildDivider(),
 
               const SizedBox(height: 15),
 
               // Social login buttons
-              _buildGoogleButton(),
+              buildGoogleButton(),
               const SizedBox(height: 10),
-              _buildAppleButton(),
+              buildAppleButton(),
 
               const Spacer(),
 
               // Create account link
-              _buildCreateAccount(),
+              buildCreateAccount(),
               const SizedBox(height: 10),
             ],
           ),
@@ -349,7 +349,7 @@ class _LoginviewState extends State<Loginview> {
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget buildLoginButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -371,7 +371,7 @@ class _LoginviewState extends State<Loginview> {
     );
   }
 
-  Widget _buildDivider() {
+  Widget buildDivider() {
     return Row(
       children: [
         Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -387,7 +387,7 @@ class _LoginviewState extends State<Loginview> {
     );
   }
 
-  Widget _buildGoogleButton() {
+  Widget buildGoogleButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -433,7 +433,7 @@ class _LoginviewState extends State<Loginview> {
     );
   }
 
-  Widget _buildAppleButton() {
+  Widget buildAppleButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -456,7 +456,7 @@ class _LoginviewState extends State<Loginview> {
     );
   }
 
-  Widget _buildCreateAccount() {
+  Widget buildCreateAccount() {
     return Center(
       child: TextButton(
         onPressed: () {},
