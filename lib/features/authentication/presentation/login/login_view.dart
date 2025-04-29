@@ -14,19 +14,42 @@ class Loginview extends StatefulWidget {
   State<Loginview> createState() => _LoginviewState();
 }
 
-class _LoginviewState extends State<Loginview> {
+class _LoginviewState extends State<Loginview>
+    with SingleTickerProviderStateMixin {
   bool _obscureText = true;
   LoginTabOption _selectedTab = LoginTabOption.email;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
+  // Add page controller for swipe functionality
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _selectedTab.index);
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
+    _pageController.dispose();
     super.dispose();
+  }
+
+  // Change tab and update page controller
+  void _changeTab(LoginTabOption tab) {
+    setState(() {
+      _selectedTab = tab;
+      _pageController.animateToPage(
+        tab.index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   @override
@@ -36,8 +59,8 @@ class _LoginviewState extends State<Loginview> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: ListView(
-            // crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
               const Text(
@@ -52,53 +75,76 @@ class _LoginviewState extends State<Loginview> {
               const SizedBox(height: 30),
               buildTabOptions(),
               const SizedBox(height: 20),
-              // Login form based on selected tab
-              if (_selectedTab == LoginTabOption.email)
-                CustomTextField(
-                  controller: _emailController,
-                  label: 'Email',
-                  hintText: 'Enter your email',
-                  keyboardType: TextInputType.emailAddress,
-                  obscureText: false,
-                ),
 
-              if (_selectedTab == LoginTabOption.phone)
-                PhoneNumberField(
-                  onCountryCodeChanged: (value) {
-                    setState(() {});
+              // Swipeable content area
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _selectedTab = LoginTabOption.values[index];
+                    });
                   },
-                  // countryCodes: [],
-                  phoneController: _phoneController,
+                  children: [
+                    // Email login form
+                    SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustomTextField(
+                            controller: _emailController,
+                            label: 'Email',
+                            hintText: 'Enter your email',
+                            keyboardType: TextInputType.emailAddress,
+                            obscureText: false,
+                          ),
+                          const SizedBox(height: 16),
+                          buildPasswordField(),
+                          buildForgotPassword(),
+                          const SizedBox(height: 10),
+                          buildLoginButton(),
+                          const SizedBox(height: 15),
+                          buildDivider(),
+                          const SizedBox(height: 15),
+                          buildGoogleButton(),
+                          const SizedBox(height: 10),
+                          buildAppleButton(),
+                          const SizedBox(height: 20),
+                          buildCreateAccount(),
+                        ],
+                      ),
+                    ),
+
+                    // Phone login form
+                    SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PhoneNumberField(
+                            onCountryCodeChanged: (value) {
+                              setState(() {});
+                            },
+                            phoneController: _phoneController,
+                          ),
+                          const SizedBox(height: 16),
+                          buildPasswordField(),
+                          buildForgotPassword(),
+                          const SizedBox(height: 10),
+                          buildLoginButton(),
+                          const SizedBox(height: 15),
+                          buildDivider(),
+                          const SizedBox(height: 15),
+                          buildGoogleButton(),
+                          const SizedBox(height: 10),
+                          buildAppleButton(),
+                          const SizedBox(height: 20),
+                          buildCreateAccount(),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              const SizedBox(height: 16),
-
-              // Password field
-              buildPasswordField(),
-
-              buildForgotPassword(),
-
-              const SizedBox(height: 10),
-
-              // Login button
-              buildLoginButton(),
-
-              const SizedBox(height: 15),
-
-              // Divider with text
-              buildDivider(),
-
-              const SizedBox(height: 15),
-
-              // Social login buttons
-              buildGoogleButton(),
-              const SizedBox(height: 10),
-              buildAppleButton(),
-
-              const Spacer(),
-
-              // Create account link
-              buildCreateAccount(),
-              const SizedBox(height: 10),
+              ),
             ],
           ),
         ),
@@ -111,11 +157,7 @@ class _LoginviewState extends State<Loginview> {
       children: [
         Expanded(
           child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedTab = LoginTabOption.email;
-              });
-            },
+            onTap: () => _changeTab(LoginTabOption.email),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -144,11 +186,7 @@ class _LoginviewState extends State<Loginview> {
         const SizedBox(width: 16),
         Expanded(
           child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedTab = LoginTabOption.phone;
-              });
-            },
+            onTap: () => _changeTab(LoginTabOption.phone),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
