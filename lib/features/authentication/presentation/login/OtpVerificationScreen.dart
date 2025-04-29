@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 
+import 'package:strongerkiddos/features/home/presentation/home_view.dart';
+
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
 
@@ -96,6 +98,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     ).showSnackBar(const SnackBar(content: Text('OTP verified successfully')));
 
     // Navigate to home screen or next screen after successful verification
+    Navigator.of(context).pushReplacementNamed(HomeView.routeName);
   }
 
   @override

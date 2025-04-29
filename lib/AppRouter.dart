@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
+import 'package:strongerkiddos/features/home/presentation/home_view.dart';
 import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding_view.dart';
 import 'package:strongerkiddos/features/splash/presentation/views/splash_view.dart';
 
@@ -14,6 +15,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const Onboardingview());
       case Loginview.routeName:
         return MaterialPageRoute(builder: (_) => const Loginview());
+      case HomeView.routeName:
+        return MaterialPageRoute(builder: (_) => const HomeView());
 
       default:
         return MaterialPageRoute(
