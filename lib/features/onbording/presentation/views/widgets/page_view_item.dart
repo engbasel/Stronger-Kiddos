@@ -21,14 +21,12 @@ class PageViewItem extends StatelessWidget {
       color: Colors.white,
       child: Stack(
         children: [
-          // الخلفية (الصورة)
           Positioned.fill(child: Image.asset(image, fit: BoxFit.cover)),
 
-          // النص فوق الصورة
           Positioned(
             left: 20,
             right: 20,
-            bottom: 40, // يمكنك ضبط المسافة حسب الحاجة
+            bottom: 145, // يمكنك ضبط المسافة حسب الحاجة
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -16,7 +16,6 @@ class SkipWidget extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        SizedBox(height: 40),
         GestureDetector(
           onTap: () {
             pageController.animateToPage(

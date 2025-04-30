@@ -37,16 +37,15 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     return Scaffold(
       body: Stack(
         children: [
+          OnBoardingPageView(pageController: pageController),
           Positioned(
-            top: 60,
+            top: 45,
             right: 25,
-            left: 25,
             child: SkipWidget(
               currentPage: currentPage,
               pageController: pageController,
             ),
           ),
-          Expanded(child: OnBoardingPageView(pageController: pageController)),
           Positioned(
             bottom: 90,
             right: 40,
