@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import '../../../../app_constants.dart';
 import 'widgets/build_nav_bottom.dart';
 import 'widgets/on_boarding_page_view.dart';
 import 'widgets/skip_widget.dart';
@@ -37,27 +35,24 @@ class _OnBoardingViewState extends State<OnBoardingView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppConstants.kHorizintalPadding,
+      body: Stack(
+        children: [
+          Positioned(
+            top: 60,
+            right: 25,
+            left: 25,
+            child: SkipWidget(
+              currentPage: currentPage,
+              pageController: pageController,
+            ),
           ),
-          child: Column(
-            children: [
-              const SizedBox(height: 25),
-              SkipWidget(
-                currentPage: currentPage,
-                pageController: pageController,
-              ),
-              Expanded(
-                child: OnBoardingPageView(pageController: pageController),
-              ),
-              const SizedBox(height: 20),
-              buildNavigationBar(context, pageController, currentPage),
-              const SizedBox(height: 25),
-            ],
+          Expanded(child: OnBoardingPageView(pageController: pageController)),
+          Positioned(
+            bottom: 90,
+            right: 40,
+            child: buildNavigationBar(context, pageController, currentPage),
           ),
-        ),
+        ],
       ),
     );
   }
