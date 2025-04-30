@@ -6,6 +6,7 @@ import 'package:strongerkiddos/features/splash/presentation/views/splash_view.da
 import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
 import 'package:strongerkiddos/features/home/presentation/views/home_view.dart';
 import 'core/services/injection_container.dart';
+import 'features/authentication/presentation/login/email_verfication_screen.dart';
 import 'features/authentication/presentation/manager/cubit/auth_cubit.dart';
 import 'features/authentication/presentation/manager/cubit/auth_state.dart';
 
@@ -57,8 +58,16 @@ class AuthWrapper extends StatelessWidget {
           case AuthStatus.loading:
             return const SplashView();
           case AuthStatus.authenticated:
+            // Check if email verification is required
+            if (state.user != null &&
+                state.user!.email.isNotEmpty &&
+                !state.user!.isEmailVerified) {
+              // Email not verified, show verification screen
+              return const EmailVerificationScreen();
+            }
             return const HomeView();
           case AuthStatus.unauthenticated:
+          case AuthStatus.otpSent: // Added this case
             return const Onboardingview();
           case AuthStatus.error:
             // On error, show login screen

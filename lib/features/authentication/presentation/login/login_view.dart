@@ -9,6 +9,7 @@ import 'package:strongerkiddos/features/authentication/presentation/widgets/buil
 import 'package:strongerkiddos/features/authentication/presentation/widgets/build_password_field.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/phone_form_widget.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/tab_selector_widget.dart';
+import 'package:strongerkiddos/features/authentication/presentation/login/login_with_phone_and_otp_view.dart';
 
 import '../manager/cubit/auth_cubit.dart';
 import '../manager/cubit/auth_state.dart';
@@ -32,6 +33,7 @@ class _LoginviewState extends State<Loginview>
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  String selectedCountryCode = '+1';
 
   // Add page controller for swipe functionality
   late PageController _pageController;
@@ -77,11 +79,30 @@ class _LoginviewState extends State<Loginview>
 
       context.read<AuthCubit>().signInWithEmailAndPassword(email, password);
     } else {
-      // Handle phone login or show message that it's not implemented yet
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Phone login not yet implemented')),
+      // Navigate to the phone OTP login screen
+      final phone = _phoneController.text.trim();
+
+      if (phone.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter your phone number')),
+        );
+        return;
+      }
+
+      // Navigate to the phone login screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginScreenWithPhoneAndOtp(),
+        ),
       );
     }
+  }
+
+  void _onCountryCodeChanged(value) {
+    setState(() {
+      selectedCountryCode = value.dialCode;
+    });
   }
 
   @override
@@ -260,25 +281,14 @@ class _LoginviewState extends State<Loginview>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             PhoneNumberField(
-                              onCountryCodeChanged: (value) {
-                                setState(() {});
-                              },
+                              onCountryCodeChanged: _onCountryCodeChanged,
                               phoneController: _phoneController,
                             ),
                             const SizedBox(height: 16),
-                            PasswordField(
-                              controller: _passwordController,
-                              obscureText: _obscureText,
-                              onToggleVisibility: (isVisible) {
-                                setState(() {
-                                  _obscureText = isVisible;
-                                });
-                              },
-                            ),
-                            buildForgotPassword(context),
+                            // Phone number login doesn't need password - we'll use OTP instead
                             const SizedBox(height: 10),
 
-                            // Updated login button for phone tab
+                            // Updated login button for phone tab (Go to OTP screen)
                             BlocBuilder<AuthCubit, AuthState>(
                               builder: (context, state) {
                                 final isLoading =
@@ -310,7 +320,7 @@ class _LoginviewState extends State<Loginview>
                                               ),
                                             )
                                             : const Text(
-                                              'Login',
+                                              'Continue with Phone',
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,

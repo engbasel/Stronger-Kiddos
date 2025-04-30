@@ -16,7 +16,7 @@ Widget buildForgotPassword(BuildContext context) {
             style: TextStyle(color: Colors.black, fontSize: 14),
           ),
         ),
-        Spacer(),
+        const Spacer(),
         TextButton(
           onPressed: () {
             Navigator.push(
@@ -28,7 +28,7 @@ Widget buildForgotPassword(BuildContext context) {
           },
           child: const Text(
             'Login With OTP',
-            style: TextStyle(color: Colors.grey, fontSize: 14),
+            style: TextStyle(color: Color(0xFFF9B356), fontSize: 14),
           ),
         ),
       ],

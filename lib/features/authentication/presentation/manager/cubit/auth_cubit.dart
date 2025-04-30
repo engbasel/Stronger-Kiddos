@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:strongerkiddos/features/authentication/domain/repositories/auth_repository.dart';
+import '../../../domain/entities/user_entity.dart';
 import 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
@@ -88,15 +89,27 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> signInWithGoogle() async {
     emit(state.copyWith(status: AuthStatus.loading));
 
-    final result = await _authRepository.signInWithGoogle();
+    try {
+      final result = await _authRepository.signInWithGoogle();
 
-    result.fold(
-      (failure) => emit(
-        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
-      ),
-      (user) =>
-          emit(state.copyWith(status: AuthStatus.authenticated, user: user)),
-    );
+      result.fold(
+        (failure) => emit(
+          state.copyWith(
+            status: AuthStatus.error,
+            errorMessage: failure.message,
+          ),
+        ),
+        (user) =>
+            emit(state.copyWith(status: AuthStatus.authenticated, user: user)),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Google sign-in error: ${e.toString()}',
+        ),
+      );
+    }
   }
 
   Future<void> signInWithApple() async {
@@ -143,5 +156,122 @@ class AuthCubit extends Cubit<AuthState> {
 
   void clearError() {
     emit(state.copyWith(errorMessage: null));
+  }
+
+  Future<void> verifyPhoneNumber(String phoneNumber) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _authRepository.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      onVerificationCompleted: (user) {
+        emit(state.copyWith(status: AuthStatus.authenticated, user: user));
+      },
+      onVerificationFailed: (error) {
+        emit(state.copyWith(status: AuthStatus.error, errorMessage: error));
+      },
+      onCodeSent: (verificationId, resendToken) {
+        emit(
+          state.copyWith(
+            status: AuthStatus.otpSent,
+            verificationId: verificationId,
+            resendToken: resendToken,
+          ),
+        );
+      },
+      onCodeAutoRetrievalTimeout: (verificationId) {
+        // Only update verification ID if still in OTP sent state
+        if (state.status == AuthStatus.otpSent) {
+          emit(state.copyWith(verificationId: verificationId));
+        }
+      },
+    );
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+      ),
+      (_) {}, // do nothing as state is already updated in callbacks
+    );
+  }
+
+  Future<void> verifyOTP(String otp) async {
+    if (state.verificationId == null) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Verification ID not found. Please try again.',
+        ),
+      );
+      return;
+    }
+
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _authRepository.verifyOTP(
+      verificationId: state.verificationId!,
+      otp: otp,
+    );
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+      ),
+      (user) =>
+          emit(state.copyWith(status: AuthStatus.authenticated, user: user)),
+    );
+  }
+
+  Future<void> sendEmailVerification() async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _authRepository.sendEmailVerification();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+      ),
+      (_) => emit(
+        state.copyWith(
+          status:
+              state.user != null
+                  ? AuthStatus.authenticated
+                  : AuthStatus.unauthenticated,
+          errorMessage: null,
+        ),
+      ),
+    );
+  }
+
+  Future<void> checkEmailVerification() async {
+    if (state.user == null) {
+      emit(state.copyWith(status: AuthStatus.unauthenticated));
+      return;
+    }
+
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _authRepository.isEmailVerified();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+      ),
+      (isVerified) {
+        // Update the user entity with new verification status
+        // This is just a simple approach - ideally you would have a proper way to update user properties
+        final updatedUser = UserEntity(
+          id: state.user!.id,
+          name: state.user!.name,
+          email: state.user!.email,
+          photoUrl: state.user!.photoUrl,
+          phoneNumber: state.user!.phoneNumber,
+          isEmailVerified: isVerified,
+        );
+
+        emit(
+          state.copyWith(status: AuthStatus.authenticated, user: updatedUser),
+        );
+      },
+    );
   }
 }

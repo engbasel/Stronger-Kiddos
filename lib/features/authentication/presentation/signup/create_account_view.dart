@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:strongerkiddos/features/authentication/presentation/widgets/build_google_button.dart';
+import '../../../home/presentation/views/home_view.dart';
+import '../login/email_verfication_screen.dart';
 import '../manager/cubit/auth_cubit.dart';
 import '../manager/cubit/auth_state.dart';
 
@@ -92,6 +94,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               content: Text(state.errorMessage ?? 'Registration failed'),
             ),
           );
+        } else if (state.status == AuthStatus.authenticated) {
+          // Check if email is already verified
+          if (state.user != null && !state.user!.isEmailVerified) {
+            // Navigate to email verification screen
+            Navigator.of(context).pushNamed(EmailVerificationScreen.routeName);
+          } else {
+            // User is authenticated and email is verified, go to home
+            Navigator.of(context).pushReplacementNamed(HomeView.routeName);
+          }
         }
       },
       child: Scaffold(

@@ -17,6 +17,20 @@ abstract class AuthRemoteDataSource {
   Future<void> resetPassword(String email);
   Future<bool> isSignedIn();
   Future<UserModel?> getCurrentUser();
+  Future<void> verifyPhoneNumber({
+    required String phoneNumber,
+    required void Function(UserModel) onVerificationCompleted,
+    required void Function(String) onVerificationFailed,
+    required void Function(String, int?) onCodeSent,
+    required void Function(String) onCodeAutoRetrievalTimeout,
+  });
+
+  Future<UserModel> verifyOTP({
+    required String verificationId,
+    required String otp,
+  });
+  Future<void> sendEmailVerification();
+  Future<bool> isEmailVerified();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -99,38 +113,90 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> signInWithGoogle() async {
     try {
       // Trigger the authentication flow
-      final googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      // If user cancels the flow
       if (googleUser == null) {
-        throw AuthException(message: 'Google sign in was cancelled');
+        throw AuthException(message: 'Sign in cancelled by user');
       }
 
-      // Obtain the auth details from the request
-      final googleAuth = await googleUser.authentication;
+      try {
+        // Obtain the auth details from the request
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
 
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+        // Create a new credential
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
 
-      // Sign in to Firebase with the Google credential
-      final userCredential = await _firebaseAuth.signInWithCredential(
-        credential,
-      );
-      final user = userCredential.user;
+        // Sign in to Firebase with the Google credential
+        final userCredential = await _firebaseAuth.signInWithCredential(
+          credential,
+        );
+        final user = userCredential.user;
+
+        if (user == null) {
+          throw AuthException(message: 'User is null after Google sign in');
+        }
+
+        return UserModel(
+          id: user.uid,
+          name: user.displayName ?? '',
+          email: user.email ?? '',
+          photoUrl: user.photoURL,
+          phoneNumber: user.phoneNumber,
+          isEmailVerified: user.emailVerified,
+        );
+      } catch (credentialError) {
+        // If there's an issue with the credentials, try to sign out of Google
+        await _googleSignIn.signOut();
+        throw AuthException(
+          message: 'Google sign-in credential error: $credentialError',
+        );
+      }
+    } catch (e) {
+      throw AuthException(message: 'Google sign-in error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> sendEmailVerification() async {
+    try {
+      User? user = _firebaseAuth.currentUser;
 
       if (user == null) {
-        throw AuthException(message: 'User is null after Google sign in');
+        throw AuthException(message: 'No user is currently signed in');
       }
 
-      return UserModel(
-        id: user.uid,
-        name: user.displayName ?? '',
-        email: user.email ?? '',
-        photoUrl: user.photoURL,
-        phoneNumber: user.phoneNumber,
-        isEmailVerified: user.emailVerified,
+      await user.sendEmailVerification();
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(
+        message: e.message ?? 'Failed to send verification email',
       );
+    } catch (e) {
+      throw AuthException(message: e.toString());
+    }
+  }
+
+  // Add method to check email verification status
+  @override
+  Future<bool> isEmailVerified() async {
+    try {
+      User? user = _firebaseAuth.currentUser;
+
+      if (user == null) {
+        return false;
+      }
+
+      // Reload user to get the latest status
+      await user.reload();
+
+      // Get fresh user instance after reload
+      user = _firebaseAuth.currentUser;
+
+      return user?.emailVerified ?? false;
     } catch (e) {
       throw AuthException(message: e.toString());
     }
@@ -229,5 +295,93 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       phoneNumber: user.phoneNumber,
       isEmailVerified: user.emailVerified,
     );
+  }
+
+  @override
+  Future<void> verifyPhoneNumber({
+    required String phoneNumber,
+    required void Function(UserModel) onVerificationCompleted,
+    required void Function(String) onVerificationFailed,
+    required void Function(String, int?) onCodeSent,
+    required void Function(String) onCodeAutoRetrievalTimeout,
+  }) async {
+    try {
+      await _firebaseAuth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Auto-verification completed (Android only)
+          final userCredential = await _firebaseAuth.signInWithCredential(
+            credential,
+          );
+          final user = userCredential.user;
+
+          if (user == null) {
+            throw AuthException(
+              message: 'User is null after phone auth completed',
+            );
+          }
+
+          final userModel = UserModel(
+            id: user.uid,
+            name: user.displayName ?? '',
+            email: user.email ?? '',
+            photoUrl: user.photoURL,
+            phoneNumber: user.phoneNumber,
+            isEmailVerified: user.emailVerified,
+          );
+
+          onVerificationCompleted(userModel);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          onVerificationFailed(e.message ?? 'Phone verification failed');
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          onCodeSent(verificationId, resendToken);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          onCodeAutoRetrievalTimeout(verificationId);
+        },
+        timeout: const Duration(seconds: 60),
+      );
+    } catch (e) {
+      throw AuthException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel> verifyOTP({
+    required String verificationId,
+    required String otp,
+  }) async {
+    try {
+      // Create credential
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: otp,
+      );
+
+      // Sign in with credential
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
+      final user = userCredential.user;
+
+      if (user == null) {
+        throw AuthException(message: 'User is null after OTP verification');
+      }
+
+      return UserModel(
+        id: user.uid,
+        name: user.displayName ?? '',
+        email: user.email ?? '',
+        photoUrl: user.photoURL,
+        phoneNumber: user.phoneNumber,
+        isEmailVerified: user.emailVerified,
+      );
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(message: e.message ?? 'OTP verification failed');
+    } catch (e) {
+      throw AuthException(message: e.toString());
+    }
   }
 }

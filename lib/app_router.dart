@@ -10,6 +10,11 @@ import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding
 import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding_view.dart';
 import 'package:strongerkiddos/features/splash/presentation/views/splash_view.dart';
 
+import 'features/authentication/presentation/login/email_verfication_screen.dart'
+    show EmailVerificationScreen;
+import 'features/authentication/presentation/login/login_with_phone_and_otp_view.dart';
+import 'features/authentication/presentation/login/otp_verification_screen.dart';
+
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -30,6 +35,22 @@ class AppRouter {
       case OnboardingQuestionScreen.routeName:
         return MaterialPageRoute(
           builder: (_) => const OnboardingQuestionScreen(),
+        );
+      case LoginScreenWithPhoneAndOtp.routeName:
+        return MaterialPageRoute(
+          builder: (_) => const LoginScreenWithPhoneAndOtp(),
+        );
+
+      case OtpVerificationScreen.routeName:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final phoneNumber = args?['phoneNumber'] as String? ?? '';
+        return MaterialPageRoute(
+          builder: (_) => OtpVerificationScreen(phoneNumber: phoneNumber),
+        );
+
+      case EmailVerificationScreen.routeName:
+        return MaterialPageRoute(
+          builder: (_) => const EmailVerificationScreen(),
         );
 
       default:

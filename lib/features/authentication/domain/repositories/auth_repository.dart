@@ -18,4 +18,18 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> resetPassword(String email);
   Future<Either<Failure, bool>> isSignedIn();
   Future<Either<Failure, UserEntity?>> getCurrentUser();
+  Future<Either<Failure, void>> verifyPhoneNumber({
+    required String phoneNumber,
+    required Function(UserEntity) onVerificationCompleted,
+    required Function(String) onVerificationFailed,
+    required Function(String, int?) onCodeSent,
+    required Function(String) onCodeAutoRetrievalTimeout,
+  });
+
+  Future<Either<Failure, UserEntity>> verifyOTP({
+    required String verificationId,
+    required String otp,
+  });
+  Future<Either<Failure, void>> sendEmailVerification();
+  Future<Either<Failure, bool>> isEmailVerified();
 }

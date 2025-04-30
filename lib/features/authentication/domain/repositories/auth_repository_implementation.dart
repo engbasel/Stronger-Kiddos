@@ -204,4 +204,93 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(AuthFailure(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> verifyPhoneNumber({
+    required String phoneNumber,
+    required Function(UserEntity) onVerificationCompleted,
+    required Function(String) onVerificationFailed,
+    required Function(String, int?) onCodeSent,
+    required Function(String) onCodeAutoRetrievalTimeout,
+  }) async {
+    if (await networkInfo.isConnected()) {
+      try {
+        await remoteDataSource.verifyPhoneNumber(
+          phoneNumber: phoneNumber,
+          onVerificationCompleted: (userModel) {
+            // Cache the user when verification completes automatically
+            localDataSource.cacheUser(userModel);
+            onVerificationCompleted(userModel);
+          },
+          onVerificationFailed: onVerificationFailed,
+          onCodeSent: onCodeSent,
+          onCodeAutoRetrievalTimeout: onCodeAutoRetrievalTimeout,
+        );
+        return const Right(null);
+      } on AuthException catch (e) {
+        return Left(AuthFailure(message: e.message));
+      } catch (e) {
+        return Left(AuthFailure(message: e.toString()));
+      }
+    } else {
+      return Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> verifyOTP({
+    required String verificationId,
+    required String otp,
+  }) async {
+    if (await networkInfo.isConnected()) {
+      try {
+        final userModel = await remoteDataSource.verifyOTP(
+          verificationId: verificationId,
+          otp: otp,
+        );
+
+        // Cache the user data for offline access
+        await localDataSource.cacheUser(userModel);
+        return Right(userModel);
+      } on AuthException catch (e) {
+        return Left(AuthFailure(message: e.message));
+      } catch (e) {
+        return Left(AuthFailure(message: e.toString()));
+      }
+    } else {
+      return Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> sendEmailVerification() async {
+    if (await networkInfo.isConnected()) {
+      try {
+        await remoteDataSource.sendEmailVerification();
+        return const Right(null);
+      } on AuthException catch (e) {
+        return Left(AuthFailure(message: e.message));
+      } catch (e) {
+        return Left(AuthFailure(message: e.toString()));
+      }
+    } else {
+      return Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> isEmailVerified() async {
+    if (await networkInfo.isConnected()) {
+      try {
+        final isVerified = await remoteDataSource.isEmailVerified();
+        return Right(isVerified);
+      } on AuthException catch (e) {
+        return Left(AuthFailure(message: e.message));
+      } catch (e) {
+        return Left(AuthFailure(message: e.toString()));
+      }
+    } else {
+      return Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
 }
