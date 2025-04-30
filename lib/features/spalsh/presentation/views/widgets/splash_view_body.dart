@@ -74,7 +74,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
   void _navigateToHome() {
     Future.delayed(const Duration(seconds: 4), () {
       if (!mounted) return;
-      Navigator.pushNamed(context, OnBoardingView.routeName);
+      Navigator.pushReplacementNamed(context, OnBoardingView.routeName);
     });
   }
 
