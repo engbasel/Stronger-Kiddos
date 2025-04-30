@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1009843765311",
+    "project_id": "stronger-kiddos",
+    "storage_bucket": "stronger-kiddos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1009843765311:android:efb3d9a15328c1baab788a",
+        "android_client_info": {
+          "package_name": "com.example.strongerkiddos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1009843765311-tkefv76i5v3jr737vn2iemt7ibvgpsrd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAStvxkRU12za0B7KJcHER-fLxZ4nKo4zs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1009843765311-tkefv76i5v3jr737vn2iemt7ibvgpsrd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
