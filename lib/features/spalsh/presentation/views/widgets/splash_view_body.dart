@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import '../../../../../core/utils/app_text_style.dart';
-import '../../../../onbording/presentation/views/onbording_view.dart';
+import '../../../../onboarding/presentation/views/onbording_view.dart';
 import 'smiling_face_painter.dart';
 
 class SplashViewBody extends StatefulWidget {
