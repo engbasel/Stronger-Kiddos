@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import '../../../../../core/utils/app_text_style.dart';
-import '../../../../onboarding/presentation/views/onbording_view.dart';
+import '../../../../onbording/presentation/views/on_boarding_view.dart';
 import 'smiling_face_painter.dart';
 
 class SplashViewBody extends StatefulWidget {
@@ -87,7 +87,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.fabBackgroundColor, // Orange background
+      color: AppColors.fabBackgroundColor,
       child: Center(
         child: AnimatedBuilder(
           animation: _animationController,

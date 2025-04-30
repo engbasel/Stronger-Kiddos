@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../features/onboarding/presentation/views/onbording_view.dart';
+import '../../features/onbording/presentation/views/on_boarding_view.dart';
 import '../../features/spalsh/presentation/views/splash_view.dart';
 import '../utils/page_rout_builder.dart';
 
