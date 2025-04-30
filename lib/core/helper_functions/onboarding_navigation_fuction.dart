@@ -1,9 +1,11 @@
-// ignore_for_file: use_build_context_synchronously
-
+// lib/core/helper_functions/onboarding_navigation_function.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:strongerkiddos/features/authentication/presentation/login/login_view.dart';
 import 'package:strongerkiddos/features/onboarding/presentation/views/onboarding_view.dart';
+
+import '../../features/authentication/presentation/manager/cubit/auth_cubit.dart';
 
 class OnboardingNavigationFunction {
   static const String _onboardingSeenKey = 'onboarding_seen';
@@ -13,8 +15,13 @@ class OnboardingNavigationFunction {
     final prefs = await SharedPreferences.getInstance();
     final seenOnboarding = prefs.getBool(_onboardingSeenKey) ?? false;
 
+    // Let the AuthCubit handle authentication status
+    if (!context.mounted) return;
+    context.read<AuthCubit>().checkAuth();
+
     if (seenOnboarding) {
-      // User already saw onboarding, navigate to Home/Loginw
+      // User already saw onboarding, navigate to Login
+      // The AuthCubit will redirect to Home if already authenticated
       Navigator.pushReplacementNamed(context, Loginview.routeName);
     } else {
       // First time opening app, show onboarding
@@ -27,7 +34,9 @@ class OnboardingNavigationFunction {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_onboardingSeenKey, true);
 
-    Navigator.pushReplacementNamed(context, '/home');
+    // Navigate to login after onboarding
+    if (!context.mounted) return;
+    Navigator.pushReplacementNamed(context, Loginview.routeName);
   }
 
   // For testing or reset purposes (optional)
