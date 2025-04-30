@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
+import '../../../../../core/utils/app_text_style.dart';
+import '../../../../onbording/presentation/views/onbording_view.dart';
 import 'smiling_face_painter.dart';
 
 class SplashViewBody extends StatefulWidget {
@@ -71,7 +73,8 @@ class _SplashViewBodyState extends State<SplashViewBody>
 
   void _navigateToHome() {
     Future.delayed(const Duration(seconds: 4), () {
-      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
+      if (!mounted) return;
+      Navigator.pushNamed(context, OnBoardingView.routeName);
     });
   }
 
@@ -99,13 +102,9 @@ class _SplashViewBodyState extends State<SplashViewBody>
                 const SizedBox(height: 20),
                 Opacity(
                   opacity: _textOpacityAnimation.value,
-                  child: const Text(
+                  child: Text(
                     'Stronger Kiddos',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 36,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyles.bold36.copyWith(color: Colors.white),
                   ),
                 ),
               ],

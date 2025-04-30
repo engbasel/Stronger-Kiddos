@@ -1,4 +1,5 @@
 class AppConstants {
+  static const double kHorizintalPadding = 16;
   // Stroke widths
   static const double mainStrokeWidth = 7.0;
   static const double smileStrokeWidth = 8.0;
