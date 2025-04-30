@@ -18,12 +18,12 @@ class OnBoardingPageView extends StatelessWidget {
           subtitle: 'subtitle_on_boarding_one',
         ),
         PageViewItem(
-          image: Assets.imagesPng1,
+          image: Assets.imagesPng3,
           titel: 'title_on_boarding_two',
           subtitle: 'subtitle_on_boarding_two',
         ),
         PageViewItem(
-          image: Assets.imagesPng1,
+          image: Assets.imagesPng5,
           titel: 'title_on_boarding_four',
           subtitle: 'subtitle_on_boarding_four',
         ),

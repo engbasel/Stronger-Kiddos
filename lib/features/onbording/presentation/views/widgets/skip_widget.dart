@@ -13,26 +13,29 @@ class SkipWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        GestureDetector(
-          onTap: () {
-            pageController.animateToPage(
-              3,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            );
-          },
-          child: Opacity(
-            opacity: 0.3,
-            child: Text(
-              'skip',
-              style: TextStyles.bold19.copyWith(color: Colors.grey.shade900),
+    return Visibility(
+      visible: currentPage != 2,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          GestureDetector(
+            onTap: () {
+              pageController.animateToPage(
+                2,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+              );
+            },
+            child: Opacity(
+              opacity: 0.3,
+              child: Text(
+                'skip',
+                style: TextStyles.bold19.copyWith(color: Colors.grey.shade900),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
