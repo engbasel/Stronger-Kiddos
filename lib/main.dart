@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/services/injection_container.dart' as di;
-import 'main_app.dart';
+import 'stronger_siddos_app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
