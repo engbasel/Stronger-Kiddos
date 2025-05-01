@@ -16,6 +16,6 @@ class AppConstants {
   static const double logoWidth = 300.0;
   static const double logoHeight = 150.0;
 
-  // Prevent instantiation
+  static const kUserData = 'userData';
   AppConstants._();
 }
