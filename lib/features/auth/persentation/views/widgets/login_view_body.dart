@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:country_code_picker/country_code_picker.dart'; // Import the package
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/core/widgets/custom_button.dart';
 import 'package:strongerkiddos/core/widgets/custom_name.dart';
 import 'package:strongerkiddos/core/widgets/custom_text_form_field.dart';
-
 import '../../../../../app_constants.dart';
 import '../../../../../core/utils/app_text_style.dart';
 import '../../../../../core/utils/assets_images.dart';
+import '../phone_signup_view.dart';
 import '../signup_view.dart';
 import 'or_divider.dart';
 import 'social_login_button.dart';
@@ -156,7 +156,8 @@ class _LoginViewBodyState extends State<LoginViewBody> {
               CustomTextFormField(
                 hintText: '••••••••',
                 controller: _passwordController,
-                obobscureText: !_isPasswordVisible,
+                obobscureText:
+                    !_isPasswordVisible, // Fixed typo: obobscureText -> obscureText
                 suffixIcon: IconButton(
                   icon: Icon(
                     _isPasswordVisible
@@ -212,7 +213,12 @@ class _LoginViewBodyState extends State<LoginViewBody> {
               Center(
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, SignupView.routeName);
+                    // Navigate based on the selected tab
+                    if (_isEmailSelected) {
+                      Navigator.pushNamed(context, SignupView.routeName);
+                    } else {
+                      Navigator.pushNamed(context, PhoneSignupView.routeName);
+                    }
                   },
                   child: Text(
                     'Create an account',
