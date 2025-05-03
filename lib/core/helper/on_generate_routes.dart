@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
 import '../../features/auth/persentation/views/login_view.dart';
 import '../../features/auth/persentation/views/phone_signup_view.dart';
 import '../../features/auth/persentation/views/signup_view.dart';
@@ -18,6 +19,8 @@ Route<dynamic> onGenerateRoute(RouteSettings setting) {
       return buildPageRoute(const SignupView());
     case PhoneSignupView.routeName:
       return buildPageRoute(const PhoneSignupView());
+    case HomeView.routeName:
+      return buildPageRoute(const HomeView());
     default:
       return buildPageRoute(const SplashView());
   }

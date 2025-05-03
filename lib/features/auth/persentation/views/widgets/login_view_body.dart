@@ -4,6 +4,7 @@ import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/core/widgets/custom_button.dart';
 import 'package:strongerkiddos/core/widgets/custom_name.dart';
 import 'package:strongerkiddos/core/widgets/custom_text_form_field.dart';
+import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
 import '../../../../../app_constants.dart';
 import '../../../../../core/utils/app_text_style.dart';
 import '../../../../../core/utils/assets_images.dart';
@@ -191,7 +192,12 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                 ),
               ),
               const SizedBox(height: 24),
-              CustomButton(onPressed: () {}, text: 'Login'),
+              CustomButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, HomeView.routeName);
+                },
+                text: 'Login',
+              ),
               const SizedBox(height: 32),
               OrDivider(),
               const SizedBox(height: 32),
