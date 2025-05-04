@@ -1,5 +1,6 @@
 // Search Bar Section
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/core/utils/app_colors.dart';
 
 class SearchBarSection extends StatelessWidget {
   const SearchBarSection({Key? key}) : super(key: key);
@@ -7,21 +8,33 @@ class SearchBarSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Container(
-        height: 40,
+        height: 56,
         decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(20),
+          color: AppColors.backgroundColor,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Color(0xffe5e6e7), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
+            const SizedBox(width: 16),
+            Icon(Icons.search, color: Colors.grey[400], size: 24),
             const SizedBox(width: 12),
-            Icon(Icons.search, color: Colors.grey[400]),
-            const SizedBox(width: 8),
             Text(
-              'Search for services',
-              style: TextStyle(color: Colors.grey[400]),
+              'Search for videos',
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ],
         ),

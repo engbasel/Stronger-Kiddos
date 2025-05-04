@@ -7,11 +7,18 @@ class WelcomeSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        CircleAvatar(backgroundColor: Colors.red),
+        CircleAvatar(
+          radius: 24,
+          backgroundColor: Colors.white,
+          backgroundImage: AssetImage('assets/images/png/profieminage.png'),
+        ),
+        SizedBox(width: 20),
         Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome, '),
-            Text('John Doe', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Hello, Welcome  🎉'),
+            Text('Jack', style: TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
         Spacer(),

@@ -11,7 +11,7 @@ class HomeviewBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
       child: Column(
         children: [
           const WelcomeSection(),
@@ -23,13 +23,13 @@ class HomeviewBody extends StatelessWidget {
           // New to App Card Section
           const NewToAppCardSection(),
 
-          // Recommended Section
-          const RecommendedSection(),
+          // // Recommended Section
+          // const RecommendedSection(),
 
-          const Spacer(),
+          // const Spacer(),
 
           // Bottom Navigation Bar Section
-          const BottomNavBarSection(),
+          // const BottomNavBarSection(),
         ],
       ),
     );
