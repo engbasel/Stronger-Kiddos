@@ -17,7 +17,10 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavBarSection(),
-      body: SafeArea(child: HomeviewBody()),
+      body: SafeArea(
+        child: HomeviewBody(),
+        bottom: false, // خلي الودجت تنزل لآخر الشاشة
+      ),
       backgroundColor: AppColors.backgroundColor,
     );
   }
