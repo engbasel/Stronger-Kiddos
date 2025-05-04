@@ -8,6 +8,6 @@ class AppColors {
   static const double arcStrokeWidth = 5.0;
   static const Duration pageTransitionDuration = Duration(milliseconds: 500);
 
-  static const Color backgroundColor = Color(0xFFF5F5F5);
+  static const Color backgroundColor = Colors.white;
   static const Color textColor = Color(0xFF000000);
 }
