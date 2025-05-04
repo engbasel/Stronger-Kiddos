@@ -1,75 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:strongerkiddos/features/home/presentation/widgets/bottom_nav_bar_section.dart';
+import 'package:strongerkiddos/features/home/presentation/widgets/new_to_app_card_section.dart';
+import 'package:strongerkiddos/features/home/presentation/widgets/recommended_section.dart';
+import 'package:strongerkiddos/features/home/presentation/widgets/search_bar_section.dart';
+import 'package:strongerkiddos/features/home/presentation/widgets/welcome_section.dart';
 
-class HomeviewBody extends StatefulWidget {
+class HomeviewBody extends StatelessWidget {
   const HomeviewBody({super.key});
-
-  @override
-  State<HomeviewBody> createState() => _HomeviewBodyState();
-}
-
-class _HomeviewBodyState extends State<HomeviewBody> {
-  final TextEditingController _controller = TextEditingController();
-  final supabase = Supabase.instance.client;
-  List<dynamic> users = [];
-
-  Future<void> insertUser(String name) async {
-    await supabase.from('user').insert({'name': name});
-    fetchUsers();
-  }
-
-  Future<void> fetchUsers() async {
-    final response = await supabase
-        .from('user')
-        .select()
-        .order('id', ascending: false);
-    setState(() {
-      users = response;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchUsers();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       child: Column(
         children: [
-          TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              labelText: 'اكتب اسم المستخدم',
-              suffixIcon: IconButton(
-                icon: Icon(Icons.person_add),
-                onPressed: () {
-                  final name = _controller.text.trim();
-                  if (name.isNotEmpty) {
-                    insertUser(name);
-                    _controller.clear();
-                  }
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ListView.builder(
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                final user = users[index];
-                return ListTile(
-                  leading: CircleAvatar(child: Text(user['id'].toString())),
-                  title: Text(user['name']),
-                  subtitle: Text(user['created_at'] ?? ''),
-                );
-              },
-            ),
-          ),
+          const WelcomeSection(),
+          // Search Bar Section
+          const SearchBarSection(),
+
+          const SizedBox(height: 16),
+
+          // New to App Card Section
+          const NewToAppCardSection(),
+
+          // Recommended Section
+          const RecommendedSection(),
+
+          const Spacer(),
+
+          // Bottom Navigation Bar Section
+          const BottomNavBarSection(),
         ],
       ),
     );
