@@ -4,8 +4,8 @@ import 'package:strongerkiddos/core/widgets/custom_button.dart';
 import 'package:strongerkiddos/core/widgets/custom_name.dart';
 import 'package:strongerkiddos/core/widgets/custom_text_form_field.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/otp_vericifaction.dart';
-import '../../../../../app_constants.dart';
-import '../../../../../core/utils/app_text_style.dart';
+import '../../../../app_constants.dart';
+import '../../../../core/utils/app_text_style.dart';
 import 'or_divider.dart';
 
 class PhoneSignupViewBody extends StatefulWidget {

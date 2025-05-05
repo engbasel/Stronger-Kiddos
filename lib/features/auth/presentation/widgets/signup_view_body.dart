@@ -5,9 +5,9 @@ import 'package:strongerkiddos/core/widgets/custom_button.dart';
 import 'package:strongerkiddos/core/widgets/custom_name.dart';
 import 'package:strongerkiddos/core/widgets/custom_text_form_field.dart';
 
-import '../../../../../app_constants.dart';
-import '../../../../../core/utils/app_text_style.dart';
-import '../../../../../core/utils/assets_images.dart';
+import '../../../../app_constants.dart';
+import '../../../../core/utils/app_text_style.dart';
+import '../../../../core/utils/assets_images.dart';
 import 'or_divider.dart';
 import 'social_login_button.dart';
 

@@ -5,11 +5,11 @@ import 'package:strongerkiddos/core/widgets/custom_button.dart';
 import 'package:strongerkiddos/core/widgets/custom_name.dart';
 import 'package:strongerkiddos/core/widgets/custom_text_form_field.dart';
 import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
-import '../../../../../app_constants.dart';
-import '../../../../../core/utils/app_text_style.dart';
-import '../../../../../core/utils/assets_images.dart';
-import '../phone_signup_view.dart';
-import '../signup_view.dart';
+import '../../../../app_constants.dart';
+import '../../../../core/utils/app_text_style.dart';
+import '../../../../core/utils/assets_images.dart';
+import '../views/phone_signup_view.dart';
+import '../views/signup_view.dart';
 import 'or_divider.dart';
 import 'social_login_button.dart';
 
