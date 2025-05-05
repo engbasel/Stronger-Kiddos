@@ -4,6 +4,7 @@ import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/core/widgets/custom_button.dart';
 import 'package:strongerkiddos/core/widgets/custom_name.dart';
 import 'package:strongerkiddos/core/widgets/custom_text_form_field.dart';
+import 'package:strongerkiddos/features/auth/presentation/views/forget_password_view.dart';
 import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
 import '../../../../app_constants.dart';
 import '../../../../core/utils/app_text_style.dart';
@@ -184,7 +185,9 @@ class _LoginViewBodyState extends State<LoginViewBody> {
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, ForgetPasswordView.routeName);
+                  },
                   child: const Text(
                     'Forget password?',
                     style: TextStyles.medium15,
