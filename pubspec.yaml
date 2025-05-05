@@ -118,6 +118,17 @@ flutter:
           weight: 600
         - asset: assets/fonts/ClashGrotesk-Bold.otf
           weight: 700
+    - family: Quicksand
+      fonts:
+        - asset: assets/fonts/Quicksand-Bold.ttf
+          weight: 400
+        - asset:  assets/fonts/Quicksand-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Quicksand-Medium.otf
+          weight: 400
+        - asset: assets/fonts/Quicksand-SemiBold.otf
+          weight: 600
+
 
 flutter_assets:
   assets_path: assets/images/

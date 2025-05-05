@@ -87,7 +87,14 @@ class _SplashViewBodyState extends State<SplashViewBody>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.fabBackgroundColor,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: const [0.0, 1.0],
+          colors: [AppColors.fabBackgroundColor, Colors.black87],
+        ),
+      ),
       child: Center(
         child: AnimatedBuilder(
           animation: _animationController,
@@ -97,13 +104,13 @@ class _SplashViewBodyState extends State<SplashViewBody>
               children: [
                 Transform.scale(
                   scale: _logoScaleAnimation.value,
-                  child: _buildSmilingFaceLogo(),
+                  child: buildSmilingFaceLogo(),
                 ),
                 const SizedBox(height: 20),
                 Opacity(
                   opacity: _textOpacityAnimation.value,
                   child: Text(
-                    'Stronger Kiddos',
+                    'stronger kiddos',
                     style: TextStyles.bold36.copyWith(color: Colors.white),
                   ),
                 ),
@@ -115,7 +122,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
     );
   }
 
-  Widget _buildSmilingFaceLogo() {
+  Widget buildSmilingFaceLogo() {
     return SizedBox(
       width: 300,
       height: 150,
