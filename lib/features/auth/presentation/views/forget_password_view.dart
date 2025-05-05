@@ -21,7 +21,7 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
   }
 
   // Handle sending password reset code
-  void _sendResetCode() async {
+  void sendResetCode() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;

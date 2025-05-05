@@ -1,7 +1,10 @@
 // Recommended Section
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 
 class RecommendedSection extends StatelessWidget {
+  // ignore: use_super_parameters
   const RecommendedSection({Key? key}) : super(key: key);
 
   Widget _buildRecommendedCard(

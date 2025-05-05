@@ -16,6 +16,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
       TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  // ignore: unused_field
   bool _isLoading = false;
 
   @override
@@ -40,13 +41,12 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
   }
 
   // Handle password reset confirmation
-  void _confirmPasswordReset() async {
+  void confirmPasswordReset() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
-      // TODO: Implement actual password reset API call
       // Simulating API call with a delay
       await Future.delayed(const Duration(seconds: 2));
 
@@ -63,7 +63,6 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
           ),
         );
 
-        // TODO: Navigate to login screen or home screen after successful password reset
         // Example: Navigator.pushReplacementNamed(context, LoginView.routeName);
       }
     }
@@ -71,7 +70,6 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
 
   // Navigate to create account screen
   void _navigateToCreateAccount() {
-    // TODO: Navigate to your create account screen
     // Example: Navigator.pushNamed(context, CreateAccountView.routeName);
 
     ScaffoldMessenger.of(

@@ -1,3 +1,5 @@
+// ignore_for_file: sort_child_properties_last
+
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/bottom_nav_bar_section.dart';

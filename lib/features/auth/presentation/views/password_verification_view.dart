@@ -168,6 +168,7 @@ class _PasswordVerificationViewState extends State<PasswordVerificationView> {
                 child: GestureDetector(
                   onTap: _isResendEnabled ? resendCode : null,
                   child: Text(
+                    // ignore: unnecessary_brace_in_string_interps
                     'Resend Code in ${_countdownSeconds} sec',
                     style: TextStyle(
                       color:

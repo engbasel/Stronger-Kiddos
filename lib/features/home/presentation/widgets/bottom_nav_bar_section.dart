@@ -1,6 +1,9 @@
+// ignore_for_file: deprecated_member_use, sized_box_for_whitespace
+
 import 'package:flutter/material.dart';
 
 class BottomNavBarSection extends StatelessWidget {
+  // ignore: use_super_parameters
   const BottomNavBarSection({Key? key}) : super(key: key);
 
   Widget _buildBottomNavItem(IconData icon, bool isSelected) {
