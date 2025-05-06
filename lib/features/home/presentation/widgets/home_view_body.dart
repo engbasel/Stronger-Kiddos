@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/features/home/presentation/widgets/bottom_nav_bar_section.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/new_to_app_card_section.dart';
-import 'package:strongerkiddos/features/home/presentation/widgets/recommended_section.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/search_bar_section.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/welcome_section.dart';
 

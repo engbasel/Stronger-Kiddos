@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class BottomNavBarSection extends StatelessWidget {
-  const BottomNavBarSection({Key? key}) : super(key: key);
+  const BottomNavBarSection({super.key});
 
   Widget _buildBottomNavItem(IconData icon, bool isSelected) {
     return Container(
@@ -13,7 +13,7 @@ class BottomNavBarSection extends StatelessWidget {
       ),
       child: Icon(
         icon,
-        color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+        color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
       ),
     );
   }
