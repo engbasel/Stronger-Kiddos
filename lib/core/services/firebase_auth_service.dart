@@ -126,23 +126,41 @@ class FirebaseAuthService {
   }
 
   /// تسجيل الدخول باستخدام Google
+  // Update the existing signInWithGoogle method
   Future<User> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     try {
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
+      // Sign out first to force account selection dialog
+      await GoogleSignIn().signOut();
+
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      // If the user cancels the sign-in process
+      if (googleUser == null) {
+        throw CustomExceptions(message: 'Google sign-in was cancelled.');
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
 
-      final user =
-          (await FirebaseAuth.instance.signInWithCredential(credential)).user;
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+      final user = userCredential.user!;
+
+      // Send verification email for new Google users who haven't verified their email in our system
+      bool isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      if (isNewUser || !user.emailVerified) {
+        await user.sendEmailVerification();
+      }
 
       await fetchAndSaveToken();
 
-      return user!;
+      return user;
     } on FirebaseAuthException catch (e) {
       log('Exception in signInWithGoogle: ${e.toString()}');
       if (e.code == 'account-exists-with-different-credential') {
@@ -174,6 +192,29 @@ class FirebaseAuthService {
     } catch (e) {
       log('Exception in sendPasswordResetLink: ${e.toString()}');
       throw CustomExceptions(message: 'An unexpected error occurred.');
+    }
+  }
+
+  Future<void> resendVerificationEmail() async {
+    try {
+      if (firebaseAuth.currentUser != null) {
+        await firebaseAuth.currentUser!.sendEmailVerification();
+      } else {
+        throw CustomExceptions(message: 'No user currently logged in.');
+      }
+    } catch (e) {
+      log('Exception in resendVerificationEmail: ${e.toString()}');
+      throw CustomExceptions(message: 'Failed to resend verification email.');
+    }
+  }
+
+  Future<bool> checkEmailVerified() async {
+    try {
+      await firebaseAuth.currentUser?.reload();
+      return firebaseAuth.currentUser?.emailVerified ?? false;
+    } catch (e) {
+      log('Exception in checkEmailVerified: ${e.toString()}');
+      throw CustomExceptions(message: 'Failed to check verification status.');
     }
   }
 

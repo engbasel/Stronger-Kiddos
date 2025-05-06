@@ -37,7 +37,9 @@ class SignupCubit extends Cubit<SignupState> {
 
       result.fold(
         (failure) => emit(SignupFailure(message: failure.message)),
-        (user) => emit(EmailSignupSuccess(user: user)),
+        (user) => emit(
+          EmailSignupSuccess(user: user, email: email),
+        ), // Pass email to state
       );
     } catch (e) {
       emit(SignupFailure(message: 'There was an error: ${e.toString()}'));
@@ -45,6 +47,7 @@ class SignupCubit extends Cubit<SignupState> {
   }
 
   // التسجيل باستخدام حساب جوجل
+  // Update the signupWithGoogle method
   Future<void> signupWithGoogle() async {
     emit(SignupLoading());
 
@@ -58,10 +61,17 @@ class SignupCubit extends Cubit<SignupState> {
       }
 
       final result = await authRepo.signInWithGoogle();
-      result.fold(
-        (failure) => emit(SignupFailure(message: failure.message)),
-        (user) => emit(GoogleSignupSuccess(user: user)),
-      );
+      result.fold((failure) => emit(SignupFailure(message: failure.message)), (
+        user,
+      ) {
+        // Always emit GoogleSignupSuccess, the UI will handle verification check
+        emit(
+          GoogleSignupSuccess(
+            user: user,
+            requiresVerification: !user.isEmailVerified,
+          ),
+        );
+      });
     } catch (e) {
       emit(SignupFailure(message: 'There was an error: ${e.toString()}'));
     }
