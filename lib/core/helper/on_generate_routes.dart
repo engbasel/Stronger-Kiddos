@@ -5,9 +5,9 @@ import 'package:strongerkiddos/features/auth/presentation/views/password_verific
 import 'package:strongerkiddos/features/auth/presentation/views/reset_password_view.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/successfully_verified_view.dart';
 import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
-import '../../features/auth/presentation/views/login_view.dart';
+import '../../features/auth/presentation/views/llogin_view.dart';
 import '../../features/auth/presentation/views/phone_signup_view.dart';
-import '../../features/auth/presentation/views/signup_view.dart';
+import '../../features/auth/presentation/views/ssigniin_view.dart';
 import '../../features/onbording/presentation/views/on_boarding_view.dart';
 import '../../features/spalsh/presentation/views/splash_view.dart';
 import '../utils/page_rout_builder.dart';

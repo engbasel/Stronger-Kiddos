@@ -10,7 +10,7 @@ import '../../../../app_constants.dart';
 import '../../../../core/utils/app_text_style.dart';
 import '../../../../core/utils/assets_images.dart';
 import '../views/phone_signup_view.dart';
-import '../views/signup_view.dart';
+import '../views/ssigniin_view.dart';
 import 'or_divider.dart';
 import 'social_login_button.dart';
 
