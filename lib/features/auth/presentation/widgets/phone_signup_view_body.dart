@@ -3,8 +3,9 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:strongerkiddos/core/widgets/custom_button.dart';
 import 'package:strongerkiddos/core/widgets/custom_name.dart';
 import 'package:strongerkiddos/core/widgets/custom_text_form_field.dart';
-import '../../../../../app_constants.dart';
-import '../../../../../core/utils/app_text_style.dart';
+import 'package:strongerkiddos/features/auth/presentation/views/otp_vericifaction.dart';
+import '../../../../app_constants.dart';
+import '../../../../core/utils/app_text_style.dart';
 import 'or_divider.dart';
 
 class PhoneSignupViewBody extends StatefulWidget {
@@ -73,7 +74,12 @@ class _PhoneSignupViewBodyState extends State<PhoneSignupViewBody> {
                 },
               ),
               const SizedBox(height: 65),
-              CustomButton(onPressed: () {}, text: 'Get OTP'),
+              CustomButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, OtpVerificationView.routeName);
+                },
+                text: 'Get OTP',
+              ),
               const SizedBox(height: 32),
               OrDivider(),
               const SizedBox(height: 32),

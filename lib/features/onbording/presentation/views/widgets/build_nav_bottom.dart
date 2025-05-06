@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
-import 'package:strongerkiddos/features/auth/persentation/views/login_view.dart';
+import 'package:strongerkiddos/features/auth/presentation/views/login_view.dart';
 import '../../../../../core/utils/app_text_style.dart';
 
 Widget buildNavigationBar(

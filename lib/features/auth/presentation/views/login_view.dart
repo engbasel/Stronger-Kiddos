@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'widgets/login_view_body.dart';
+import 'package:strongerkiddos/core/utils/app_colors.dart';
+import '../widgets/login_view_body.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -7,6 +8,9 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: const LoginViewBody());
+    return Scaffold(
+      body: const LoginViewBody(),
+      backgroundColor: AppColors.backgroundColor,
+    );
   }
 }

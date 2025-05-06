@@ -1,7 +1,9 @@
-// Bottom Navigation Bar Section
+// ignore_for_file: deprecated_member_use, sized_box_for_whitespace
+
 import 'package:flutter/material.dart';
 
 class BottomNavBarSection extends StatelessWidget {
+  // ignore: use_super_parameters
   const BottomNavBarSection({Key? key}) : super(key: key);
 
   Widget _buildBottomNavItem(IconData icon, bool isSelected) {
@@ -20,19 +22,34 @@ class BottomNavBarSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the bottom padding to account for the safe area
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D3953),
-        borderRadius: BorderRadius.circular(0),
+      // Add height + bottom padding to account for safe area
+      height: 60 + bottomPadding,
+      width: double.infinity, // Ensure full width
+      decoration: const BoxDecoration(
+        color: Color(0xFF2D3953),
+        borderRadius: BorderRadius.zero, // Remove any border radius
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Column(
         children: [
-          _buildBottomNavItem(Icons.home, true),
-          _buildBottomNavItem(Icons.search, false),
-          _buildBottomNavItem(Icons.message, false),
-          _buildBottomNavItem(Icons.person, false),
+          // This is your actual navigation content
+          Container(
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildBottomNavItem(Icons.home, true),
+                _buildBottomNavItem(Icons.search, false),
+                _buildBottomNavItem(Icons.message, false),
+                _buildBottomNavItem(Icons.person, false),
+              ],
+            ),
+          ),
+          // This empty container fills the safe area with your background color
+          Container(height: bottomPadding, color: Color(0xFF2D3953)),
         ],
       ),
     );

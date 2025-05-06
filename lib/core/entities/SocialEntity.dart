@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 class SocialEntity {
   final String? maritalStatus;
   final int? numberOfChildren;
