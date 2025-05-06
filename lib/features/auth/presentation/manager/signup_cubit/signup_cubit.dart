@@ -9,7 +9,7 @@ import 'signup_state.dart';
 class SignupCubit extends Cubit<SignupState> {
   final AuthRepo authRepo;
 
-  SignupCubit({required this.authRepo}) : super(SignupInitial());
+  SignupCubit(this.authRepo) : super(SignupInitial());
 
   // التسجيل باستخدام البريد الإلكتروني وكلمة المرور
   Future<void> signupWithEmailAndPassword({

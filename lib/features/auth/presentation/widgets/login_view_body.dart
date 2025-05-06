@@ -85,6 +85,7 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                     ),
                   ),
                   const SizedBox(width: 16),
+                  //
                   GestureDetector(
                     onTap: () {
                       setState(() {
