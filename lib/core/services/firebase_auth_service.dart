@@ -12,20 +12,25 @@ class FirebaseAuthService {
   User? get currentUser => firebaseAuth.currentUser;
 
   /// دالة لحفظ التوكن
+  // In firebase_auth_service.dart
   Future<void> saveUserToken(String token) async {
     final firestore = FirebaseFirestore.instance;
     final userId = FirebaseAuth.instance.currentUser?.uid;
 
     if (userId != null) {
       try {
+        // Try a different approach - use set with merge option
         await firestore.collection('userTokens').doc(userId).set({
           'token': token,
           'userId': userId,
           'createdAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
+
         log('Token saved successfully for user $userId');
       } catch (e) {
+        // Don't let token saving failure block the auth flow
         log('Failed to save token: $e');
+        // Continue with auth flow despite token saving error
       }
     } else {
       log('User is not logged in, skipping token save.');

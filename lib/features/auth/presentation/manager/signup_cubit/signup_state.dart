@@ -42,11 +42,15 @@ class AppleSignupSuccess extends SignupState {
 
 class PhoneVerificationSent extends SignupState {
   final String verificationId;
+  final String phoneNumber;
 
-  const PhoneVerificationSent({required this.verificationId});
+  const PhoneVerificationSent({
+    required this.phoneNumber,
+    required this.verificationId,
+  });
 
   @override
-  List<Object?> get props => [verificationId];
+  List<Object?> get props => [verificationId, phoneNumber];
 }
 
 class PhoneSignupSuccess extends SignupState {

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/core/widgets/custom_button.dart';
 import 'package:strongerkiddos/core/widgets/custom_name.dart';
 import 'package:strongerkiddos/core/widgets/custom_text_form_field.dart';
+import 'package:strongerkiddos/features/auth/presentation/manager/signup_cubit/signup_cubit.dart';
 
 import '../../../../app_constants.dart';
 import '../../../../core/utils/app_text_style.dart';
 import '../../../../core/utils/assets_images.dart';
+import '../views/login_view.dart';
 import 'or_divider.dart';
 import 'social_login_button.dart';
 
@@ -19,6 +22,7 @@ class SignupViewBody extends StatefulWidget {
 }
 
 class _SignupViewBodyState extends State<SignupViewBody> {
+  final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -35,9 +39,35 @@ class _SignupViewBodyState extends State<SignupViewBody> {
     super.dispose();
   }
 
+  // Validate email format
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  // Handle sign up
+  void _handleSignup() {
+    if (_formKey.currentState!.validate()) {
+      final signupCubit = context.read<SignupCubit>();
+
+      signupCubit.signupWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        name: _nameController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
+      );
+    }
+  }
+
+  // Handle Google sign up
+  void _handleGoogleSignUp() {
+    final signupCubit = context.read<SignupCubit>();
+    signupCubit.signupWithGoogle();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: _formKey,
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -50,7 +80,9 @@ class _SignupViewBodyState extends State<SignupViewBody> {
               const SizedBox(height: 35),
               const Text('Create an account', style: TextStyles.semiBold32),
               const SizedBox(height: 24),
-              CustomName(text: 'Name'),
+
+              // Name field
+              const CustomName(text: 'Name'),
               const SizedBox(height: 10),
               CustomTextFormField(
                 hintText: 'John Doe',
@@ -63,8 +95,11 @@ class _SignupViewBodyState extends State<SignupViewBody> {
                   return null;
                 },
               ),
+
               const SizedBox(height: 16),
-              CustomName(text: 'Email Address'),
+
+              // Email field
+              const CustomName(text: 'Email Address'),
               const SizedBox(height: 10),
               CustomTextFormField(
                 hintText: 'johndoe@email.com',
@@ -74,11 +109,17 @@ class _SignupViewBodyState extends State<SignupViewBody> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your email';
                   }
+                  if (!_isValidEmail(value)) {
+                    return 'Please enter a valid email';
+                  }
                   return null;
                 },
               ),
+
               const SizedBox(height: 16),
-              CustomName(text: 'Phone Number'),
+
+              // Phone field
+              const CustomName(text: 'Phone Number'),
               const SizedBox(height: 10),
               CustomTextFormField(
                 hintText: 'Phone Number',
@@ -106,8 +147,11 @@ class _SignupViewBodyState extends State<SignupViewBody> {
                   return null;
                 },
               ),
+
               const SizedBox(height: 16),
-              CustomName(text: 'Password'),
+
+              // Password field
+              const CustomName(text: 'Password'),
               const SizedBox(height: 10),
               CustomTextFormField(
                 hintText: '••••••••',
@@ -130,11 +174,17 @@ class _SignupViewBodyState extends State<SignupViewBody> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
                   }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
                   return null;
                 },
                 keyboardType: TextInputType.visiblePassword,
               ),
+
               const SizedBox(height: 16),
+
+              // Terms of service
               RichText(
                 text: TextSpan(
                   text: 'By continuing, you agree to our ',
@@ -149,30 +199,46 @@ class _SignupViewBodyState extends State<SignupViewBody> {
                   ],
                 ),
               ),
+
               const SizedBox(height: 24),
-              CustomButton(onPressed: () {}, text: 'Sign Up'),
+
+              // Signup button
+              CustomButton(onPressed: _handleSignup, text: 'Sign Up'),
+
               const SizedBox(height: 32),
-              OrDivider(),
+              const OrDivider(),
               const SizedBox(height: 32),
+
+              // Social login buttons
               SocialLoginButton(
                 backgroundColor: const Color(0xffe4e7eb),
                 image: Assets.imagesSvgGoogle,
                 title: 'Continue with Google',
-                onPressed: () {},
+                onPressed: _handleGoogleSignUp,
               ),
+
               const SizedBox(height: 28),
+
               SocialLoginButton(
                 backgroundColor: Colors.black,
                 color: Colors.white,
                 image: Assets.imagesSvgApple,
                 title: 'Continue with Apple',
-                onPressed: () {},
+                onPressed: () {
+                  // Apple sign in would be implemented here
+                },
               ),
+
               const SizedBox(height: 24),
+
+              // Login link
               Center(
                 child: InkWell(
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(
+                      context,
+                      LoginView.routeName,
+                    );
                   },
                   child: RichText(
                     text: TextSpan(

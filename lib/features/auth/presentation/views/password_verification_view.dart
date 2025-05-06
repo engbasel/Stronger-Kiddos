@@ -1,11 +1,17 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:strongerkiddos/core/widgets/custom_button.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 
+import 'package:strongerkiddos/core/helper/failuer_top_snak_bar.dart';
+import 'package:strongerkiddos/core/helper/scccess_top_snak_bar.dart';
+import 'package:strongerkiddos/core/widgets/custom_button.dart';
+import 'package:strongerkiddos/core/widgets/custom_progrss_hud.dart';
+import 'package:strongerkiddos/features/auth/presentation/manager/login_cubit/login_cubit.dart';
+import 'package:strongerkiddos/features/auth/presentation/manager/login_cubit/login_state.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/reset_password_view.dart';
+import 'package:strongerkiddos/features/auth/presentation/views/signup_view.dart';
 
 class PasswordVerificationView extends StatefulWidget {
   const PasswordVerificationView({super.key});
@@ -31,10 +37,28 @@ class _PasswordVerificationViewState extends State<PasswordVerificationView> {
   int _countdownSeconds = 60;
   bool _isResendEnabled = false;
 
+  // Store email for password reset
+  late String _email;
+
   @override
   void initState() {
     super.initState();
     startCountdown();
+    // Delay to ensure context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getRouteArguments();
+    });
+  }
+
+  void _getRouteArguments() {
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      _email = args['email'] ?? '';
+      log('Email for password reset: $_email');
+    } else {
+      log('No arguments passed to password verification screen');
+    }
   }
 
   @override
@@ -76,10 +100,13 @@ class _PasswordVerificationViewState extends State<PasswordVerificationView> {
 
     log('Verifying code: $code');
 
-    // For demo purposes only - would normally call an API
+    // For demo purposes only - would normally validate the code
     if (code.length == 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Processing password reset...')),
+      // Navigate to reset password screen
+      Navigator.pushNamed(
+        context,
+        ResetPasswordView.routeName,
+        arguments: {'email': _email, 'resetCode': code},
       );
     } else {
       ScaffoldMessenger.of(
@@ -90,8 +117,8 @@ class _PasswordVerificationViewState extends State<PasswordVerificationView> {
 
   // Handle resend code
   void resendCode() {
-    if (_isResendEnabled) {
-      log('Resending code');
+    if (_isResendEnabled && _email.isNotEmpty) {
+      log('Resending code to $_email');
 
       // Clear the fields
       for (var controller in _controllers) {
@@ -104,131 +131,116 @@ class _PasswordVerificationViewState extends State<PasswordVerificationView> {
       // Restart countdown
       startCountdown();
 
-      ScaffoldMessenger.of(
+      // Get LoginCubit instance and resend password reset link
+      final loginCubit = context.read<LoginCubit>();
+      loginCubit.sendPasswordResetLink(email: _email);
+    } else {
+      failuerTopSnackBar(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Verification code resent')));
+        'Email address is missing, please go back and try again',
+      );
     }
   }
 
   // Navigate to create account screen
   void navigateToCreateAccount() {
-    // Example: Navigator.pushNamed(context, CreateAccountView.routeName);
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Navigate to create account')));
+    Navigator.pushReplacementNamed(context, SignupView.routeName);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 12),
-              // Title
-              const Text(
-                'Enter your 4-digit code',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+    return BlocConsumer<LoginCubit, LoginState>(
+      listener: (context, state) {
+        if (state is PasswordResetEmailSent) {
+          succesTopSnackBar(context, 'Password reset email sent successfully');
+        } else if (state is LoginFailure) {
+          failuerTopSnackBar(context, state.message);
+        }
+      },
+      builder: (context, state) {
+        return CustomProgrssHud(
+          isLoading: state is LoginLoading,
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
               ),
-              const SizedBox(height: 8),
-              // Description
-              const Text(
-                'Enter your email address to get the\npassword reset link.',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 32),
-              // Code input fields
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(
-                  4,
-                  (index) => _buildDigitTextField(index),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Resend code text with timer
-              Center(
-                child: GestureDetector(
-                  onTap: _isResendEnabled ? resendCode : null,
-                  child: Text(
-                    // ignore: unnecessary_brace_in_string_interps
-                    'Resend Code in ${_countdownSeconds} sec',
-                    style: TextStyle(
-                      color:
-                          _isResendEnabled
-                              ? const Color(0xFFF9B56E) // Orange when enabled
-                              : Colors.grey,
-                      fontSize: 14,
+            ),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 12),
+                    // Title
+                    const Text(
+                      'Enter your 4-digit code',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              // Reset Password button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  // onPressed: resetPassword,
-                  onPressed: () {
-                    Navigator.pushNamed(context, ResetPasswordView.routeName);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(
-                      0xFFF9B56E,
-                    ), // Orange button color
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                    const SizedBox(height: 8),
+                    // Description
+                    const Text(
+                      'Enter the code we sent to your email to reset your password',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Reset Password',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                    const SizedBox(height: 32),
+                    // Code input fields
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(
+                        4,
+                        (index) => _buildDigitTextField(index),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Resend code text with timer
+                    Center(
+                      child: GestureDetector(
+                        onTap: _isResendEnabled ? resendCode : null,
+                        child: Text(
+                          'Resend Code in $_countdownSeconds sec',
+                          style: TextStyle(
+                            color:
+                                _isResendEnabled
+                                    ? const Color(
+                                      0xFFF9B56E,
+                                    ) // Orange when enabled
+                                    : Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    // Reset Password button
+                    CustomButton(
+                      onPressed: resetPassword,
+                      text: 'Reset Password',
+                    ),
+                    // Spacer to push "Create an account" to bottom
+                    const Spacer(),
+                    // Create an account button
+                    CustomButton(
+                      onPressed: navigateToCreateAccount,
+                      text: 'Create an account',
+                    ),
+                    const SizedBox(height: 20), // Bottom padding
+                  ],
                 ),
               ),
-              // Spacer to push "Create an account" to bottom
-              const Spacer(),
-
-              // Create Account text
-              // Center(
-              //   child: GestureDetector(
-              //     onTap: navigateToCreateAccount,
-              //     child: const Text(
-              //       'Create an account',
-              //       style: TextStyle(
-              //         color: Color(0xFFF9B56E), // Orange color
-              //         fontSize: 14,
-              //         fontWeight: FontWeight.w500,
-              //       ),
-              //     ),
-              //   ),
-              // ),
-              CustomButton(onPressed: () {}, text: 'Create an account'),
-              const SizedBox(height: 20), // Bottom padding
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

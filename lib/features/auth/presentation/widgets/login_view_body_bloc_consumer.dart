@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/helper/failuer_top_snak_bar.dart';
 import '../../../../core/widgets/custom_progrss_hud.dart';
+import '../../../home/presentation/Views/home_view.dart';
 import '../manager/login_cubit/login_cubit.dart';
 import '../manager/login_cubit/login_state.dart';
+import '../views/password_verification_view.dart';
 import 'login_view_body.dart';
 
 class LoginViewBodyBlocConsumer extends StatelessWidget {
@@ -15,9 +17,21 @@ class LoginViewBodyBlocConsumer extends StatelessWidget {
       body: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state is LoginSuccess) {
-            Navigator.pushReplacementNamed(context, '/home');
-          }
-          if (state is LoginFailure) {
+            Navigator.pushReplacementNamed(context, HomeView.routeName);
+          } else if (state is GoogleLoginSuccess) {
+            Navigator.pushReplacementNamed(context, HomeView.routeName);
+          } else if (state is LoginOffline) {
+            Navigator.pushReplacementNamed(context, HomeView.routeName);
+          } else if (state is PasswordResetEmailSent) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Password reset email sent. Please check your inbox.',
+                ),
+              ),
+            );
+            Navigator.pushNamed(context, PasswordVerificationView.routeName);
+          } else if (state is LoginFailure) {
             failuerTopSnackBar(context, state.message);
           }
         },

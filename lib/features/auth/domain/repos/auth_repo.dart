@@ -8,8 +8,9 @@ abstract class AuthRepo {
     // ignore: non_constant_identifier_names
     String email,
     String password,
-    String name,
-  );
+    String name, [
+    String? phoneNumber,
+  ]);
 
   Future<Either<Failures, UserEntity>> signInWithEmailAndPassword(
     String email,
@@ -19,4 +20,5 @@ abstract class AuthRepo {
   Future<Either<Failures, void>> sendPasswordResetLink(String email);
   Future addUserData({required UserEntity user});
   Future<UserEntity> getUserData({required String uid});
+  Future<void> updateUserData({required UserEntity user});
 }

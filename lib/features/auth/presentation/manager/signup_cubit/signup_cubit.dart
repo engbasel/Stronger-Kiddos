@@ -11,16 +11,16 @@ class SignupCubit extends Cubit<SignupState> {
 
   SignupCubit(this.authRepo) : super(SignupInitial());
 
-  // التسجيل باستخدام البريد الإلكتروني وكلمة المرور
   Future<void> signupWithEmailAndPassword({
     required String email,
     required String password,
     required String name,
+    String? phoneNumber, // Add this parameter
   }) async {
     emit(SignupLoading());
 
     try {
-      // تحقق من حالة الاتصال
+      // Check connection
       var connectivityResult = await Connectivity().checkConnectivity();
       if (connectivityResult.contains(ConnectivityResult.none) ||
           connectivityResult.isEmpty) {
@@ -32,6 +32,7 @@ class SignupCubit extends Cubit<SignupState> {
         email,
         password,
         name,
+        phoneNumber, // Pass phone number to repository
       );
 
       result.fold(
@@ -86,11 +87,20 @@ class SignupCubit extends Cubit<SignupState> {
           await _signInWithPhoneCredential(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
-          emit(SignupFailure(message: e.message ?? 'فشل التحقق من الهاتف'));
+          emit(
+            SignupFailure(
+              message: e.message ?? "Failed to verify phone number.",
+            ),
+          );
         },
         codeSent: (String verificationId, int? resendToken) {
           // تم إرسال الرمز بنجاح
-          emit(PhoneVerificationSent(verificationId: verificationId));
+          emit(
+            PhoneVerificationSent(
+              verificationId: verificationId,
+              phoneNumber: phoneNumber,
+            ),
+          );
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           // انتهت مهلة استرداد الرمز تلقائيًا
