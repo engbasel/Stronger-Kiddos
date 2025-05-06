@@ -1,200 +1,57 @@
+// ignore_for_file: deprecated_member_use, sized_box_for_whitespace
+
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:strongerkiddos/core/utils/app_colors.dart';
-import 'package:strongerkiddos/features/auth/presentation/views/login_view.dart';
-import '../../../../../core/utils/app_text_style.dart';
 
-Widget buildNavigationBar(
-  BuildContext context,
-  PageController pageController,
-  int currentPage,
-) {
-  return Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      SizedBox(
-        width: 200,
-        child: AnimatedCrossFade(
-          duration: const Duration(milliseconds: 300),
-          crossFadeState:
-              currentPage == 2
-                  ? CrossFadeState.showFirst
-                  : CrossFadeState.showSecond,
-          firstChild: buildGetStartedButton(context),
-          secondChild: buildNextButton(context, pageController, currentPage),
-        ),
-      ),
-      AnimatedCrossFade(
-        duration: const Duration(milliseconds: 300),
-        crossFadeState:
-            currentPage != 2
-                ? CrossFadeState.showFirst
-                : CrossFadeState.showSecond,
-        firstChild: Column(
-          children: [
-            const SizedBox(height: 50),
-            AnimatedOpacity(
-              opacity: 1.0,
-              duration: const Duration(milliseconds: 300),
-              child: SmoothPageIndicator(
-                controller: pageController,
-                count: 3,
-                effect: const ExpandingDotsEffect(
-                  activeDotColor: AppColors.fabBackgroundColor,
-                  dotColor: Colors.grey,
-                  dotHeight: 8,
-                  dotWidth: 8,
-                  spacing: 5,
-                ),
-              ),
-            ),
-          ],
-        ),
-        secondChild: const SizedBox(),
-      ),
-    ],
-  );
-}
+class BottomNavBarSection extends StatelessWidget {
+  // ignore: use_super_parameters
+  const BottomNavBarSection({Key? key}) : super(key: key);
 
-Widget buildGetStartedButton(BuildContext context) {
-  return Padding(
-    padding: const EdgeInsets.only(left: 55),
-    child: Container(
-      height: 50,
-      width: 150,
+  Widget _buildBottomNavItem(IconData icon, bool isSelected) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.fabBackgroundColor,
-        borderRadius: BorderRadius.circular(25),
+        color: isSelected ? Colors.orange : Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(25),
-          onTap: () {
-            Navigator.pushReplacementNamed(context, LoginView.routeName);
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Get Started",
-                style: TextStyles.bold16.copyWith(color: Colors.white),
-              ),
-              const SizedBox(width: 5),
-              const Icon(Icons.chevron_right, color: Colors.white, size: 20),
-            ],
-          ),
-        ),
+      child: Icon(
+        icon,
+        color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
       ),
-    ),
-  );
-}
-
-Widget buildNextButton(
-  BuildContext context,
-  PageController pageController,
-  int currentPage,
-) {
-  return SizedBox(
-    width: 250,
-    height: 70,
-    child: Padding(
-      padding: const EdgeInsets.only(left: 130),
-      child: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          CustomPaint(
-            size: const Size(70, 70),
-            painter: ArcProgressPainter(
-              progress: (currentPage + 1) / 3,
-              color: AppColors.fabBackgroundColor,
-              strokeWidth: 3,
-            ),
-          ),
-          TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0.8, end: 1.0),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.elasticOut,
-            builder: (context, scale, child) {
-              return Transform.scale(scale: scale, child: child);
-            },
-            child: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: AppColors.fabBackgroundColor,
-                shape: BoxShape.circle,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    if (currentPage < 2) {
-                      pageController.nextPage(
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  },
-                  child: const Center(
-                    child: Icon(
-                      Icons.chevron_right,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class ArcProgressPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-  final double strokeWidth;
-
-  ArcProgressPainter({
-    required this.progress,
-    required this.color,
-    this.strokeWidth = 4.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width / 2) - strokeWidth;
-
-    const startAngle = -math.pi / 2;
-    final sweepAngle = 2 * math.pi * progress;
-
-    final paint =
-        Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth
-          ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      sweepAngle,
-      false,
-      paint,
     );
   }
 
   @override
-  bool shouldRepaint(ArcProgressPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.color != color ||
-        oldDelegate.strokeWidth != strokeWidth;
+  Widget build(BuildContext context) {
+    // Get the bottom padding to account for the safe area
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      // Add height + bottom padding to account for safe area
+      height: 60 + bottomPadding,
+      width: double.infinity, // Ensure full width
+      decoration: const BoxDecoration(
+        color: Color(0xFF2D3953),
+        borderRadius: BorderRadius.zero, // Remove any border radius
+      ),
+      child: Column(
+        children: [
+          // This is your actual navigation content
+          Container(
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildBottomNavItem(Icons.home, true),
+                _buildBottomNavItem(Icons.search, false),
+                _buildBottomNavItem(Icons.message, false),
+                _buildBottomNavItem(Icons.person, false),
+              ],
+            ),
+          ),
+          // This empty container fills the safe area with your background color
+          Container(height: bottomPadding, color: Color(0xFF2D3953)),
+        ],
+      ),
+    );
   }
 }
