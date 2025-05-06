@@ -9,10 +9,8 @@ import '../../../domain/repos/auth_repo.dart';
 import 'login_state.dart';
 
 class LoginCubit extends Cubit<LoginState> {
+  LoginCubit(this.authRepo) : super(LoginInitial());
   final AuthRepo authRepo;
-
-  LoginCubit({required this.authRepo}) : super(LoginInitial());
-
   // تسجيل الدخول باستخدام البريد الإلكتروني وكلمة المرور
   Future<void> loginWithEmailAndPassword({
     required String email,

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-
-import 'widgets/signup_view_body.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/services/get_it_service.dart';
+import '../../domain/repos/auth_repo.dart';
+import '../manager/signup_cubit/signup_cubit.dart';
+import 'widgets/signin_view_body_bloc_consumer.dart';
 
 class SignupView extends StatelessWidget {
   const SignupView({super.key});
@@ -8,16 +11,9 @@ class SignupView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SignupViewBody(),
+    return BlocProvider(
+      create: (context) => SignupCubit(getIt.get<AuthRepo>()),
+      child: SignInViewBodyBlocConsumer(),
     );
   }
 }
