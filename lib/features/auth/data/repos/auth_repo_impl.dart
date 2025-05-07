@@ -111,6 +111,7 @@ class AuthRepoImpl extends AuthRepo {
   }
 
   @override
+  // In AuthRepoImpl.signInWithGoogle method
   @override
   Future<Either<Failures, UserEntity>> signInWithGoogle([
     String? phoneNumber,
@@ -139,7 +140,7 @@ class AuthRepoImpl extends AuthRepo {
             id: existingUser.id,
             name: existingUser.name,
             email: existingUser.email,
-            phoneNumber: phoneNumber,
+            phoneNumber: phoneNumber, // Update phone number
             role: existingUser.role,
             createdAt: existingUser.createdAt,
             photoUrl: existingUser.photoUrl,
@@ -154,15 +155,14 @@ class AuthRepoImpl extends AuthRepo {
         await saveUserData(user: existingUser);
         return right(existingUser);
       } else {
-        // For new users, create with unverified email status initially
+        // For new users, include the phone number
         userEntity = UserModel(
           id: user.uid,
           name: user.displayName ?? '',
           email: user.email ?? '',
           photoUrl: user.photoURL,
-          phoneNumber: phoneNumber,
-          isEmailVerified:
-              false, // ALWAYS FALSE for new users, even from Google
+          phoneNumber: phoneNumber, // Include the phone number
+          isEmailVerified: user.emailVerified,
           userStat: 'active',
         );
         await addUserData(user: userEntity);
@@ -204,26 +204,6 @@ class AuthRepoImpl extends AuthRepo {
         'Exception in AuthRepoImpl.signInWithEmailAndPassword :${e.toString()}',
       );
       return left(ServerFailure('An error occurred. Please try again later.'));
-    }
-  }
-
-  @override
-  Future<Either<Failures, void>> resendVerificationEmail() async {
-    try {
-      await firebaseAuthService.resendVerificationEmail();
-      return right(null);
-    } catch (e) {
-      return left(ServerFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failures, bool>> checkEmailVerified() async {
-    try {
-      final isVerified = await firebaseAuthService.checkEmailVerified();
-      return right(isVerified);
-    } catch (e) {
-      return left(ServerFailure(e.toString()));
     }
   }
 

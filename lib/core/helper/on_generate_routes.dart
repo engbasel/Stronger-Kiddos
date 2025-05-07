@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/features/auth/presentation/views/email_verification_view.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/forget_password_view.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/otp_vericifaction.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/password_verification_view.dart';
@@ -37,8 +36,6 @@ Route<dynamic> onGenerateRoute(RouteSettings setting) {
       return buildPageRoute(const ResetPasswordView());
     case SuccessfullyVerifiedView.routeName:
       return buildPageRoute(const SuccessfullyVerifiedView());
-    case EmailVerificationView.routeName:
-      return buildPageRoute(const EmailVerificationView());
     default:
       return buildPageRoute(const SplashView());
   }

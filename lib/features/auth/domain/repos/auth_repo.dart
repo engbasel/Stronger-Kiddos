@@ -21,6 +21,4 @@ abstract class AuthRepo {
   Future addUserData({required UserEntity user});
   Future<UserEntity> getUserData({required String uid});
   Future<void> updateUserData({required UserEntity user});
-  Future<Either<Failures, void>> resendVerificationEmail();
-  Future<Either<Failures, bool>> checkEmailVerified();
 }
