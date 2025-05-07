@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:developer';
 import '../../../../../core/helper/failuer_top_snak_bar.dart';
 import '../../../../../core/helper/scccess_top_snak_bar.dart';
 import '../../../../../core/widgets/custom_progrss_hud.dart';
-import '../../../home/presentation/Views/home_view.dart';
 import '../manager/signup_cubit/signup_cubit.dart';
 import '../manager/signup_cubit/signup_state.dart';
 import '../views/email_verification_view.dart';
@@ -19,6 +19,7 @@ class SignInViewBodyBlocConsumer extends StatelessWidget {
     return BlocConsumer<SignupCubit, SignupState>(
       listener: (context, state) {
         if (state is EmailSignupSuccess) {
+          log('Email signup success, navigating to verification screen');
           succesTopSnackBar(context, 'Account created successfully');
           // Navigate to email verification screen
           Navigator.pushReplacementNamed(
@@ -27,18 +28,17 @@ class SignInViewBodyBlocConsumer extends StatelessWidget {
             arguments: state.email,
           );
         } else if (state is GoogleSignupSuccess) {
-          // Use only one check - either requiresVerification or isEmailVerified
-          if (state.requiresVerification) {
-            succesTopSnackBar(context, 'Please verify your email');
-            Navigator.pushReplacementNamed(
-              context,
-              EmailVerificationView.routeName,
-              arguments: state.user.email,
-            );
-          } else {
-            succesTopSnackBar(context, 'Account created successfully');
-            Navigator.pushReplacementNamed(context, HomeView.routeName);
-          }
+          // For Google users, always require email verification
+          log(
+            'Google signup success. User verified: ${state.user.isEmailVerified}',
+          );
+          // Always redirect to verification for Google signups
+          succesTopSnackBar(context, 'Please verify your email');
+          Navigator.pushReplacementNamed(
+            context,
+            EmailVerificationView.routeName,
+            arguments: state.user.email,
+          );
         } else if (state is PhoneVerificationSent) {
           succesTopSnackBar(context, 'OTP sent successfully');
           Navigator.pushNamed(

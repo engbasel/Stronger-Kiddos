@@ -152,10 +152,12 @@ class FirebaseAuthService {
       );
       final user = userCredential.user!;
 
-      // Send verification email for new Google users who haven't verified their email in our system
+      // Send verification email for ALL Google users, regardless of Firebase verification status
+      // This ensures every user in your app must verify through your verification flow
       bool isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
-      if (isNewUser || !user.emailVerified) {
+      if (isNewUser) {
         await user.sendEmailVerification();
+        log('Verification email sent to Google user: ${user.email}');
       }
 
       await fetchAndSaveToken();
@@ -233,6 +235,21 @@ class FirebaseAuthService {
     } catch (e) {
       log('Exception in deleteUser: ${e.toString()}');
       throw CustomExceptions(message: 'Failed to delete user.');
+    }
+  }
+
+  // New method to mark an email as verified only when the user clicks the verification link
+  Future<void> manuallyMarkEmailAsVerified(String uid) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('users').doc(uid).update({
+        'isEmailVerified': true,
+        'userStat': 'active',
+      });
+      log('User $uid manually marked as verified');
+    } catch (e) {
+      log('Error manually marking email as verified: $e');
+      throw CustomExceptions(message: 'Failed to verify email.');
     }
   }
 

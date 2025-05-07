@@ -111,8 +111,6 @@ class AuthRepoImpl extends AuthRepo {
   }
 
   @override
-  // In AuthRepoImpl.signInWithGoogle method
-  @override
   @override
   Future<Either<Failures, UserEntity>> signInWithGoogle([
     String? phoneNumber,
@@ -163,7 +161,8 @@ class AuthRepoImpl extends AuthRepo {
           email: user.email ?? '',
           photoUrl: user.photoURL,
           phoneNumber: phoneNumber,
-          isEmailVerified: false, // Start as false for our verification process
+          isEmailVerified:
+              false, // ALWAYS FALSE for new users, even from Google
           userStat: 'active',
         );
         await addUserData(user: userEntity);

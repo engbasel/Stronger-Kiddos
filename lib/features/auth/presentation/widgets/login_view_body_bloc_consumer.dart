@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:developer';
 import '../../../../core/helper/failuer_top_snak_bar.dart';
 import '../../../../core/widgets/custom_progrss_hud.dart';
 import '../../../home/presentation/Views/home_view.dart';
@@ -18,6 +19,7 @@ class LoginViewBodyBlocConsumer extends StatelessWidget {
       body: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state is LoginSuccess) {
+            log('Login success. User verified: ${state.user.isEmailVerified}');
             // Check if email is verified
             if (state.user.isEmailVerified) {
               Navigator.pushReplacementNamed(context, HomeView.routeName);
@@ -29,7 +31,10 @@ class LoginViewBodyBlocConsumer extends StatelessWidget {
               );
             }
           } else if (state is GoogleLoginSuccess) {
-            // Check if email is verified for Google login
+            log(
+              'Google login success. User verified: ${state.user.isEmailVerified}',
+            );
+            // For consistency, check verification status
             if (state.user.isEmailVerified) {
               Navigator.pushReplacementNamed(context, HomeView.routeName);
             } else {
