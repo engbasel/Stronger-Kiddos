@@ -30,6 +30,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
   late Animation<double> _textOpacityAnimation;
   late Animation<double> _linesAnimation;
   final FirebaseAuthService _authService = getIt<FirebaseAuthService>();
+  final QuestionnaireRepo _questionnaireRepo = getIt<QuestionnaireRepo>();
 
   @override
   void initState() {
@@ -82,6 +83,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
     _animationController.forward();
   }
 
+  // Updated navigation logic in _navigateToNextScreen method in SplashViewBody
   Future<void> _navigateToNextScreen() async {
     await Future.delayed(
       const Duration(seconds: AppConstants.navigationDelaySeconds),
@@ -92,69 +94,72 @@ class _SplashViewBodyState extends State<SplashViewBody>
     // Check if onboarding has been shown before
     final bool onboardingShown = Prefs.getBool(AppConstants.kOnboardingShown);
 
-    // Check if user is logged in
-    final bool isLoggedIn = _authService.isLoggedIn();
-
-    // Get last visited route (if any)
-    final String lastRoute = Prefs.getString(AppConstants.kLastVisitedRoute);
-
     if (!onboardingShown) {
       // First time opening the app - show onboarding
       Prefs.setBool(AppConstants.kOnboardingShown, true);
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, OnBoardingView.routeName);
-    } else if (isLoggedIn) {
-      // User is logged in - check email verification first
-      bool isEmailVerified = await _authService.checkEmailVerification();
+      return;
+    }
 
-      if (!mounted) return;
-
-      if (isEmailVerified) {
-        // Get QuestionnaireRepo instance from GetIt
-        final questionnaireRepo = getIt<QuestionnaireRepo>();
-        final userId = _authService.currentUser?.uid;
-
-        if (userId != null) {
-          final result = await questionnaireRepo.hasCompletedQuestionnaire(
-            userId: userId,
-          );
-
-          final hasCompletedQuestionnaire = result.fold(
-            (failure) => false,
-            (completed) => completed,
-          );
-
-          if (!context.mounted) return;
-
-          if (hasCompletedQuestionnaire) {
-            // User has completed questionnaire - proceed to home or last route
-
-            if (lastRoute.isNotEmpty) {
-              Navigator.pushReplacementNamed(context, lastRoute);
-            } else {
-              Navigator.pushReplacementNamed(context, HomeView.routeName);
-            }
-          } else {
-            // User needs to complete questionnaire
-            Navigator.pushReplacementNamed(
-              context,
-              QuestionnaireControllerView.routeName,
-            );
-          }
-        }
-      } else {
-        // User is logged in but email not verified
-        String? email = _authService.currentUser?.email;
-        Navigator.pushReplacementNamed(
-          context,
-          '/email-verification',
-          arguments: {'email': email ?? ''},
-        );
-      }
-    } else {
-      // User is not logged in - go to login
+    // Check if user is logged in
+    final bool isLoggedIn = _authService.isLoggedIn();
+    if (!isLoggedIn) {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, LoginView.routeName);
+      return;
+    }
+
+    // User is logged in - check email verification first
+    bool isEmailVerified = await _authService.checkEmailVerification();
+    if (!mounted) return;
+
+    if (!isEmailVerified) {
+      // User is logged in but email not verified
+      String? email = _authService.currentUser?.email;
+      Navigator.pushReplacementNamed(
+        context,
+        '/email-verification',
+        arguments: {'email': email ?? ''},
+      );
+      return;
+    }
+
+    // Email is verified - check questionnaire completion
+    final userId = _authService.currentUser?.uid;
+    if (userId == null) {
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, LoginView.routeName);
+      return;
+    }
+
+    final result = await _questionnaireRepo.hasCompletedQuestionnaire(
+      userId: userId,
+    );
+
+    final hasCompletedQuestionnaire = result.fold(
+      (failure) => false,
+      (completed) => completed,
+    );
+
+    if (!context.mounted) return;
+
+    // Navigate based on questionnaire completion status
+    if (hasCompletedQuestionnaire) {
+      // User has completed questionnaire - get the last route or go to home
+      final lastRoute = Prefs.getString(AppConstants.kLastVisitedRoute);
+
+      if (lastRoute.isNotEmpty && lastRoute != '/splash') {
+        Navigator.pushReplacementNamed(context, lastRoute);
+      } else {
+        Navigator.pushReplacementNamed(context, HomeView.routeName);
+      }
+    } else {
+      // User needs to complete questionnaire - direct to questionnaire without showing home
+      Navigator.pushReplacementNamed(
+        context,
+        QuestionnaireControllerView.routeName,
+      );
     }
   }
 

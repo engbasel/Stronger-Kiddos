@@ -1,3 +1,4 @@
+// lib/features/home/presentation/Views/home_view.dart
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/home_view_body.dart';
@@ -14,22 +15,36 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  bool _isInitialized = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AuthGuard.canActivate(context);
+      _checkAndRedirect();
     });
+  }
+
+  Future<void> _checkAndRedirect() async {
+    if (_isInitialized) return;
+
+    final canActivate = await AuthGuard.canActivate(context);
+    if (canActivate) {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       bottomNavigationBar: BottomNavBarSection(),
-      body: SafeArea(
-        bottom: false,
-        child: HomeviewBody(), // خلي الودجت تنزل لآخر الشاشة
-      ),
+      body: SafeArea(bottom: false, child: HomeviewBody()),
       backgroundColor: AppColors.backgroundColor,
     );
   }
