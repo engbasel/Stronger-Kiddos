@@ -130,6 +130,10 @@ class FirebaseAuthService {
   /// تسجيل الدخول باستخدام Google
   // في firebase_auth_service.dart
   Future<User> signInWithGoogle() async {
+    // Sign out first to ensure the account selection dialog appears every time
+    await GoogleSignIn().signOut();
+
+    // Now proceed with the sign-in flow
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     try {
       final GoogleSignInAuthentication? googleAuth =
@@ -145,9 +149,7 @@ class FirebaseAuthService {
       );
       final user = userCredential.user;
 
-      // حسابات Google تعتبر محققة تلقائياً، لكن يمكننا مراجعة الحالة
       if (user != null && !user.emailVerified) {
-        // هذا نادر الحدوث مع حسابات Google ولكننا نتحقق على أي حال
         log('Google account not verified: ${user.email}');
       }
 
