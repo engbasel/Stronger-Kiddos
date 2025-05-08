@@ -23,34 +23,45 @@ class QuestionnaireControllerView extends StatelessWidget {
             questionnaireRepo: getIt.get(),
             authService: getIt.get<FirebaseAuthService>(),
           )..checkQuestionnaireStatus(),
-      child: BlocConsumer<QuestionnaireCubit, QuestionnaireState>(
-        listener: (context, state) {
-          if (state is QuestionnaireError) {
-            failuerTopSnackBar(context, state.message);
-          } else if (state is QuestionnaireCompleted) {
-            // User already completed questionnaire, skip to home
-            Navigator.pushReplacementNamed(context, HomeView.routeName);
-          } else if (state is QuestionnaireSubmitSuccess) {
-            succesTopSnackBar(
-              context,
-              'Thank you for completing the questionnaire!',
-            );
-            Navigator.pushReplacementNamed(context, HomeView.routeName);
-          }
-        },
-        builder: (context, state) {
-          return CustomProgrssHud(
-            isLoading:
-                state is QuestionnaireLoading || state is QuestionnaireSaving,
-            child:
-                state is QuestionnaireReadyToStart
-                    ? const ChildInfoQuestion()
-                    : const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    ),
+      child: const QuestionnaireControllerContent(),
+    );
+  }
+}
+
+class QuestionnaireControllerContent extends StatelessWidget {
+  const QuestionnaireControllerContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<QuestionnaireCubit, QuestionnaireState>(
+      listener: (context, state) {
+        if (state is QuestionnaireError) {
+          failuerTopSnackBar(context, state.message);
+        } else if (state is QuestionnaireCompleted) {
+          // User already completed questionnaire, skip to home
+          Navigator.pushReplacementNamed(context, HomeView.routeName);
+        } else if (state is QuestionnaireSubmitSuccess) {
+          succesTopSnackBar(
+            context,
+            'Thank you for completing the questionnaire!',
           );
-        },
-      ),
+          Navigator.pushReplacementNamed(context, HomeView.routeName);
+        }
+      },
+      builder: (context, state) {
+        return CustomProgrssHud(
+          isLoading:
+              state is QuestionnaireLoading || state is QuestionnaireSaving,
+          child:
+              state is QuestionnaireReadyToStart
+                  ? ChildInfoQuestion(
+                    questionnaireCubit: context.read<QuestionnaireCubit>(),
+                  )
+                  : const Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  ),
+        );
+      },
     );
   }
 }
