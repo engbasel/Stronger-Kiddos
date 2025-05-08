@@ -5,6 +5,7 @@ import 'package:strongerkiddos/features/auth/presentation/views/password_verific
 import 'package:strongerkiddos/features/auth/presentation/views/reset_password_view.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/successfully_verified_view.dart';
 import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
+import '../../features/auth/presentation/views/email_verification_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/phone_signup_view.dart';
 import '../../features/auth/presentation/views/signup_view.dart';
@@ -36,6 +37,9 @@ Route<dynamic> onGenerateRoute(RouteSettings setting) {
       return buildPageRoute(const ResetPasswordView());
     case SuccessfullyVerifiedView.routeName:
       return buildPageRoute(const SuccessfullyVerifiedView());
+    case EmailVerificationView.routeName:
+      final args = setting.arguments as Map<String, dynamic>;
+      return buildPageRoute(EmailVerificationView(email: args['email']));
     default:
       return buildPageRoute(const SplashView());
   }

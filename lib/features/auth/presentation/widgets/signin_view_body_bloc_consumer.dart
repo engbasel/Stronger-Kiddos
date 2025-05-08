@@ -6,6 +6,7 @@ import '../../../../../core/widgets/custom_progrss_hud.dart';
 import '../../../home/presentation/Views/home_view.dart';
 import '../manager/signup_cubit/signup_cubit.dart';
 import '../manager/signup_cubit/signup_state.dart';
+import '../views/email_verification_view.dart';
 import '../views/otp_vericifaction.dart';
 import '../views/successfully_verified_view.dart';
 
@@ -19,7 +20,15 @@ class SignInViewBodyBlocConsumer extends StatelessWidget {
       listener: (context, state) {
         if (state is EmailSignupSuccess) {
           succesTopSnackBar(context, 'Account created successfully');
-          Navigator.pushReplacementNamed(context, HomeView.routeName);
+          if (state.requiresVerification) {
+            Navigator.pushReplacementNamed(
+              context,
+              EmailVerificationView.routeName,
+              arguments: {'email': state.email},
+            );
+          } else {
+            Navigator.pushReplacementNamed(context, HomeView.routeName);
+          }
         } else if (state is GoogleSignupSuccess) {
           succesTopSnackBar(context, 'Account created successfully');
           Navigator.pushReplacementNamed(context, HomeView.routeName);

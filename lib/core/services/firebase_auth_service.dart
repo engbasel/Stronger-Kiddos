@@ -60,9 +60,11 @@ class FirebaseAuthService {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      await fetchAndSaveToken(); // استدعاء الدالة المشتركة
-
+      // إرسال بريد التحقق
       await credential.user!.sendEmailVerification();
+
+      await fetchAndSaveToken();
+
       return credential.user!;
     } on FirebaseAuthException catch (e) {
       log('Exception in createUserWithEmailAndPassword: ${e.toString()}');
@@ -126,6 +128,7 @@ class FirebaseAuthService {
   }
 
   /// تسجيل الدخول باستخدام Google
+  // في firebase_auth_service.dart
   Future<User> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     try {
@@ -137,8 +140,16 @@ class FirebaseAuthService {
         idToken: googleAuth?.idToken,
       );
 
-      final user =
-          (await FirebaseAuth.instance.signInWithCredential(credential)).user;
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+      final user = userCredential.user;
+
+      // حسابات Google تعتبر محققة تلقائياً، لكن يمكننا مراجعة الحالة
+      if (user != null && !user.emailVerified) {
+        // هذا نادر الحدوث مع حسابات Google ولكننا نتحقق على أي حال
+        log('Google account not verified: ${user.email}');
+      }
 
       await fetchAndSaveToken();
 
@@ -155,6 +166,54 @@ class FirebaseAuthService {
     } catch (e) {
       log('Exception in signInWithGoogle: ${e.toString()}');
       throw CustomExceptions(message: 'An unexpected error occurred.');
+    }
+  }
+
+  // في firebase_auth_service.dart
+  Future<bool> checkEmailVerification() async {
+    User? user = firebaseAuth.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+    // إعادة تحميل معلومات المستخدم لضمان أحدث حالة
+    await user.reload();
+    user = firebaseAuth.currentUser; // تحديث المرجع بعد الإعادة
+
+    return user?.emailVerified ?? false;
+  }
+
+  // دالة لإعادة إرسال بريد التحقق
+  Future<void> resendVerificationEmail() async {
+    User? user = firebaseAuth.currentUser;
+
+    if (user == null) {
+      throw CustomExceptions(message: 'No user logged in.');
+    }
+
+    if (user.emailVerified) {
+      throw CustomExceptions(message: 'Email is already verified.');
+    }
+
+    try {
+      await user.sendEmailVerification();
+    } on FirebaseAuthException catch (e) {
+      log('Exception in resendVerificationEmail: ${e.toString()}');
+      if (e.code == 'too-many-requests') {
+        throw CustomExceptions(
+          message: 'Too many requests. Please try again later.',
+        );
+      } else {
+        throw CustomExceptions(
+          message: e.message ?? 'Failed to send verification email.',
+        );
+      }
+    } catch (e) {
+      log('Exception in resendVerificationEmail: ${e.toString()}');
+      throw CustomExceptions(
+        message: 'An unexpected error occurred. Please try again.',
+      );
     }
   }
 

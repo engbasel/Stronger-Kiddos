@@ -11,16 +11,17 @@ class SignupCubit extends Cubit<SignupState> {
 
   SignupCubit(this.authRepo) : super(SignupInitial());
 
+  // في features/auth/presentation/manager/signup_cubit/signup_cubit.dart
   Future<void> signupWithEmailAndPassword({
     required String email,
     required String password,
     required String name,
-    String? phoneNumber, // Add this parameter
+    String? phoneNumber,
   }) async {
     emit(SignupLoading());
 
     try {
-      // Check connection
+      // تحقق من الاتصال
       var connectivityResult = await Connectivity().checkConnectivity();
       if (connectivityResult.contains(ConnectivityResult.none) ||
           connectivityResult.isEmpty) {
@@ -32,14 +33,18 @@ class SignupCubit extends Cubit<SignupState> {
         email,
         password,
         name,
-        phoneNumber, // Pass phone number to repository
+        phoneNumber,
       );
 
       result.fold(
         (failure) => emit(SignupFailure(message: failure.message)),
         (user) => emit(
-          EmailSignupSuccess(user: user, email: email),
-        ), // Pass email to state
+          EmailSignupSuccess(
+            user: user,
+            email: email,
+            requiresVerification: true,
+          ),
+        ),
       );
     } catch (e) {
       emit(SignupFailure(message: 'There was an error: ${e.toString()}'));
