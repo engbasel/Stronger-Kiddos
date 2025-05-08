@@ -6,7 +6,6 @@ import '../../../home/presentation/Views/home_view.dart';
 import '../manager/login_cubit/login_cubit.dart';
 import '../manager/login_cubit/login_state.dart';
 import '../views/email_verification_view.dart';
-import '../views/password_verification_view.dart';
 import 'login_view_body.dart';
 
 class LoginViewBodyBlocConsumer extends StatelessWidget {
@@ -37,7 +36,6 @@ class LoginViewBodyBlocConsumer extends StatelessWidget {
                 ),
               ),
             );
-            Navigator.pushNamed(context, PasswordVerificationView.routeName);
           } else if (state is LoginFailure) {
             failuerTopSnackBar(context, state.message);
           }

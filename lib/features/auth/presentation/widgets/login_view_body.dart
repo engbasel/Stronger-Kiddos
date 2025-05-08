@@ -10,6 +10,7 @@ import 'package:strongerkiddos/features/auth/presentation/views/forget_password_
 import '../../../../app_constants.dart';
 import '../../../../core/utils/app_text_style.dart';
 import '../../../../core/utils/assets_images.dart';
+import '../../../../core/utils/form_validation.dart';
 import '../views/phone_signup_view.dart';
 import '../views/signup_view.dart';
 import 'or_divider.dart';
@@ -37,11 +38,6 @@ class _LoginViewBodyState extends State<LoginViewBody> {
     _passwordController.dispose();
     _phoneController.dispose();
     super.dispose();
-  }
-
-  // Validate email format
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
   // Handle login
@@ -166,13 +162,7 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!_isValidEmail(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
+                      return FormValidation.validateEmail(value);
                     },
                   )
                   : CustomTextFormField(
@@ -195,10 +185,7 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your phone number';
-                      }
-                      return null;
+                      return FormValidation.validateEmail(value);
                     },
                   ),
 
@@ -226,13 +213,7 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                     },
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
+                    return FormValidation.validatePassword(value);
                   },
                   keyboardType: TextInputType.visiblePassword,
                 ),

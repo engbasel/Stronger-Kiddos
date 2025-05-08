@@ -10,6 +10,7 @@ import 'package:strongerkiddos/features/auth/presentation/manager/signup_cubit/s
 import '../../../../app_constants.dart';
 import '../../../../core/utils/app_text_style.dart';
 import '../../../../core/utils/assets_images.dart';
+import '../../../../core/utils/form_validation.dart';
 import '../views/login_view.dart';
 import 'or_divider.dart';
 import 'social_login_button.dart';
@@ -37,11 +38,6 @@ class _SignupViewBodyState extends State<SignupViewBody> {
     _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  // Validate email format
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
   // Handle sign up
@@ -89,10 +85,7 @@ class _SignupViewBodyState extends State<SignupViewBody> {
                 controller: _nameController,
                 keyboardType: TextInputType.name,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
+                  return FormValidation.validateName(value);
                 },
               ),
 
@@ -106,13 +99,7 @@ class _SignupViewBodyState extends State<SignupViewBody> {
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!_isValidEmail(value)) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
+                  return FormValidation.validateEmail(value);
                 },
               ),
 
@@ -141,10 +128,7 @@ class _SignupViewBodyState extends State<SignupViewBody> {
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
+                  return FormValidation.validatePhone(value);
                 },
               ),
 
@@ -171,13 +155,7 @@ class _SignupViewBodyState extends State<SignupViewBody> {
                   },
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
-                  return null;
+                  return FormValidation.validatePassword(value);
                 },
                 keyboardType: TextInputType.visiblePassword,
               ),
