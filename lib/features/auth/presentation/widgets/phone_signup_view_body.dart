@@ -12,6 +12,7 @@ import 'package:strongerkiddos/core/helper/failuer_top_snak_bar.dart';
 import 'package:strongerkiddos/core/helper/scccess_top_snak_bar.dart';
 import '../../../../app_constants.dart';
 import '../../../../core/utils/app_text_style.dart';
+import '../../../../core/utils/form_validation.dart';
 import '../../../../core/widgets/custom_progrss_hud.dart';
 import 'or_divider.dart';
 
@@ -99,10 +100,7 @@ class _PhoneSignupViewBodyState extends State<PhoneSignupViewBody> {
                       controller: _nameController,
                       keyboardType: TextInputType.name,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
-                        }
-                        return null;
+                        return FormValidation.validateName(value);
                       },
                     ),
 
@@ -131,10 +129,7 @@ class _PhoneSignupViewBodyState extends State<PhoneSignupViewBody> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your phone number';
-                        }
-                        return null;
+                        return FormValidation.validatePhone(value);
                       },
                     ),
 
