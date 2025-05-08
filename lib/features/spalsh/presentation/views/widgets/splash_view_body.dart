@@ -1,7 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import '../../../../../app_constants.dart';
-import '../../../../../core/services/auth_guard.dart';
 import '../../../../../core/services/firebase_auth_service.dart';
 import '../../../../../core/services/get_it_service.dart';
 import '../../../../../core/services/shared_preferences_sengleton.dart';
@@ -9,6 +10,8 @@ import '../../../../../core/utils/app_text_style.dart';
 import '../../../../auth/presentation/views/login_view.dart';
 import '../../../../home/presentation/Views/home_view.dart';
 import '../../../../onbording/presentation/views/on_boarding_view.dart';
+import '../../../../questionnaire/domain/repos/questionnaire_repo.dart';
+import '../../../../questionnaire/presentation/views/questionnaire_controller_view.dart';
 import 'smiling_face_painter.dart';
 
 class SplashViewBody extends StatefulWidget {
@@ -100,15 +103,45 @@ class _SplashViewBodyState extends State<SplashViewBody>
       Prefs.setBool(AppConstants.kOnboardingShown, true);
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, OnBoardingView.routeName);
-    } else if (lastRoute.isNotEmpty && isLoggedIn) {
-      // Resume from last screen if user is logged in
-      // Check email verification first
+    } else if (isLoggedIn) {
+      // User is logged in - check email verification first
       bool isEmailVerified = await _authService.checkEmailVerification();
 
       if (!mounted) return;
 
       if (isEmailVerified) {
-        Navigator.pushReplacementNamed(context, lastRoute);
+        // Get QuestionnaireRepo instance from GetIt
+        final questionnaireRepo = getIt<QuestionnaireRepo>();
+        final userId = _authService.currentUser?.uid;
+
+        if (userId != null) {
+          final result = await questionnaireRepo.hasCompletedQuestionnaire(
+            userId: userId,
+          );
+
+          final hasCompletedQuestionnaire = result.fold(
+            (failure) => false,
+            (completed) => completed,
+          );
+
+          if (!context.mounted) return;
+
+          if (hasCompletedQuestionnaire) {
+            // User has completed questionnaire - proceed to home or last route
+
+            if (lastRoute.isNotEmpty) {
+              Navigator.pushReplacementNamed(context, lastRoute);
+            } else {
+              Navigator.pushReplacementNamed(context, HomeView.routeName);
+            }
+          } else {
+            // User needs to complete questionnaire
+            Navigator.pushReplacementNamed(
+              context,
+              QuestionnaireControllerView.routeName,
+            );
+          }
+        }
       } else {
         // User is logged in but email not verified
         String? email = _authService.currentUser?.email;
@@ -117,12 +150,6 @@ class _SplashViewBodyState extends State<SplashViewBody>
           '/email-verification',
           arguments: {'email': email ?? ''},
         );
-      }
-    } else if (isLoggedIn) {
-      // User is logged in but no last route - go to home
-      bool canActivate = await AuthGuard.canActivate(context);
-      if (canActivate && mounted) {
-        Navigator.pushReplacementNamed(context, HomeView.routeName);
       }
     } else {
       // User is not logged in - go to login

@@ -1,8 +1,13 @@
+// lib/features/auth/presentation/widgets/signin_view_body_bloc_consumer.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/helper/failuer_top_snak_bar.dart';
 import '../../../../../core/helper/scccess_top_snak_bar.dart';
+import '../../../../../core/services/firebase_auth_service.dart';
+import '../../../../../core/services/get_it_service.dart';
 import '../../../../../core/widgets/custom_progrss_hud.dart';
+import '../../../../../features/questionnaire/domain/repos/questionnaire_repo.dart';
+import '../../../../../features/questionnaire/presentation/views/questionnaire_controller_view.dart';
 import '../../../home/presentation/Views/home_view.dart';
 import '../manager/signup_cubit/signup_cubit.dart';
 import '../manager/signup_cubit/signup_state.dart';
@@ -17,7 +22,7 @@ class SignInViewBodyBlocConsumer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SignupCubit, SignupState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is EmailSignupSuccess) {
           succesTopSnackBar(context, 'Account created successfully');
           if (state.requiresVerification) {
@@ -27,11 +32,41 @@ class SignInViewBodyBlocConsumer extends StatelessWidget {
               arguments: {'email': state.email},
             );
           } else {
-            Navigator.pushReplacementNamed(context, HomeView.routeName);
+            // User is verified, redirect to questionnaire
+            Navigator.pushReplacementNamed(
+              context,
+              QuestionnaireControllerView.routeName,
+            );
           }
         } else if (state is GoogleSignupSuccess) {
           succesTopSnackBar(context, 'Account created successfully');
-          Navigator.pushReplacementNamed(context, HomeView.routeName);
+
+          // Check if user has completed questionnaire
+          final authService = getIt<FirebaseAuthService>();
+          final questionnaireRepo = getIt<QuestionnaireRepo>();
+          final userId = authService.currentUser?.uid;
+
+          if (userId != null) {
+            final result = await questionnaireRepo.hasCompletedQuestionnaire(
+              userId: userId,
+            );
+
+            final hasCompletedQuestionnaire = result.fold(
+              (failure) => false,
+              (completed) => completed,
+            );
+
+            if (!context.mounted) return;
+
+            if (hasCompletedQuestionnaire) {
+              Navigator.pushReplacementNamed(context, HomeView.routeName);
+            } else {
+              Navigator.pushReplacementNamed(
+                context,
+                QuestionnaireControllerView.routeName,
+              );
+            }
+          }
         } else if (state is PhoneVerificationSent) {
           succesTopSnackBar(context, 'OTP sent successfully');
           Navigator.pushNamed(

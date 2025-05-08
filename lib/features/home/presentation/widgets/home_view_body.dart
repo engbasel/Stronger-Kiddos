@@ -6,9 +6,56 @@ import 'package:strongerkiddos/features/auth/presentation/views/login_view.dart'
 import 'package:strongerkiddos/features/home/presentation/widgets/new_to_app_card_section.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/search_bar_section.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/welcome_section.dart';
+import 'package:strongerkiddos/features/questionnaire/domain/repos/questionnaire_repo.dart';
 
-class HomeviewBody extends StatelessWidget {
+import '../../../questionnaire/domain/entities/questionnaire_entity.dart';
+import 'personalized_content_section.dart';
+
+class HomeviewBody extends StatefulWidget {
   const HomeviewBody({super.key});
+
+  @override
+  State<HomeviewBody> createState() => _HomeviewBodyState();
+}
+
+class _HomeviewBodyState extends State<HomeviewBody> {
+  final FirebaseAuthService _authService = getIt<FirebaseAuthService>();
+  final QuestionnaireRepo _questionnaireRepo = getIt<QuestionnaireRepo>();
+  bool _isLoading = true;
+  QuestionnaireEntity? _questionnaireData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQuestionnaireData();
+  }
+
+  Future<void> _loadQuestionnaireData() async {
+    final userId = _authService.currentUser?.uid;
+    if (userId != null) {
+      final result = await _questionnaireRepo.getQuestionnaireData(
+        userId: userId,
+      );
+      result.fold(
+        (failure) {
+          // Handle error - data not found
+          setState(() {
+            _isLoading = false;
+          });
+        },
+        (data) {
+          setState(() {
+            _questionnaireData = data;
+            _isLoading = false;
+          });
+        },
+      );
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,25 +63,25 @@ class HomeviewBody extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
       child: Column(
         children: [
-          const WelcomeSection(),
+          WelcomeSection(childName: _questionnaireData?.childName),
+
           // Search Bar Section
           const SearchBarSection(),
 
           const SizedBox(height: 16),
 
-          // New to App Card Section
-          const NewToAppCardSection(),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_questionnaireData != null)
+            // Personalized content based on questionnaire data
+            PersonalizedContentSection(questionnaireData: _questionnaireData!)
+          else
+            // Default content for users who haven't completed the questionnaire
+            const NewToAppCardSection(),
 
-          // // Recommended Section
-          // const RecommendedSection(),
-
-          // const Spacer(),
-
-          // Bottom Navigation Bar Section
-          // const BottomNavBarSection(),
+          const Spacer(),
 
           // Logout Button
-          const Spacer(),
           _buildLogoutButton(context),
           const SizedBox(height: 20),
         ],
@@ -43,8 +90,6 @@ class HomeviewBody extends StatelessWidget {
   }
 
   Widget _buildLogoutButton(BuildContext context) {
-    final FirebaseAuthService authService = getIt<FirebaseAuthService>();
-
     return SizedBox(
       width: double.infinity,
       child: TextButton(
@@ -57,7 +102,7 @@ class HomeviewBody extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
         onPressed: () async {
-          await authService.signOut();
+          await _authService.signOut();
           if (!context.mounted) return;
           Navigator.pushReplacementNamed(context, LoginView.routeName);
         },
