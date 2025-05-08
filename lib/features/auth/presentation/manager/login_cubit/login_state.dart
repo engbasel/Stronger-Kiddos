@@ -22,6 +22,15 @@ class LoginSuccess extends LoginState {
   List<Object?> get props => [user];
 }
 
+class LoginRequiresVerification extends LoginState {
+  final String email;
+
+  const LoginRequiresVerification({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
 class GoogleLoginSuccess extends LoginState {
   final UserEntity user;
 

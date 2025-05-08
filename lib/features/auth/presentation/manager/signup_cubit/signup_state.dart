@@ -16,11 +16,16 @@ class SignupLoading extends SignupState {}
 class EmailSignupSuccess extends SignupState {
   final UserEntity user;
   final String email;
+  final bool requiresVerification;
 
-  const EmailSignupSuccess({required this.user, required this.email});
+  const EmailSignupSuccess({
+    required this.user,
+    required this.email,
+    required this.requiresVerification,
+  });
 
   @override
-  List<Object?> get props => [user, email];
+  List<Object?> get props => [user, email, requiresVerification];
 }
 
 class GoogleSignupSuccess extends SignupState {

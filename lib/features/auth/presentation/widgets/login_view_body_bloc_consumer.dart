@@ -5,6 +5,7 @@ import '../../../../core/widgets/custom_progrss_hud.dart';
 import '../../../home/presentation/Views/home_view.dart';
 import '../manager/login_cubit/login_cubit.dart';
 import '../manager/login_cubit/login_state.dart';
+import '../views/email_verification_view.dart';
 import '../views/password_verification_view.dart';
 import 'login_view_body.dart';
 
@@ -20,6 +21,12 @@ class LoginViewBodyBlocConsumer extends StatelessWidget {
             Navigator.pushReplacementNamed(context, HomeView.routeName);
           } else if (state is GoogleLoginSuccess) {
             Navigator.pushReplacementNamed(context, HomeView.routeName);
+          } else if (state is LoginRequiresVerification) {
+            Navigator.pushReplacementNamed(
+              context,
+              EmailVerificationView.routeName,
+              arguments: {'email': state.email},
+            );
           } else if (state is LoginOffline) {
             Navigator.pushReplacementNamed(context, HomeView.routeName);
           } else if (state is PasswordResetEmailSent) {

@@ -9,7 +9,6 @@ import 'stronger_siddos_app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Prefs.init();
   setupGetit();
@@ -19,4 +18,3 @@ Future<void> main() async {
   );
   runApp(const StrongerKiddos());
 }
-// test

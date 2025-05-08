@@ -44,10 +44,16 @@ class LoginCubit extends Cubit<LoginState> {
       }
 
       final result = await authRepo.signInWithEmailAndPassword(email, password);
-      result.fold(
-        (failure) => emit(LoginFailure(message: failure.message)),
-        (user) => emit(LoginSuccess(user: user)),
-      );
+      result.fold((failure) => emit(LoginFailure(message: failure.message)), (
+        user,
+      ) {
+        // تحقق من حالة توثيق البريد
+        if (!user.isEmailVerified) {
+          emit(LoginRequiresVerification(email: email));
+        } else {
+          emit(LoginSuccess(user: user));
+        }
+      });
     } catch (e) {
       emit(LoginFailure(message: 'There was an error: ${e.toString()}'));
     }
