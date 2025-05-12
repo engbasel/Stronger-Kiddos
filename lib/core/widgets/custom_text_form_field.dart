@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/core/utils/app_colors.dart';
 import '../utils/app_text_style.dart';
 
 class CustomTextFormField extends StatelessWidget {
@@ -39,13 +40,16 @@ class CustomTextFormField extends StatelessWidget {
       keyboardType: keyboardType,
       onFieldSubmitted: onSubmitted,
       decoration: InputDecoration(
+        errorStyle: TextStyle(color: AppColors.textColor),
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         hintText: hintText,
         filled: true,
         fillColor: Colors.transparent,
         border: buildBorder(),
+        errorBorder: buildBorder(),
         enabledBorder: buildBorder(),
+        focusedErrorBorder: focusedErrorBorder(),
         focusedBorder: buildBorder(),
       ),
     );
@@ -54,7 +58,17 @@ class CustomTextFormField extends StatelessWidget {
   OutlineInputBorder buildBorder() {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(width: 1),
+      borderSide: const BorderSide(width: 1, color: Colors.black),
+    );
+  }
+
+  OutlineInputBorder focusedErrorBorder() {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(
+        width: 1,
+        color: AppColors.fabBackgroundColor,
+      ),
     );
   }
 }
