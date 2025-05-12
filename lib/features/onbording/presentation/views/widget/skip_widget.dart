@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
-import 'package:strongerkiddos/core/utils/app_text_style.dart';
 
 class SkipWidget extends StatelessWidget {
   const SkipWidget({

@@ -40,15 +40,18 @@ class Assets {
 
   /// Assets for imagesPngLogo
   /// assets/images/png/Logo.png
-  static const onboarding_image_step_one =
+  // ignore: constant_identifier_names
+  static const onboarding_step_one =
       "assets/images/png/onboarding_image_one.png";
 
   /// assets/images/png/Logo.png
-  static const onboarding_image_three =
+  // ignore: constant_identifier_names
+  static const onboarding_step_two =
       "assets/images/png/onboarding_image_three.png";
 
   /// assets/images/png/Logo.png
-  static const onboarding_image_two =
+  // ignore: constant_identifier_names
+  static const onboarding_step_three =
       "assets/images/png/onboarding_image_two.png";
 
   /// Assets for imagesPngLogoApp
