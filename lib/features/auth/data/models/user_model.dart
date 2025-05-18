@@ -48,13 +48,13 @@ class UserModel extends UserEntity {
       userStat: user.userStat,
     );
   }
-  factory UserModel.fromFirebaseUser(User user) {
+  factory UserModel.fromFirebaseUser(User user, {String? phoneNumber}) {
     return UserModel(
       id: user.uid,
       name: user.displayName ?? '',
       email: user.email ?? '',
       photoUrl: user.photoURL ?? '',
-      phoneNumber: user.phoneNumber,
+      phoneNumber: phoneNumber ?? user.phoneNumber,
       isEmailVerified: user.emailVerified,
       userStat: user.emailVerified ? 'active' : 'inactive',
     );

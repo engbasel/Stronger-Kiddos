@@ -11,16 +11,17 @@ class SignupCubit extends Cubit<SignupState> {
 
   SignupCubit(this.authRepo) : super(SignupInitial());
 
-  // التسجيل باستخدام البريد الإلكتروني وكلمة المرور
+  // في features/auth/presentation/manager/signup_cubit/signup_cubit.dart
   Future<void> signupWithEmailAndPassword({
     required String email,
     required String password,
     required String name,
+    String? phoneNumber,
   }) async {
     emit(SignupLoading());
 
     try {
-      // تحقق من حالة الاتصال
+      // تحقق من الاتصال
       var connectivityResult = await Connectivity().checkConnectivity();
       if (connectivityResult.contains(ConnectivityResult.none) ||
           connectivityResult.isEmpty) {
@@ -32,11 +33,18 @@ class SignupCubit extends Cubit<SignupState> {
         email,
         password,
         name,
+        phoneNumber,
       );
 
       result.fold(
         (failure) => emit(SignupFailure(message: failure.message)),
-        (user) => emit(EmailSignupSuccess(user: user)),
+        (user) => emit(
+          EmailSignupSuccess(
+            user: user,
+            email: email,
+            requiresVerification: true,
+          ),
+        ),
       );
     } catch (e) {
       emit(SignupFailure(message: 'There was an error: ${e.toString()}'));
@@ -44,6 +52,7 @@ class SignupCubit extends Cubit<SignupState> {
   }
 
   // التسجيل باستخدام حساب جوجل
+  // Update the signupWithGoogle method
   Future<void> signupWithGoogle() async {
     emit(SignupLoading());
 
@@ -57,10 +66,17 @@ class SignupCubit extends Cubit<SignupState> {
       }
 
       final result = await authRepo.signInWithGoogle();
-      result.fold(
-        (failure) => emit(SignupFailure(message: failure.message)),
-        (user) => emit(GoogleSignupSuccess(user: user)),
-      );
+      result.fold((failure) => emit(SignupFailure(message: failure.message)), (
+        user,
+      ) {
+        // Always emit GoogleSignupSuccess, the UI will handle verification check
+        emit(
+          GoogleSignupSuccess(
+            user: user,
+            requiresVerification: !user.isEmailVerified,
+          ),
+        );
+      });
     } catch (e) {
       emit(SignupFailure(message: 'There was an error: ${e.toString()}'));
     }
@@ -86,11 +102,20 @@ class SignupCubit extends Cubit<SignupState> {
           await _signInWithPhoneCredential(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
-          emit(SignupFailure(message: e.message ?? 'فشل التحقق من الهاتف'));
+          emit(
+            SignupFailure(
+              message: e.message ?? "Failed to verify phone number.",
+            ),
+          );
         },
         codeSent: (String verificationId, int? resendToken) {
           // تم إرسال الرمز بنجاح
-          emit(PhoneVerificationSent(verificationId: verificationId));
+          emit(
+            PhoneVerificationSent(
+              verificationId: verificationId,
+              phoneNumber: phoneNumber,
+            ),
+          );
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           // انتهت مهلة استرداد الرمز تلقائيًا

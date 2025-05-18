@@ -16,11 +16,16 @@ class AppConstants {
   static const double logoWidth = 300.0;
   static const double logoHeight = 150.0;
 
+  // User data
   static const kUserData = 'userData';
+
+  // App preferences
+  static const kOnboardingShown = 'onboardingShown';
+  static const kLastVisitedRoute = 'lastVisitedRoute';
+
   AppConstants._();
 
   // Database
-
   static const String supabaseUrl = 'https://euvlssawtizmdamkjhfh.supabase.co';
   static const String anonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1dmxzc2F3dGl6bWRhbWtqaGZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzMTEwMTQsImV4cCI6MjA2MTg4NzAxNH0.3C4qDEJ7N5fH2FRu9PEJVYfhqkTMTISWJoKob-QWz-c';

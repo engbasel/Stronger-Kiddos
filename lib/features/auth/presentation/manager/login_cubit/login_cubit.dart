@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../app_constants.dart';
 import '../../../../../core/services/shared_preferences_sengleton.dart';
+import '../../../../../core/utils/form_validation.dart';
 import '../../../data/models/user_model.dart';
 import '../../../domain/repos/auth_repo.dart';
 import 'login_state.dart';
@@ -44,10 +45,16 @@ class LoginCubit extends Cubit<LoginState> {
       }
 
       final result = await authRepo.signInWithEmailAndPassword(email, password);
-      result.fold(
-        (failure) => emit(LoginFailure(message: failure.message)),
-        (user) => emit(LoginSuccess(user: user)),
-      );
+      result.fold((failure) => emit(LoginFailure(message: failure.message)), (
+        user,
+      ) {
+        // تحقق من حالة توثيق البريد
+        if (!user.isEmailVerified) {
+          emit(LoginRequiresVerification(email: email));
+        } else {
+          emit(LoginSuccess(user: user));
+        }
+      });
     } catch (e) {
       emit(LoginFailure(message: 'There was an error: ${e.toString()}'));
     }
@@ -89,13 +96,23 @@ class LoginCubit extends Cubit<LoginState> {
         return;
       }
 
+      // Validate email format
+      if (!FormValidation.isValidEmail(email)) {
+        emit(
+          const LoginFailure(message: 'Please enter a valid email address.'),
+        );
+        return;
+      }
+
+      // Call the auth repository method to send password reset link
       final result = await authRepo.sendPasswordResetLink(email);
+
       result.fold(
         (failure) => emit(LoginFailure(message: failure.message)),
         (_) => emit(PasswordResetEmailSent()),
       );
     } catch (e) {
-      emit(LoginFailure(message: 'There was an error: ${e.toString()}'));
+      emit(LoginFailure(message: 'An error occurred: ${e.toString()}'));
     }
   }
 }

@@ -24,11 +24,13 @@ class AuthRepoImpl extends AuthRepo {
   });
 
   @override
+  @override
   Future<Either<Failures, UserEntity>> createUserWithEmailAndPassword(
     String email,
     String password,
-    String name,
-  ) async {
+    String name, [
+    String? phoneNumber, // Add optional parameter
+  ]) async {
     User? user;
 
     try {
@@ -40,11 +42,11 @@ class AuthRepoImpl extends AuthRepo {
         name: name,
         email: email,
         id: user.uid,
+        phoneNumber: phoneNumber, // Include phone number
         createdAt: DateTime.now(),
         role: 'user',
       );
       await addUserData(user: userEntity);
-
       await saveUserData(user: userEntity);
 
       return right(userEntity);
@@ -53,9 +55,6 @@ class AuthRepoImpl extends AuthRepo {
       return left(ServerFailure(e.message));
     } catch (e) {
       await deleteUser(user);
-      log(
-        'Exception in AuthRepoImpl.createUserWithEmailAndPassword: ${e.toString()}',
-      );
       return left(ServerFailure('An error occurred. Please try again later.'));
     }
   }
@@ -70,21 +69,41 @@ class AuthRepoImpl extends AuthRepo {
   }
 
   @override
+  @override
   Future<Either<Failures, void>> sendPasswordResetLink(String email) async {
     try {
-      final emailExists = await isEmailExists(email);
-      if (!emailExists) {
-        return left(ServerFailure('Email not found. Please register first.'));
-      }
-
-      // إرسال رابط إعادة تعيين كلمة المرور
+      // Directly use Firebase Auth - no need to check Firestore
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+      // Return success (email will only be sent if the account exists)
       return right(null);
     } on FirebaseAuthException catch (e) {
+      // These handle only technical errors (invalid email format, etc.),
+      // not whether the user exists or not
+      if (e.code == 'invalid-email') {
+        return left(ServerFailure('Invalid email format.'));
+      } else if (e.code == 'too-many-requests') {
+        return left(
+          ServerFailure('Too many requests. Please try again later.'),
+        );
+      }
       return left(ServerFailure(e.message ?? 'Invalid email address.'));
     } catch (e) {
       log('Error in sendPasswordResetLink: ${e.toString()}');
       return left(ServerFailure('An error occurred. Please try again later.'));
+    }
+  }
+
+  // Helper method to check if an email exists in the user database
+  Future<bool> isEmailExists(String email) async {
+    try {
+      final usersCollection = FirebaseFirestore.instance.collection('users');
+      final querySnapshot =
+          await usersCollection.where('email', isEqualTo: email).get();
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      log('Error checking if email exists: ${e.toString()}');
+      return false;
     }
   }
 
@@ -104,36 +123,78 @@ class AuthRepoImpl extends AuthRepo {
     log('User data saved successfully. UserData: $jsonData');
   }
 
-  Future<bool> isEmailExists(String email) async {
-    final usersCollection = FirebaseFirestore.instance.collection('users');
-    final querySnapshot =
-        await usersCollection.where('email', isEqualTo: email).get();
-    return querySnapshot.docs.isNotEmpty;
-  }
-
   @override
-  Future<Either<Failures, UserEntity>> signInWithGoogle() async {
+  // In AuthRepoImpl.signInWithGoogle method
+  @override
+  Future<Either<Failures, UserEntity>> signInWithGoogle([
+    String? phoneNumber,
+  ]) async {
     User? user;
     try {
       user = await firebaseAuthService.signInWithGoogle();
 
-      var userEntity = UserModel.fromFirebaseUser(user);
+      var userEntity = UserModel.fromFirebaseUser(
+        user,
+        phoneNumber: phoneNumber,
+      );
       var isUserExist = await databaseService.checkIfDatatExists(
         path: BackendEndpoint.isUserExists,
         docuementId: user.uid,
       );
+
       if (isUserExist) {
-        await getUserData(uid: user.uid);
-        await saveUserData(user: userEntity);
+        // If user exists, fetch existing data and update phone number if needed
+        var existingUser = await getUserData(uid: user.uid);
+        if (phoneNumber != null &&
+            (existingUser.phoneNumber == null ||
+                existingUser.phoneNumber!.isEmpty)) {
+          // Update user data with new phone number
+          var updatedUserEntity = UserEntity(
+            id: existingUser.id,
+            name: existingUser.name,
+            email: existingUser.email,
+            phoneNumber: phoneNumber, // Update phone number
+            role: existingUser.role,
+            createdAt: existingUser.createdAt,
+            photoUrl: existingUser.photoUrl,
+            profileImageUrl: existingUser.profileImageUrl,
+            isEmailVerified: existingUser.isEmailVerified,
+            userStat: existingUser.userStat,
+          );
+          await updateUserData(user: updatedUserEntity);
+          await saveUserData(user: updatedUserEntity);
+          return right(updatedUserEntity);
+        }
+        await saveUserData(user: existingUser);
+        return right(existingUser);
       } else {
+        // For new users, include the phone number
+        userEntity = UserModel(
+          id: user.uid,
+          name: user.displayName ?? '',
+          email: user.email ?? '',
+          photoUrl: user.photoURL,
+          phoneNumber: phoneNumber, // Include the phone number
+          isEmailVerified: user.emailVerified,
+          userStat: 'active',
+        );
         await addUserData(user: userEntity);
+        await saveUserData(user: userEntity);
       }
       return right(userEntity);
     } catch (e) {
       await deleteUser(user);
-      log('Exception in AuthRepoImpl.signInWithGoogle :${e.toString()}');
       return left(ServerFailure('An error occurred. Please try again later.'));
     }
+  }
+
+  @override
+  Future<void> updateUserData({required UserEntity user}) {
+    return databaseService.updateData(
+      path: BackendEndpoint.addUserData,
+      docuementId: user.id,
+      data: user.toMap(),
+    );
   }
 
   @override

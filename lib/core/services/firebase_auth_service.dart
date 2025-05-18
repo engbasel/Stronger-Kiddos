@@ -12,39 +12,67 @@ class FirebaseAuthService {
   User? get currentUser => firebaseAuth.currentUser;
 
   /// دالة لحفظ التوكن
+  // In firebase_auth_service.dart
   Future<void> saveUserToken(String token) async {
     final firestore = FirebaseFirestore.instance;
     final userId = FirebaseAuth.instance.currentUser?.uid;
 
     if (userId != null) {
       try {
+        // Get current user questionnaire status
+        bool hasCompletedQuestionnaire = false;
+        try {
+          final docSnapshot =
+              await firestore.collection('questionnaires').doc(userId).get();
+          hasCompletedQuestionnaire = docSnapshot.exists;
+        } catch (e) {
+          log('Error checking questionnaire status: $e');
+        }
+
+        // Save token with additional user metadata
         await firestore.collection('userTokens').doc(userId).set({
           'token': token,
           'userId': userId,
-          'createdAt': FieldValue.serverTimestamp(),
+          'hasCompletedQuestionnaire': hasCompletedQuestionnaire,
+          'lastUpdated': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
+
         log('Token saved successfully for user $userId');
       } catch (e) {
-        log('Failed to save token: $e');
+        // More detailed error logging
+        log('Failed to save token: ${e.toString()}');
+        // Continue with auth flow despite token saving error
       }
     } else {
       log('User is not logged in, skipping token save.');
     }
   }
 
-  /// دالة مشتركة لجلب وحفظ التوكن
+  /// Improved method to fetch and save token with retries
   Future<void> fetchAndSaveToken() async {
-    try {
-      final token = await messaging.getToken();
-      if (token != null) {
-        await saveUserToken(token);
-        log('Token fetched and saved successfully: $token');
-      } else {
-        log('Failed to fetch token. Token is null.');
+    int retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        final token = await messaging.getToken();
+        if (token != null) {
+          await saveUserToken(token);
+          log('Token fetched and saved successfully: $token');
+          return; // Success - exit the method
+        } else {
+          log('Failed to fetch token. Token is null.');
+        }
+      } catch (e) {
+        log('Error fetching and saving token (attempt ${retryCount + 1}): $e');
       }
-    } catch (e) {
-      log('Error fetching and saving token: $e');
+
+      // Wait before retry
+      await Future.delayed(Duration(seconds: 2));
+      retryCount++;
     }
+
+    log('Failed to fetch and save token after $maxRetries attempts');
   }
 
   Future<User> createUserWithEmailAndPassword({
@@ -55,9 +83,11 @@ class FirebaseAuthService {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      await fetchAndSaveToken(); // استدعاء الدالة المشتركة
-
+      // إرسال بريد التحقق
       await credential.user!.sendEmailVerification();
+
+      await fetchAndSaveToken();
+
       return credential.user!;
     } on FirebaseAuthException catch (e) {
       log('Exception in createUserWithEmailAndPassword: ${e.toString()}');
@@ -121,7 +151,12 @@ class FirebaseAuthService {
   }
 
   /// تسجيل الدخول باستخدام Google
+  // في firebase_auth_service.dart
   Future<User> signInWithGoogle() async {
+    // Sign out first to ensure the account selection dialog appears every time
+    await GoogleSignIn().signOut();
+
+    // Now proceed with the sign-in flow
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     try {
       final GoogleSignInAuthentication? googleAuth =
@@ -132,8 +167,14 @@ class FirebaseAuthService {
         idToken: googleAuth?.idToken,
       );
 
-      final user =
-          (await FirebaseAuth.instance.signInWithCredential(credential)).user;
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+      final user = userCredential.user;
+
+      if (user != null && !user.emailVerified) {
+        log('Google account not verified: ${user.email}');
+      }
 
       await fetchAndSaveToken();
 
@@ -150,6 +191,54 @@ class FirebaseAuthService {
     } catch (e) {
       log('Exception in signInWithGoogle: ${e.toString()}');
       throw CustomExceptions(message: 'An unexpected error occurred.');
+    }
+  }
+
+  // في firebase_auth_service.dart
+  Future<bool> checkEmailVerification() async {
+    User? user = firebaseAuth.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+    // إعادة تحميل معلومات المستخدم لضمان أحدث حالة
+    await user.reload();
+    user = firebaseAuth.currentUser; // تحديث المرجع بعد الإعادة
+
+    return user?.emailVerified ?? false;
+  }
+
+  // دالة لإعادة إرسال بريد التحقق
+  Future<void> resendVerificationEmail() async {
+    User? user = firebaseAuth.currentUser;
+
+    if (user == null) {
+      throw CustomExceptions(message: 'No user logged in.');
+    }
+
+    if (user.emailVerified) {
+      throw CustomExceptions(message: 'Email is already verified.');
+    }
+
+    try {
+      await user.sendEmailVerification();
+    } on FirebaseAuthException catch (e) {
+      log('Exception in resendVerificationEmail: ${e.toString()}');
+      if (e.code == 'too-many-requests') {
+        throw CustomExceptions(
+          message: 'Too many requests. Please try again later.',
+        );
+      } else {
+        throw CustomExceptions(
+          message: e.message ?? 'Failed to send verification email.',
+        );
+      }
+    } catch (e) {
+      log('Exception in resendVerificationEmail: ${e.toString()}');
+      throw CustomExceptions(
+        message: 'An unexpected error occurred. Please try again.',
+      );
     }
   }
 

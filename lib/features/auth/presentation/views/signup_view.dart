@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:strongerkiddos/features/auth/presentation/widgets/signup_view_body.dart';
 
 import '../../../../core/services/get_it_service.dart';
 import '../../domain/repos/auth_repo.dart';
@@ -14,7 +15,7 @@ class SignupView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SignupCubit(getIt.get<AuthRepo>()),
-      child: SignInViewBodyBlocConsumer(),
+      child: SignInViewBodyBlocConsumer(child: SignupViewBody()),
     );
   }
 }

@@ -1,10 +1,15 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 
+import 'package:strongerkiddos/core/helper/failuer_top_snak_bar.dart';
+import 'package:strongerkiddos/core/helper/scccess_top_snak_bar.dart';
 import 'package:strongerkiddos/core/widgets/custom_button.dart';
+import 'package:strongerkiddos/core/widgets/custom_progrss_hud.dart';
+import 'package:strongerkiddos/features/auth/presentation/manager/signup_cubit/signup_cubit.dart';
+import 'package:strongerkiddos/features/auth/presentation/manager/signup_cubit/signup_state.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/successfully_verified_view.dart';
 
 class OtpVerificationView extends StatefulWidget {
@@ -31,10 +36,34 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
   int _countdownSeconds = 30;
   bool _isResendEnabled = false;
 
+  // Store verification ID and phone number
+  late String _verificationId;
+  late String _phoneNumber;
+  late String _userName;
+
   @override
   void initState() {
     super.initState();
     startCountdown();
+    // Delay to ensure context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getRouteArguments();
+    });
+  }
+
+  void _getRouteArguments() {
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      _verificationId = args['verificationId'] ?? '';
+      _phoneNumber = args['phoneNumber'] ?? '';
+      _userName = args['name'] ?? '';
+
+      log('Verification ID: $_verificationId');
+      log('Phone Number: $_phoneNumber');
+    } else {
+      log('No arguments passed to OTP verification screen');
+    }
   }
 
   @override
@@ -76,12 +105,14 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
 
     log('Verifying OTP: $otp');
 
-    // For demo purposes only - would normally call an API
     if (otp.length == 4) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Verifying OTP...')));
-      Navigator.pushNamed(context, SuccessfullyVerifiedView.routeName);
+      // Get SignupCubit instance and verify OTP
+      final signupCubit = context.read<SignupCubit>();
+      signupCubit.verifyOTP(
+        verificationId: _verificationId,
+        smsCode: otp,
+        name: _userName,
+      );
     } else {
       ScaffoldMessenger.of(
         context,
@@ -92,7 +123,7 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
   // Handle resend OTP
   void resendOtp() {
     if (_isResendEnabled) {
-      log('Resending OTP');
+      log('Resending OTP to $_phoneNumber');
 
       // Clear the fields
       for (var controller in _controllers) {
@@ -105,93 +136,117 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
       // Restart countdown
       startCountdown();
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('OTP resent successfully')));
+      // Get SignupCubit instance and resend OTP
+      final signupCubit = context.read<SignupCubit>();
+      signupCubit.verifyPhoneNumber(phoneNumber: _phoneNumber);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 12),
-              const Text(
-                'OTP Verification',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+    return BlocConsumer<SignupCubit, SignupState>(
+      listener: (context, state) {
+        if (state is PhoneSignupSuccess) {
+          succesTopSnackBar(context, 'Phone verification successful');
+          Navigator.pushReplacementNamed(
+            context,
+            SuccessfullyVerifiedView.routeName,
+          );
+        } else if (state is PhoneVerificationSent) {
+          succesTopSnackBar(context, 'OTP sent successfully');
+          _verificationId = state.verificationId;
+        } else if (state is SignupFailure) {
+          failuerTopSnackBar(context, state.message);
+        }
+      },
+      builder: (context, state) {
+        return CustomProgrssHud(
+          isLoading: state is SignupLoading,
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Enter the verification code we just sent\non your phone number.',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 32),
-              // OTP input fields
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(4, (index) => buildOtpTextField(index)),
-              ),
-              const SizedBox(height: 32),
-
-              // Verify button
-              CustomButton(onPressed: () => verifyOtp(), text: 'Verify '),
-
-              const SizedBox(height: 24),
-
-              // Resend OTP section
-              Center(
+            ),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Countdown text
-                    _isResendEnabled
-                        ? const SizedBox.shrink()
-                        : Text(
-                          'Resend OTP in ${_countdownSeconds}s',
-                          style: const TextStyle(
-                            color: Colors.black54,
-                            fontSize: 14,
-                          ),
-                        ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'OTP Verification',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    // Resend button
-                    TextButton(
-                      onPressed: _isResendEnabled ? resendOtp : null,
-                      child: Text(
-                        'Resend OTP',
-                        style: TextStyle(
-                          color:
-                              _isResendEnabled
-                                  ? const Color(0xFFF9B56E)
-                                  : Colors.grey,
-                          fontSize: 14,
-                        ),
+                    const Text(
+                      'Enter the verification code we just sent\non your phone number.',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 32),
+                    // OTP input fields
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(
+                        4,
+                        (index) => buildOtpTextField(index),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Verify button
+                    CustomButton(onPressed: verifyOtp, text: 'Verify'),
+
+                    const SizedBox(height: 24),
+
+                    // Resend OTP section
+                    Center(
+                      child: Column(
+                        children: [
+                          // Countdown text
+                          _isResendEnabled
+                              ? const SizedBox.shrink()
+                              : Text(
+                                'Resend OTP in ${_countdownSeconds}s',
+                                style: const TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 14,
+                                ),
+                              ),
+                          const SizedBox(height: 8),
+                          // Resend button
+                          TextButton(
+                            onPressed: _isResendEnabled ? resendOtp : null,
+                            child: Text(
+                              'Resend OTP',
+                              style: TextStyle(
+                                color:
+                                    _isResendEnabled
+                                        ? const Color(0xFFF9B56E)
+                                        : Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

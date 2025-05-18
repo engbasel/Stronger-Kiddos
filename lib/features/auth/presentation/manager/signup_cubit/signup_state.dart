@@ -15,20 +15,30 @@ class SignupLoading extends SignupState {}
 
 class EmailSignupSuccess extends SignupState {
   final UserEntity user;
+  final String email;
+  final bool requiresVerification;
 
-  const EmailSignupSuccess({required this.user});
+  const EmailSignupSuccess({
+    required this.user,
+    required this.email,
+    required this.requiresVerification,
+  });
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [user, email, requiresVerification];
 }
 
 class GoogleSignupSuccess extends SignupState {
   final UserEntity user;
+  final bool requiresVerification;
 
-  const GoogleSignupSuccess({required this.user});
+  const GoogleSignupSuccess({
+    required this.user,
+    required this.requiresVerification,
+  });
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [user, requiresVerification];
 }
 
 class AppleSignupSuccess extends SignupState {
@@ -42,11 +52,15 @@ class AppleSignupSuccess extends SignupState {
 
 class PhoneVerificationSent extends SignupState {
   final String verificationId;
+  final String phoneNumber;
 
-  const PhoneVerificationSent({required this.verificationId});
+  const PhoneVerificationSent({
+    required this.phoneNumber,
+    required this.verificationId,
+  });
 
   @override
-  List<Object?> get props => [verificationId];
+  List<Object?> get props => [verificationId, phoneNumber];
 }
 
 class PhoneSignupSuccess extends SignupState {

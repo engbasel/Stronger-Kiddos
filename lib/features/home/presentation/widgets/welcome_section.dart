@@ -1,7 +1,10 @@
+// lib/features/home/presentation/widgets/welcome_section.dart
 import 'package:flutter/material.dart';
 
 class WelcomeSection extends StatelessWidget {
-  const WelcomeSection({super.key});
+  final String? childName;
+
+  const WelcomeSection({super.key, this.childName});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,10 @@ class WelcomeSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Hello, Welcome  🎉'),
-            Text('Jack', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              childName != null ? '$childName\'s Parent' : 'Parent',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         Spacer(),

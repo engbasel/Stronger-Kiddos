@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'core/helper/app_route_observer.dart';
 import 'core/helper/on_generate_routes.dart';
 
 class StrongerKiddos extends StatelessWidget {
@@ -19,7 +19,7 @@ class StrongerKiddos extends StatelessWidget {
           primary: const Color(0xFFF9B356),
         ),
       ),
-
+      navigatorObservers: [AppRouteObserver()],
       onGenerateRoute: onGenerateRoute,
     );
   }
