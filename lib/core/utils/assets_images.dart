@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_single_quotes
 class Assets {
   Assets._();
-  
+
   /// Assets for imagesPng1
   /// assets/images/png/1.png
   static const String imagesPng1 = "assets/images/png/1.png";
@@ -13,6 +13,14 @@ class Assets {
   /// Assets for imagesPng5
   /// assets/images/png/5.png
   static const String imagesPng5 = "assets/images/png/5.png";
+
+  /// Assets for imagesPngBabySleep
+  /// assets/images/png/baby_sleep.png
+  static const String imagesPngBabySleep = "assets/images/png/baby_sleep.png";
+
+  /// Assets for imagesPngBell
+  /// assets/images/png/bell.png
+  static const String imagesPngBell = "assets/images/png/bell.png";
 
   /// Assets for imagesPngGoogle
   /// assets/images/png/Google.png
@@ -38,9 +46,29 @@ class Assets {
   /// assets/images/png/Logo.png
   static const String imagesPngLogo = "assets/images/png/Logo.png";
 
+  /// Assets for imagesPngLogo
+  /// assets/images/png/Logo.png
+  // ignore: constant_identifier_names
+  static const onboarding_step_one =
+      "assets/images/png/onboarding_image_one.png";
+
+  /// assets/images/png/Logo.png
+  // ignore: constant_identifier_names
+  static const onboarding_step_two =
+      "assets/images/png/onboarding_image_three.png";
+
+  /// assets/images/png/Logo.png
+  // ignore: constant_identifier_names
+  static const onboarding_step_three =
+      "assets/images/png/onboarding_image_two.png";
+
   /// Assets for imagesPngLogoApp
   /// assets/images/png/logo_app.png
   static const String imagesPngLogoApp = "assets/images/png/logo_app.png";
+
+  /// Assets for imagesPngProfieminage
+  /// assets/images/png/profieminage.png
+  static const String imagesPngProfieminage = "assets/images/png/profieminage.png";
 
   /// Assets for imagesPngVector
   /// assets/images/png/Vector.png
@@ -58,4 +86,3 @@ class Assets {
   /// assets/images/svg/Logo.svg
   static const String imagesSvgLogo = "assets/images/svg/Logo.svg";
 }
-

@@ -69,21 +69,41 @@ class AuthRepoImpl extends AuthRepo {
   }
 
   @override
+  @override
   Future<Either<Failures, void>> sendPasswordResetLink(String email) async {
     try {
-      final emailExists = await isEmailExists(email);
-      if (!emailExists) {
-        return left(ServerFailure('Email not found. Please register first.'));
-      }
-
-      // إرسال رابط إعادة تعيين كلمة المرور
+      // Directly use Firebase Auth - no need to check Firestore
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+      // Return success (email will only be sent if the account exists)
       return right(null);
     } on FirebaseAuthException catch (e) {
+      // These handle only technical errors (invalid email format, etc.),
+      // not whether the user exists or not
+      if (e.code == 'invalid-email') {
+        return left(ServerFailure('Invalid email format.'));
+      } else if (e.code == 'too-many-requests') {
+        return left(
+          ServerFailure('Too many requests. Please try again later.'),
+        );
+      }
       return left(ServerFailure(e.message ?? 'Invalid email address.'));
     } catch (e) {
       log('Error in sendPasswordResetLink: ${e.toString()}');
       return left(ServerFailure('An error occurred. Please try again later.'));
+    }
+  }
+
+  // Helper method to check if an email exists in the user database
+  Future<bool> isEmailExists(String email) async {
+    try {
+      final usersCollection = FirebaseFirestore.instance.collection('users');
+      final querySnapshot =
+          await usersCollection.where('email', isEqualTo: email).get();
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      log('Error checking if email exists: ${e.toString()}');
+      return false;
     }
   }
 
@@ -101,13 +121,6 @@ class AuthRepoImpl extends AuthRepo {
     var jsonData = jsonEncode(UserModel.fromEntity(user).toMap());
     await Prefs.setString(AppConstants.kUserData, jsonData);
     log('User data saved successfully. UserData: $jsonData');
-  }
-
-  Future<bool> isEmailExists(String email) async {
-    final usersCollection = FirebaseFirestore.instance.collection('users');
-    final querySnapshot =
-        await usersCollection.where('email', isEqualTo: email).get();
-    return querySnapshot.docs.isNotEmpty;
   }
 
   @override

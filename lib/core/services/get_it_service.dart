@@ -1,6 +1,9 @@
+// lib/core/services/get_it_service.dart
 import 'package:get_it/get_it.dart';
 import '../../features/auth/data/repos/auth_repo_impl.dart';
 import '../../features/auth/domain/repos/auth_repo.dart';
+import '../../features/questionnaire/data/repos/questionnaire_repo_impl.dart';
+import '../../features/questionnaire/domain/repos/questionnaire_repo.dart';
 import '../services/data_service.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/firestor_service.dart';
@@ -23,7 +26,7 @@ void setupGetit() {
     ),
   );
 
-  // Cubits
-  // getIt.registerFactory<LoginCubit>(() => LoginCubit(getIt<AuthRepo>()));
-  // getIt.registerFactory<SignupCubit>(() => SignupCubit(getIt<AuthRepo>()));
+  getIt.registerSingleton<QuestionnaireRepo>(
+    QuestionnaireRepoImpl(databaseService: getIt<DatabaseService>()),
+  );
 }
