@@ -30,6 +30,7 @@ environment:
 dependencies:
   card_swiper: ^3.0.1
   cloud_firestore: ^5.6.6
+  connectivity_plus: ^6.1.4
   country_code_picker: ^3.3.0
   cupertino_icons: ^1.0.8
   dartz: ^0.10.1
@@ -40,12 +41,15 @@ dependencies:
   fancy_shimmer_image: ^2.0.3
   firebase_auth: ^5.5.3
   firebase_core: ^3.13.0
+  firebase_messaging: ^15.2.5
+  firebase_storage: ^12.4.5
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.0
   flutter_gemini: ^3.0.0
   flutter_iconly: ^1.0.2
   flutter_launcher_icons: ^0.14.3
+  flutter_svg: ^2.1.0
   fluttertoast: ^8.2.12
   get_it: ^8.0.3
   google_fonts: ^6.2.1
@@ -56,10 +60,12 @@ dependencies:
   ionicons: ^0.2.2
   lottie: ^3.3.1
   modal_progress_hud_nsn: ^0.5.1
+  path: ^1.9.1
   provider: ^6.1.4
   shared_preferences: ^2.5.3
   shimmer: ^3.0.0
   sign_in_with_apple: ^7.0.1
+  smooth_page_indicator: ^1.2.1
   stylish_bottom_bar: ^1.1.1
   supabase_flutter: ^2.9.0
   top_snackbar_flutter: ^3.2.0
@@ -68,11 +74,9 @@ dependencies:
 dev_dependencies:
   build_runner: ^2.4.15
   flutter_lints: ^5.0.0
-  flutter_svg: ^2.1.0
   flutter_test:
     sdk: flutter
   mockito: ^5.4.5
-  smooth_page_indicator: ^1.2.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -86,9 +90,10 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/png/
-    - assets/svg/Logo.svg
-    - assets/svg/
+    - assets/images/
+    - assets/images/png/
+    - assets/SVG/
+    - assets/fonts/
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -99,20 +104,39 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  fonts:
+    - family: ClashGrotesk
+      fonts:
+        - asset: assets/fonts/ClashGrotesk-ExtraLight.otf
+          weight: 200
+        - asset: assets/fonts/ClashGrotesk-ExtraLight.otf
+          weight: 300
+        - asset: assets/fonts/ClashGrotesk-Regular.otf
+          weight: 400
+        - asset: assets/fonts/ClashGrotesk-Medium.otf
+          weight: 500
+        - asset: assets/fonts/ClashGrotesk-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/ClashGrotesk-Bold.otf
+          weight: 700
+    - family: Quicksand
+      fonts:
+        - asset: assets/fonts/Quicksand-Bold.ttf
+          weight: 400
+        - asset:  assets/fonts/Quicksand-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Quicksand-Medium.ttf
+          weight: 400
+        - asset: assets/fonts/Quicksand-SemiBold.ttf
+          weight: 600
+
+
+flutter_assets:
+  assets_path: assets/images/
+  output_path: lib/core/utils
+  filename: assets_images.dart
+  field_prefix: null
+
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
