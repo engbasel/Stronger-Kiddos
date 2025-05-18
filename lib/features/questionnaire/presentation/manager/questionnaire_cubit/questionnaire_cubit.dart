@@ -1,4 +1,4 @@
-// lib/features/questionnaire/presentation/manager/questionnaire_cubit.dart
+// lib/features/questionnaire/presentation/manager/questionnaire_cubit/questionnaire_cubit.dart
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/services/firebase_auth_service.dart';
@@ -131,6 +131,10 @@ class QuestionnaireCubit extends Cubit<QuestionnaireState> {
 
     result.fold((failure) => emit(QuestionnaireError(failure.message)), (_) {
       emit(QuestionnaireSubmitSuccess());
+
+      // Now update the auth service to indicate that the user has completed the questionnaire
+      authService.fetchAndSaveToken(); // Refresh token with updated info
+
       // Navigate to completion screen
       Navigator.pushReplacementNamed(
         context,

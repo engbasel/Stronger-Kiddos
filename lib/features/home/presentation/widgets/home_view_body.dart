@@ -79,8 +79,6 @@ class _HomeviewBodyState extends State<HomeviewBody> {
             // Default content for users who haven't completed the questionnaire
             const NewToAppCardSection(),
 
-          const Spacer(),
-
           // Logout Button
           _buildLogoutButton(context),
           const SizedBox(height: 20),
