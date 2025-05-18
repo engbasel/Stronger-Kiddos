@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../manager/questionnaire_cubit/questionnaire_cubit.dart';
 import '../widgets/option_button.dart';
 import '../widgets/question_page.dart';
 import 'concern_areas_question.dart';
 
 class ContainerTimeQuestion extends StatefulWidget {
-  const ContainerTimeQuestion({super.key});
+  final QuestionnaireCubit questionnaireCubit;
+
+  const ContainerTimeQuestion({super.key, required this.questionnaireCubit});
 
   @override
   State<ContainerTimeQuestion> createState() => _ContainerTimeQuestionState();
@@ -19,11 +20,18 @@ class _ContainerTimeQuestionState extends State<ContainerTimeQuestion> {
 
   void _onNext() {
     if (selectedTime != null) {
-      context.read<QuestionnaireCubit>().updateContainerTime(selectedTime!);
+      // Use widget.questionnaireCubit instead of context.read
+      widget.questionnaireCubit.updateContainerTime(selectedTime!);
 
+      // Pass the cubit to the next screen
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ConcernAreasQuestion()),
+        MaterialPageRoute(
+          builder:
+              (context) => ConcernAreasQuestion(
+                questionnaireCubit: widget.questionnaireCubit,
+              ),
+        ),
       );
     }
   }
@@ -35,10 +43,11 @@ class _ContainerTimeQuestionState extends State<ContainerTimeQuestion> {
           "How much time does your baby spend in containers (swings, car seats, bouncers)?",
       onNext: _onNext,
       showNextButton: selectedTime != null,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children:
-            timeOptions.map((option) {
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ...timeOptions.map((option) {
               return OptionButton(
                 text: option,
                 isSelected: selectedTime == option,
@@ -46,10 +55,14 @@ class _ContainerTimeQuestionState extends State<ContainerTimeQuestion> {
                   setState(() {
                     selectedTime = option;
                   });
-                  _onNext();
+                  // Remove auto-navigation
+                  // _onNext();
                 },
               );
-            }).toList(),
+            }),
+            const SizedBox(height: 20), // Extra padding at the bottom
+          ],
+        ),
       ),
     );
   }
