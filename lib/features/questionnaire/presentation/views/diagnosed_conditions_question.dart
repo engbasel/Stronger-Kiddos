@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../manager/questionnaire_cubit/questionnaire_cubit.dart';
 import '../widgets/question_page.dart';
 import '../widgets/checkbox_option.dart';
 import 'specialist_question.dart';
 
 class DiagnosedConditionsQuestion extends StatefulWidget {
-  const DiagnosedConditionsQuestion({super.key});
+  final QuestionnaireCubit questionnaireCubit;
+
+  const DiagnosedConditionsQuestion({
+    super.key,
+    required this.questionnaireCubit,
+  });
 
   @override
   State<DiagnosedConditionsQuestion> createState() =>
@@ -43,13 +47,18 @@ class _DiagnosedConditionsQuestionState
       finalConditions.add('Other: ${_otherController.text.trim()}');
     }
 
-    context.read<QuestionnaireCubit>().updateDiagnosedConditions(
-      finalConditions,
-    );
+    // Use the cubit from widget property instead of BlocProvider
+    widget.questionnaireCubit.updateDiagnosedConditions(finalConditions);
 
+    // Pass the cubit to the next screen
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const SpecialistQuestion()),
+      MaterialPageRoute(
+        builder:
+            (context) => SpecialistQuestion(
+              questionnaireCubit: widget.questionnaireCubit,
+            ),
+      ),
     );
   }
 
@@ -113,6 +122,7 @@ class _DiagnosedConditionsQuestionState
                 ),
               ),
             ],
+            const SizedBox(height: 20), // Extra padding at the bottom
           ],
         ),
       ),

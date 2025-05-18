@@ -19,17 +19,28 @@ class FirebaseAuthService {
 
     if (userId != null) {
       try {
-        // Try a different approach - use set with merge option
+        // Get current user questionnaire status
+        bool hasCompletedQuestionnaire = false;
+        try {
+          final docSnapshot =
+              await firestore.collection('questionnaires').doc(userId).get();
+          hasCompletedQuestionnaire = docSnapshot.exists;
+        } catch (e) {
+          log('Error checking questionnaire status: $e');
+        }
+
+        // Save token with additional user metadata
         await firestore.collection('userTokens').doc(userId).set({
           'token': token,
           'userId': userId,
-          'createdAt': FieldValue.serverTimestamp(),
+          'hasCompletedQuestionnaire': hasCompletedQuestionnaire,
+          'lastUpdated': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
 
         log('Token saved successfully for user $userId');
       } catch (e) {
-        // Don't let token saving failure block the auth flow
-        log('Failed to save token: $e');
+        // More detailed error logging
+        log('Failed to save token: ${e.toString()}');
         // Continue with auth flow despite token saving error
       }
     } else {
@@ -37,19 +48,31 @@ class FirebaseAuthService {
     }
   }
 
-  /// دالة مشتركة لجلب وحفظ التوكن
+  /// Improved method to fetch and save token with retries
   Future<void> fetchAndSaveToken() async {
-    try {
-      final token = await messaging.getToken();
-      if (token != null) {
-        await saveUserToken(token);
-        log('Token fetched and saved successfully: $token');
-      } else {
-        log('Failed to fetch token. Token is null.');
+    int retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        final token = await messaging.getToken();
+        if (token != null) {
+          await saveUserToken(token);
+          log('Token fetched and saved successfully: $token');
+          return; // Success - exit the method
+        } else {
+          log('Failed to fetch token. Token is null.');
+        }
+      } catch (e) {
+        log('Error fetching and saving token (attempt ${retryCount + 1}): $e');
       }
-    } catch (e) {
-      log('Error fetching and saving token: $e');
+
+      // Wait before retry
+      await Future.delayed(Duration(seconds: 2));
+      retryCount++;
     }
+
+    log('Failed to fetch and save token after $maxRetries attempts');
   }
 
   Future<User> createUserWithEmailAndPassword({

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../manager/questionnaire_cubit/questionnaire_cubit.dart';
 import '../widgets/question_page.dart';
 import '../widgets/option_button.dart';
 import 'container_time_question.dart';
 
 class FloorTimeQuestion extends StatefulWidget {
-  const FloorTimeQuestion({super.key});
+  final QuestionnaireCubit questionnaireCubit;
+
+  const FloorTimeQuestion({super.key, required this.questionnaireCubit});
 
   @override
   State<FloorTimeQuestion> createState() => _FloorTimeQuestionState();
@@ -24,11 +25,18 @@ class _FloorTimeQuestionState extends State<FloorTimeQuestion> {
 
   void _onNext() {
     if (selectedTime != null) {
-      context.read<QuestionnaireCubit>().updateFloorTime(selectedTime!);
+      // Use widget.questionnaireCubit instead of context.read
+      widget.questionnaireCubit.updateFloorTime(selectedTime!);
 
+      // Pass the cubit to the next screen
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ContainerTimeQuestion()),
+        MaterialPageRoute(
+          builder:
+              (context) => ContainerTimeQuestion(
+                questionnaireCubit: widget.questionnaireCubit,
+              ),
+        ),
       );
     }
   }
@@ -40,10 +48,11 @@ class _FloorTimeQuestionState extends State<FloorTimeQuestion> {
           "How much time does your baby spend on the floor daily (awake)?",
       onNext: _onNext,
       showNextButton: selectedTime != null,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children:
-            timeOptions.map((option) {
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ...timeOptions.map((option) {
               return OptionButton(
                 text: option,
                 isSelected: selectedTime == option,
@@ -51,10 +60,14 @@ class _FloorTimeQuestionState extends State<FloorTimeQuestion> {
                   setState(() {
                     selectedTime = option;
                   });
-                  _onNext();
+                  // Remove auto-navigation
+                  // _onNext();
                 },
               );
-            }).toList(),
+            }),
+            const SizedBox(height: 20), // Extra padding at the bottom
+          ],
+        ),
       ),
     );
   }

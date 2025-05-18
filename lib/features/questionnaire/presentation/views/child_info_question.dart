@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/form_validation.dart';
 import '../manager/questionnaire_cubit/questionnaire_cubit.dart';
 import '../widgets/question_page.dart';
 import 'gender_question.dart';
 
 class ChildInfoQuestion extends StatefulWidget {
-  const ChildInfoQuestion({super.key});
+  final QuestionnaireCubit questionnaireCubit;
+
+  const ChildInfoQuestion({super.key, required this.questionnaireCubit});
 
   @override
   State<ChildInfoQuestion> createState() => _ChildInfoQuestionState();
@@ -29,11 +30,17 @@ class _ChildInfoQuestionState extends State<ChildInfoQuestion> {
       final name = _nameController.text.trim();
       final age = int.tryParse(_ageController.text.trim()) ?? 0;
 
-      context.read<QuestionnaireCubit>().updateChildInfo(name, age);
+      // Update the questionnaire data using the passed cubit
+      widget.questionnaireCubit.updateChildInfo(name, age);
 
+      // Navigate to the next screen and pass the same cubit instance
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const GenderQuestion()),
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  GenderQuestion(questionnaireCubit: widget.questionnaireCubit),
+        ),
       );
     }
   }
@@ -43,66 +50,69 @@ class _ChildInfoQuestionState extends State<ChildInfoQuestion> {
     return QuestionPageScaffold(
       questionText: "Tell us about your child",
       onNext: _onNext,
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "What can we call your baby?",
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                hintText: "Name",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "What can we call your baby?",
+                style: TextStyle(fontSize: 16),
               ),
-              validator: (value) => FormValidation.validateName(value),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "How old is your baby (in months)?",
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: _ageController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: "Age",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  hintText: "Name",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
+                validator: (value) => FormValidation.validateName(value),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your baby\'s age';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Please enter a valid number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "choose an avatar for your child",
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildAvatarOption('assets/images/png/avatar_boy.png'),
-                const SizedBox(width: 24),
-                _buildAvatarOption('assets/images/png/avatar_girl.png'),
-              ],
-            ),
-          ],
+              const SizedBox(height: 24),
+              const Text(
+                "How old is your baby (in months)?",
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _ageController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: "Age",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your baby\'s age';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Choose an avatar for your child",
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildAvatarOption('assets/images/png/avatar_boy.png'),
+                  const SizedBox(width: 24),
+                  _buildAvatarOption('assets/images/png/avatar_girl.png'),
+                ],
+              ),
+              const SizedBox(height: 20), // Add extra padding at the bottom
+            ],
+          ),
         ),
       ),
     );

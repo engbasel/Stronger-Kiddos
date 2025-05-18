@@ -55,4 +55,37 @@ class AuthGuard {
 
     return true;
   }
+
+  // New method specifically for login/signup flow - doesn't do navigation internally
+  static Future<String> getInitialRoute() async {
+    // Check if logged in
+    if (!_authService.isLoggedIn()) {
+      return LoginView.routeName;
+    }
+
+    // Check email verification
+    bool isEmailVerified = await _authService.checkEmailVerification();
+    if (!isEmailVerified) {
+      return EmailVerificationView.routeName;
+    }
+
+    // Check if questionnaire is completed
+    final userId = _authService.currentUser?.uid;
+    if (userId != null) {
+      final result = await _questionnaireRepo.hasCompletedQuestionnaire(
+        userId: userId,
+      );
+
+      final hasCompletedQuestionnaire = result.fold(
+        (failure) => false,
+        (completed) => completed,
+      );
+
+      if (!hasCompletedQuestionnaire) {
+        return QuestionnaireControllerView.routeName;
+      }
+    }
+
+    return '/home'; // Only return home if all checks pass
+  }
 }

@@ -1,4 +1,3 @@
-// lib/core/helper/on_generate_routes.dart
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/forget_password_view.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/otp_vericifaction.dart';
