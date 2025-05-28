@@ -47,3 +47,4 @@ Route<dynamic> onGenerateRoute(RouteSettings setting) {
       return buildPageRoute(const SplashView());
   }
 }
+// s
