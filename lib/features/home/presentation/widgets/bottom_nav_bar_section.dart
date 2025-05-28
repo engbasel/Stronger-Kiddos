@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
+import 'build_bottom_navItem.dart';
 
 class BottomNavBarSection extends StatefulWidget {
   const BottomNavBarSection({Key? key}) : super(key: key);
@@ -21,46 +22,11 @@ class _BottomNavBarSectionState extends State<BottomNavBarSection> {
     {'icon': 'assets/images/png/buttom_nav_bar/person.png', 'label': 'Settings'},
   ];
 
-  Widget buildBottomNavItem(String iconPath, String label, int index) {
-    final isSelected = index == _selectedIndex;
-    
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3e5e42) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-                  iconPath,
-              color: isSelected ? Color(0xFFbad7ac) : Colors.grey,
-              width: 24,
-              height: 24,
-            ),
-            // Only show label if selected
-            if (isSelected) ...[  
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color:  Color(    0xffbad7ac),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
+  // Method to handle item selection
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
@@ -84,10 +50,12 @@ class _BottomNavBarSectionState extends State<BottomNavBarSection> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(_navItems.length, (index) {
-                return buildBottomNavItem(
-                  _navItems[index]['icon']!,
-                  _navItems[index]['label']!,
-                  index,
+                return BuildBottomNavItem(
+                  iconPath: _navItems[index]['icon']!,
+                  label: _navItems[index]['label']!,
+                  index: index,
+                  selectedIndex: _selectedIndex,
+                  onTap: _onItemTapped,
                 );
               }),
             ),
