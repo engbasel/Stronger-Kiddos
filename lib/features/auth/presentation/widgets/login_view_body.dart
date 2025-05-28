@@ -107,7 +107,9 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                           style: TextStyle(
                             fontSize: 16,
                             color:
-                                _isEmailSelected ? Colors.orange : Colors.grey,
+                                _isEmailSelected
+                                    ? AppColors.fabBackgroundColor
+                                    : Colors.grey,
                           ),
                         ),
                         if (_isEmailSelected)
@@ -115,7 +117,7 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                             margin: const EdgeInsets.only(top: 4),
                             height: 2,
                             width: 40,
-                            color: Colors.orange,
+                            color: AppColors.fabBackgroundColor,
                           ),
                       ],
                     ),
@@ -134,7 +136,9 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                           style: TextStyle(
                             fontSize: 16,
                             color:
-                                !_isEmailSelected ? Colors.orange : Colors.grey,
+                                !_isEmailSelected
+                                    ? AppColors.fabBackgroundColor
+                                    : Colors.grey,
                           ),
                         ),
                         if (!_isEmailSelected)
@@ -142,7 +146,7 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                             margin: const EdgeInsets.only(top: 4),
                             height: 2,
                             width: 40,
-                            color: Colors.orange,
+                            color: AppColors.fabBackgroundColor,
                           ),
                       ],
                     ),

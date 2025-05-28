@@ -24,7 +24,7 @@ class SuccessfullyVerifiedView extends StatelessWidget {
             const Text(
               'Successfully Verified',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 24,color: AppColors.fabBackgroundColor,
                 fontWeight: FontWeight.w500,
                 fontFamily: 'Quicksand',
               ),
@@ -45,7 +45,7 @@ class SuccessfullyVerifiedView extends StatelessWidget {
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: CustomButton(
+              child: CustomButton(backgroundColor: AppColors.fabBackgroundColor ,
                 onPressed: () {
                   Navigator.pushReplacementNamed(
                     context,

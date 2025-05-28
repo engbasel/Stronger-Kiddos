@@ -24,7 +24,7 @@ class OnBoardingPageView extends StatelessWidget {
               'Therapist-designed programs tailored to your baby needs fun and effective',
         ),
         PageViewItem(
-          image: Assets.imagesPngOnboardingImageTwo,
+          image: Assets.onboarding_step_two,
           titel: 'See Every Step Forward',
           subtitle:
               'Monitor your baby’s progress, receive reminders all in one simple app',

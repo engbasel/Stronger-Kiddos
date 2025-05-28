@@ -258,7 +258,7 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
         border: Border.all(
           color:
               _controllers[index].text.isNotEmpty
-                  ? const Color(0xFFF9B56E) // Orange border when filled
+                  ? const Color(0xFF7c9471)
                   : Colors.grey.shade300,
           width: 1.5,
         ),
