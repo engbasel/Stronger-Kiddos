@@ -92,6 +92,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/png/
+    - assets/images/png/buttom_nav_bar/
     - assets/fonts/
     - assets/images/svg/
   #   - images/a_dot_ham.jpeg
@@ -147,3 +148,4 @@ flutter_launcher_icons:
     image_path: "assets/png/logo_app.png"
     background_color: "#ffffff"
     theme_color: "#000000"
+# /
