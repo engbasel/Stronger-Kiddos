@@ -8,7 +8,7 @@ import 'package:strongerkiddos/core/widgets/custom_progrss_hud.dart';
 import 'package:strongerkiddos/features/auth/presentation/manager/verification_cubit/verification_cubit.dart';
 import 'package:strongerkiddos/features/auth/presentation/manager/verification_cubit/verification_state.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/login_view.dart';
-import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
+import 'package:strongerkiddos/features/home/presentation/views/main_navigation_view.dart';
 
 class EmailVerificationView extends StatelessWidget {
   const EmailVerificationView({super.key, required this.email});
@@ -24,7 +24,7 @@ class EmailVerificationView extends StatelessWidget {
         listener: (context, state) {
           if (state is VerificationSuccess) {
             succesTopSnackBar(context, 'Email verified successfully');
-            Navigator.pushReplacementNamed(context, HomeView.routeName);
+            Navigator.pushReplacementNamed(context, MainNavigationView.routeName);
           } else if (state is VerificationFailure) {
             failuerTopSnackBar(context, state.message);
           } else if (state is ResendVerificationEmailSuccess) {

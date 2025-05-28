@@ -3,6 +3,7 @@ import 'package:strongerkiddos/features/auth/presentation/views/forget_password_
 import 'package:strongerkiddos/features/auth/presentation/views/otp_vericifaction.dart';
 import 'package:strongerkiddos/features/auth/presentation/views/successfully_verified_view.dart';
 import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
+import 'package:strongerkiddos/features/home/presentation/views/main_navigation_view.dart';
 import 'package:strongerkiddos/features/questionnaire/presentation/views/questionnaire_controller_view.dart';
 import '../../features/auth/presentation/views/email_verification_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
@@ -17,6 +18,8 @@ Route<dynamic> onGenerateRoute(RouteSettings setting) {
   switch (setting.name) {
     case SplashView.routeName:
       return buildPageRoute(const SplashView());
+    case MainNavigationView.routeName:
+      return buildPageRoute(const MainNavigationView());
     case OnBoardingView.routeName:
       return buildPageRoute(const OnBoardingView());
     case LoginView.routeName:
