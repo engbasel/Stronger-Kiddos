@@ -4,30 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'build_bottom_navItem.dart';
 
-class BottomNavBarSection extends StatefulWidget {
-  const BottomNavBarSection({Key? key}) : super(key: key);
+class BottomNavBarSection extends StatelessWidget {
+  final int selectedIndex;
+  final Function(int) onItemTapped;
 
-  @override
-  State<BottomNavBarSection> createState() => _BottomNavBarSectionState();
-}
-
-class _BottomNavBarSectionState extends State<BottomNavBarSection> {
-  int _selectedIndex = 0;
+  const BottomNavBarSection({
+    super.key,
+    required this.selectedIndex,
+    required this.onItemTapped,
+  });
   
   // Define the image paths and labels
-  final List<Map<String, String>> _navItems = [
+  static const List<Map<String, String>> _navItems = [
     {'icon': 'assets/images/png/buttom_nav_bar/baby.png', 'label': 'Home'},
     {'icon': 'assets/images/png/buttom_nav_bar/person.png', 'label': 'Profile'},
     {'icon': 'assets/images/png/buttom_nav_bar/calender.png', 'label': 'Calendar'},
     {'icon': 'assets/images/png/buttom_nav_bar/person.png', 'label': 'Settings'},
   ];
-
-  // Method to handle item selection
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +47,8 @@ class _BottomNavBarSectionState extends State<BottomNavBarSection> {
                   iconPath: _navItems[index]['icon']!,
                   label: _navItems[index]['label']!,
                   index: index,
-                  selectedIndex: _selectedIndex,
-                  onTap: _onItemTapped,
+                  selectedIndex: selectedIndex,
+                  onTap: onItemTapped,
                 );
               }),
             ),
