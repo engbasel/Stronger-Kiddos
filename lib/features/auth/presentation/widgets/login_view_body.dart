@@ -107,7 +107,9 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                           style: TextStyle(
                             fontSize: 16,
                             color:
-                                _isEmailSelected ? AppColors.fabBackgroundColor : Colors.grey,
+                                _isEmailSelected
+                                    ? AppColors.fabBackgroundColor
+                                    : Colors.grey,
                           ),
                         ),
                         if (_isEmailSelected)
@@ -134,7 +136,9 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                           style: TextStyle(
                             fontSize: 16,
                             color:
-                                !_isEmailSelected ? AppColors.fabBackgroundColor : Colors.grey,
+                                !_isEmailSelected
+                                    ? AppColors.fabBackgroundColor
+                                    : Colors.grey,
                           ),
                         ),
                         if (!_isEmailSelected)
