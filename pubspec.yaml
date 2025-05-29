@@ -124,13 +124,12 @@ flutter:
       fonts:
         - asset: assets/fonts/Quicksand-Bold.ttf
           weight: 400
-        - asset:  assets/fonts/Quicksand-Light.ttf
+        - asset: assets/fonts/Quicksand-Light.ttf
           weight: 300
         - asset: assets/fonts/Quicksand-Medium.ttf
           weight: 400
         - asset: assets/fonts/Quicksand-SemiBold.ttf
           weight: 600
-
 
 flutter_assets:
   assets_path: assets/images/

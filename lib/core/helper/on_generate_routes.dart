@@ -4,13 +4,13 @@ import 'package:strongerkiddos/features/auth/presentation/views/otp_vericifactio
 import 'package:strongerkiddos/features/auth/presentation/views/successfully_verified_view.dart';
 import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
 import 'package:strongerkiddos/features/home/presentation/views/main_navigation_view.dart';
-import 'package:strongerkiddos/features/questionnaire/presentation/views/questionnaire_controller_view.dart';
 import '../../features/auth/presentation/views/email_verification_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/phone_signup_view.dart';
 import '../../features/auth/presentation/views/signup_view.dart';
 import '../../features/onbording/presentation/views/on_boarding_view.dart';
-import '../../features/questionnaire/presentation/views/questionnaire_completion_view.dart';
+import '../../features/questionnaires/presentation/views/baby_questionnaire_completion_view.dart';
+import '../../features/questionnaires/presentation/views/baby_questionnaire_controller_view.dart';
 import '../../features/spalsh/presentation/views/splash_view.dart';
 import '../utils/page_rout_builder.dart';
 
@@ -30,8 +30,8 @@ Route<dynamic> onGenerateRoute(RouteSettings setting) {
       return buildPageRoute(const PhoneSignupView());
     case HomeView.routeName:
       return buildPageRoute(const HomeView());
-    case QuestionnaireControllerView.routeName:
-      return buildPageRoute(const QuestionnaireControllerView());
+    case BabyQuestionnaireControllerView.routeName:
+      return buildPageRoute(const BabyQuestionnaireControllerView());
     case OtpVerificationView.routeName:
       return buildPageRoute(const OtpVerificationView());
     case ForgetPasswordView.routeName:
@@ -41,10 +41,9 @@ Route<dynamic> onGenerateRoute(RouteSettings setting) {
     case EmailVerificationView.routeName:
       final args = setting.arguments as Map<String, dynamic>;
       return buildPageRoute(EmailVerificationView(email: args['email']));
-    case QuestionnaireCompletionView.routeName:
-      return buildPageRoute(const QuestionnaireCompletionView());
+    case BabyQuestionnaireCompletionView.routeName:
+      return buildPageRoute(const BabyQuestionnaireCompletionView());
     default:
       return buildPageRoute(const SplashView());
   }
 }
-// s

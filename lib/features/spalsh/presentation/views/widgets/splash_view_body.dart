@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/features/home/presentation/views/main_navigation_view.dart';
@@ -10,8 +8,8 @@ import '../../../../../core/services/shared_preferences_sengleton.dart';
 import '../../../../../core/utils/app_text_style.dart';
 import '../../../../auth/presentation/views/login_view.dart';
 import '../../../../onbording/presentation/views/on_boarding_view.dart';
-import '../../../../questionnaire/domain/repos/questionnaire_repo.dart';
-import '../../../../questionnaire/presentation/views/questionnaire_controller_view.dart';
+import '../../../../questionnaires/domain/repos/baby_questionnaire_repo.dart';
+import '../../../../questionnaires/presentation/views/baby_questionnaire_controller_view.dart';
 import 'smiling_face_painter.dart';
 
 class SplashViewBody extends StatefulWidget {
@@ -30,7 +28,8 @@ class _SplashViewBodyState extends State<SplashViewBody>
   late Animation<double> _textOpacityAnimation;
   late Animation<double> _linesAnimation;
   final FirebaseAuthService _authService = getIt<FirebaseAuthService>();
-  final QuestionnaireRepo _questionnaireRepo = getIt<QuestionnaireRepo>();
+  final BabyQuestionnaireRepo _questionnaireRepo =
+      getIt<BabyQuestionnaireRepo>();
 
   @override
   void initState() {
@@ -150,15 +149,20 @@ class _SplashViewBodyState extends State<SplashViewBody>
       final lastRoute = Prefs.getString(AppConstants.kLastVisitedRoute);
 
       if (lastRoute.isNotEmpty && lastRoute != '/splash') {
+        if (!mounted) return;
         Navigator.pushReplacementNamed(context, lastRoute);
       } else {
+        if (!mounted) return;
+
         Navigator.pushReplacementNamed(context, MainNavigationView.routeName);
       }
     } else {
       // User needs to complete questionnaire - direct to questionnaire without showing home
+      if (!mounted) return;
+
       Navigator.pushReplacementNamed(
         context,
-        QuestionnaireControllerView.routeName,
+        BabyQuestionnaireControllerView.routeName,
       );
     }
   }

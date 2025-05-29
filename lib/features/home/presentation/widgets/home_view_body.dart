@@ -4,10 +4,9 @@ import 'package:strongerkiddos/core/services/get_it_service.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/new_to_app_card_section.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/search_bar_section.dart';
 import 'package:strongerkiddos/features/home/presentation/widgets/welcome_section.dart';
-import 'package:strongerkiddos/features/questionnaire/domain/repos/questionnaire_repo.dart';
-
-import '../../../questionnaire/domain/entities/questionnaire_entity.dart';
-import 'personalized_content_section.dart';
+import '../../../questionnaires/domain/entities/baby_questionnaire_entity.dart';
+import '../../../questionnaires/domain/repos/baby_questionnaire_repo.dart';
+import 'baby_personalized_content_section.dart';
 
 class HomeviewBody extends StatefulWidget {
   const HomeviewBody({super.key});
@@ -18,9 +17,10 @@ class HomeviewBody extends StatefulWidget {
 
 class _HomeviewBodyState extends State<HomeviewBody> {
   final FirebaseAuthService _authService = getIt<FirebaseAuthService>();
-  final QuestionnaireRepo _questionnaireRepo = getIt<QuestionnaireRepo>();
+  final BabyQuestionnaireRepo _questionnaireRepo =
+      getIt<BabyQuestionnaireRepo>();
   bool _isLoading = true;
-  QuestionnaireEntity? _questionnaireData;
+  BabyQuestionnaireEntity? _questionnaireData;
 
   @override
   void initState() {
@@ -36,7 +36,6 @@ class _HomeviewBodyState extends State<HomeviewBody> {
       );
       result.fold(
         (failure) {
-          // Handle error - data not found
           setState(() {
             _isLoading = false;
           });
@@ -61,20 +60,17 @@ class _HomeviewBodyState extends State<HomeviewBody> {
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
       child: Column(
         children: [
-          WelcomeSection(childName: _questionnaireData?.childName),
-
-          // Search Bar Section
+          WelcomeSection(childName: _questionnaireData?.babyName),
           const SearchBarSection(),
-
           const SizedBox(height: 16),
 
           if (_isLoading)
             const Center(child: CircularProgressIndicator())
           else if (_questionnaireData != null)
-            // Personalized content based on questionnaire data
-            PersonalizedContentSection(questionnaireData: _questionnaireData!)
+            BabyPersonalizedContentSection(
+              questionnaireData: _questionnaireData!,
+            )
           else
-            // Default content for users who haven't completed the questionnaire
             const NewToAppCardSection(),
 
           const SizedBox(height: 20),
@@ -82,6 +78,4 @@ class _HomeviewBodyState extends State<HomeviewBody> {
       ),
     );
   }
-
-
 }

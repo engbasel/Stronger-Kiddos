@@ -1,8 +1,7 @@
-// lib/features/auth/presentation/views/successfully_verified_view.dart
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 import 'package:strongerkiddos/core/widgets/custom_button.dart';
-import 'package:strongerkiddos/features/questionnaire/presentation/views/questionnaire_controller_view.dart';
+import '../../../questionnaires/presentation/views/baby_questionnaire_controller_view.dart';
 
 class SuccessfullyVerifiedView extends StatelessWidget {
   const SuccessfullyVerifiedView({super.key});
@@ -16,15 +15,17 @@ class SuccessfullyVerifiedView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               backgroundColor: Color(0xff00c64f),
               radius: 30,
               child: Icon(Icons.done, color: Colors.white),
             ),
+            const SizedBox(height: 24),
             const Text(
               'Successfully Verified',
               style: TextStyle(
-                fontSize: 24,color: AppColors.fabBackgroundColor,
+                fontSize: 24,
+                color: AppColors.fabBackgroundColor,
                 fontWeight: FontWeight.w500,
                 fontFamily: 'Quicksand',
               ),
@@ -45,11 +46,12 @@ class SuccessfullyVerifiedView extends StatelessWidget {
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: CustomButton(backgroundColor: AppColors.fabBackgroundColor ,
+              child: CustomButton(
+                backgroundColor: AppColors.fabBackgroundColor,
                 onPressed: () {
                   Navigator.pushReplacementNamed(
                     context,
-                    QuestionnaireControllerView.routeName,
+                    BabyQuestionnaireControllerView.routeName,
                   );
                 },
                 text: 'Get Started',

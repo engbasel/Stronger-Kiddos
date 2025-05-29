@@ -1,16 +1,15 @@
-// lib/core/services/auth_guard.dart
 import 'package:flutter/material.dart';
+import '../../features/questionnaires/domain/repos/baby_questionnaire_repo.dart';
+import '../../features/questionnaires/presentation/views/baby_questionnaire_controller_view.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/get_it_service.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/email_verification_view.dart';
-import '../../features/questionnaire/domain/repos/questionnaire_repo.dart';
-import '../../features/questionnaire/presentation/views/questionnaire_controller_view.dart';
 
 class AuthGuard {
   static final FirebaseAuthService _authService = getIt<FirebaseAuthService>();
-  static final QuestionnaireRepo _questionnaireRepo =
-      getIt<QuestionnaireRepo>();
+  static final BabyQuestionnaireRepo _questionnaireRepo =
+      getIt<BabyQuestionnaireRepo>();
 
   static Future<bool> canActivate(BuildContext context) async {
     // Check if logged in
@@ -47,7 +46,7 @@ class AuthGuard {
       if (!hasCompletedQuestionnaire && context.mounted) {
         Navigator.pushReplacementNamed(
           context,
-          QuestionnaireControllerView.routeName,
+          BabyQuestionnaireControllerView.routeName,
         );
         return false;
       }
@@ -56,7 +55,6 @@ class AuthGuard {
     return true;
   }
 
-  // New method specifically for login/signup flow - doesn't do navigation internally
   static Future<String> getInitialRoute() async {
     // Check if logged in
     if (!_authService.isLoggedIn()) {
@@ -82,10 +80,10 @@ class AuthGuard {
       );
 
       if (!hasCompletedQuestionnaire) {
-        return QuestionnaireControllerView.routeName;
+        return BabyQuestionnaireControllerView.routeName;
       }
     }
 
-    return '/home'; // Only return home if all checks pass
+    return '/home';
   }
 }

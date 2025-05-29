@@ -12,38 +12,26 @@ class SettingsView extends StatelessWidget {
         children: [
           const Text(
             'Settings',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          _buildSettingsSection(
-            'Account',
-            [
-              _buildSettingItem(Icons.person, 'Profile Information'),
-              _buildSettingItem(Icons.notifications, 'Notifications'),
-              _buildSettingItem(Icons.privacy_tip, 'Privacy'),
-            ],
-          ),
+          _buildSettingsSection('Account', [
+            _buildSettingItem(Icons.person, 'Profile Information'),
+            _buildSettingItem(Icons.notifications, 'Notifications'),
+            _buildSettingItem(Icons.privacy_tip, 'Privacy'),
+          ]),
           const SizedBox(height: 20),
-          _buildSettingsSection(
-            'Preferences',
-            [
-              _buildSettingItem(Icons.language, 'Language'),
-              _buildSettingItem(Icons.dark_mode, 'Theme'),
-              _buildSettingItem(Icons.volume_up, 'Sounds'),
-            ],
-          ),
+          _buildSettingsSection('Preferences', [
+            _buildSettingItem(Icons.language, 'Language'),
+            _buildSettingItem(Icons.dark_mode, 'Theme'),
+            _buildSettingItem(Icons.volume_up, 'Sounds'),
+          ]),
           const SizedBox(height: 20),
-          _buildSettingsSection(
-            'Support',
-            [
-              _buildSettingItem(Icons.help, 'Help Center'),
-              _buildSettingItem(Icons.feedback, 'Send Feedback'),
-              _buildSettingItem(Icons.info, 'About'),
-            ],
-          ),
+          _buildSettingsSection('Support', [
+            _buildSettingItem(Icons.help, 'Help Center'),
+            _buildSettingItem(Icons.feedback, 'Send Feedback'),
+            _buildSettingItem(Icons.info, 'About'),
+          ]),
           const Spacer(),
           Center(
             child: TextButton(
@@ -93,7 +81,7 @@ class SettingsView extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: .1),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
@@ -104,16 +92,9 @@ class SettingsView extends StatelessWidget {
         children: [
           Icon(icon, color: const Color(0xFF3e5e42)),
           const SizedBox(width: 16),
-          Text(
-            text,
-            style: const TextStyle(fontSize: 16),
-          ),
+          Text(text, style: const TextStyle(fontSize: 16)),
           const Spacer(),
-          const Icon(
-            Icons.arrow_forward_ios,
-            color: Colors.grey,
-            size: 16,
-          ),
+          const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
         ],
       ),
     );
