@@ -34,7 +34,7 @@ class _ContainerTimePageState extends State<ContainerTimePage> {
       isLastQuestion: true,
       child: Column(
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 275),
           ...timeOptions.map((option) {
             final isSelected = selectedTime == option;
             return Padding(

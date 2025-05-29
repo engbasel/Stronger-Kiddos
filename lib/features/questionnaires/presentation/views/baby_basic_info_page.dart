@@ -34,7 +34,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
     'Father',
     'Grandfather',
     'Grandmother',
-    'babysitter',
+    'Babysitter',
     'Aunt',
     'Uncle',
     'Development Professional',
@@ -54,8 +54,8 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
         _selectedImage = File(image.path);
       });
 
-      // Upload image
-      widget.questionnaireCubit.uploadBabyPhoto(_selectedImage!);
+      // Upload image if selected
+      await widget.questionnaireCubit.uploadBabyPhoto(_selectedImage!);
     }
   }
 
@@ -109,6 +109,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
         return;
       }
 
+      // Update basic info (image is optional)
       widget.questionnaireCubit.updateBasicInfo(
         _nameController.text.trim(),
         _selectedDate!,
@@ -191,9 +192,13 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
 
               const SizedBox(height: 10.0),
 
-              // Add photo text
-              if (_selectedImage == null)
-                const Text('Add photo', style: TextStyles.regular16),
+              // Add photo text (indicate optional)
+              Text(
+                _selectedImage == null
+                    ? 'Add photo (optional)'
+                    : 'Photo selected',
+                style: TextStyles.regular16,
+              ),
 
               const SizedBox(height: 30.0),
 
@@ -287,7 +292,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
                                       _selectedGender == 'Boy'
                                           ? Colors.white
                                           : const Color(0xFFd0d5dd),
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   fontSize: 14.0,
                                 ),
                               ),

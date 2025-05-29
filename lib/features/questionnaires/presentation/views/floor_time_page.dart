@@ -46,7 +46,7 @@ class _FloorTimePageState extends State<FloorTimePage> {
       showNextButton: selectedTime != null,
       child: Column(
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 230),
           ...timeOptions.map((option) {
             final isSelected = selectedTime == option;
             return Padding(

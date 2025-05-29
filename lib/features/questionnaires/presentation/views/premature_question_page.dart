@@ -47,7 +47,7 @@ class _PrematureQuestionPageState extends State<PrematureQuestionPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 300),
           Row(
             children: [
               Expanded(
@@ -124,14 +124,15 @@ class _PrematureQuestionPageState extends State<PrematureQuestionPage> {
       decoration: BoxDecoration(
         color: isSelected ? Colors.green.shade50 : Colors.white,
         border: Border.all(
-          color: isSelected ? Colors.green : Colors.grey.shade300,
+          color:
+              isSelected ? AppColors.fabBackgroundColor : Colors.grey.shade300,
           width: 1.5,
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           if (isSelected)
             BoxShadow(
-              color: AppColors.arcColor,
+              color: AppColors.fabBackgroundColor,
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -142,14 +143,17 @@ class _PrematureQuestionPageState extends State<PrematureQuestionPage> {
           label,
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.green.shade700 : Colors.black87,
+            color: isSelected ? AppColors.fabBackgroundColor : Colors.black87,
           ),
         ),
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         trailing:
             isSelected
-                ? const Icon(Icons.check_circle, color: Colors.green)
+                ? const Icon(
+                  Icons.check_circle,
+                  color: AppColors.fabBackgroundColor,
+                )
                 : null,
       ),
     );
