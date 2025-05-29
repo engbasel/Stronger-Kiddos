@@ -12,7 +12,8 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
   final FirebaseAuthService authService;
 
   // State variables
-  String? babyPhotoUrl;
+  String? babyPhotoPath; // Changed from URL to path for private storage
+  String? babyPhotoSignedUrl; // For displaying the image
   String babyName = '';
   DateTime? dateOfBirth;
   String relationship = '';
@@ -61,11 +62,38 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     final result = await questionnaireRepo.uploadBabyPhoto(imageFile);
 
     result.fold((failure) => emit(BabyQuestionnaireError(failure.message)), (
-      photoUrl,
-    ) {
-      babyPhotoUrl = photoUrl;
-      emit(BabyPhotoUploaded(photoUrl));
+      photoPath,
+    ) async {
+      babyPhotoPath = photoPath;
+
+      // Get signed URL for display
+      final urlResult = await questionnaireRepo.getSignedImageUrl(photoPath);
+      urlResult.fold(
+        (failure) => emit(
+          BabyQuestionnaireError(
+            'Photo uploaded but failed to get display URL',
+          ),
+        ),
+        (signedUrl) {
+          babyPhotoSignedUrl = signedUrl;
+          emit(BabyPhotoUploaded(photoPath, signedUrl));
+        },
+      );
     });
+  }
+
+  Future<void> refreshPhotoUrl() async {
+    if (babyPhotoPath != null) {
+      final result = await questionnaireRepo.getSignedImageUrl(babyPhotoPath!);
+      result.fold(
+        (failure) =>
+            emit(BabyQuestionnaireError('Failed to refresh photo URL')),
+        (signedUrl) {
+          babyPhotoSignedUrl = signedUrl;
+          emit(BabyPhotoUploaded(babyPhotoPath!, signedUrl));
+        },
+      );
+    }
   }
 
   void updateBasicInfo(String name, DateTime birthDate, String rel) {
@@ -122,7 +150,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     }
 
     final questionnaireData = BabyQuestionnaireEntity(
-      babyPhotoUrl: babyPhotoUrl,
+      babyPhotoUrl: babyPhotoPath, // Store the path, not the signed URL
       babyName: babyName,
       dateOfBirth: dateOfBirth!,
       relationship: relationship,

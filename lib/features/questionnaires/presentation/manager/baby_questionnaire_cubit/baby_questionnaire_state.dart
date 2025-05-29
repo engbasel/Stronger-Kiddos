@@ -22,12 +22,13 @@ class BabyQuestionnaireSubmitSuccess extends BabyQuestionnaireState {}
 class BabyPhotoUploading extends BabyQuestionnaireState {}
 
 class BabyPhotoUploaded extends BabyQuestionnaireState {
-  final String photoUrl;
+  final String photoPath;
+  final String signedUrl;
 
-  const BabyPhotoUploaded(this.photoUrl);
+  const BabyPhotoUploaded(this.photoPath, this.signedUrl);
 
   @override
-  List<Object?> get props => [photoUrl];
+  List<Object?> get props => [photoPath, signedUrl];
 }
 
 class BabyQuestionnaireError extends BabyQuestionnaireState {

@@ -23,41 +23,93 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('User not authenticated'));
       }
 
-      final fileName =
-          'baby_photos/${currentUser.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      // Create folder structure: user_<id>/filename.jpg
+      final userId = currentUser.uid;
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = 'user_$userId/baby_photo_$timestamp.jpg';
 
-      await supabase.storage.from('baby-photos').upload(fileName, imageFile);
+      // Upload to PRIVATE bucket
+      await supabase.storage
+          .from(
+            'baby-photos',
+          ) // Make sure this bucket is set to private in Supabase dashboard
+          .upload(fileName, imageFile);
 
-      final publicUrl = supabase.storage
-          .from('baby-photos')
-          .getPublicUrl(fileName);
-
-      return right(publicUrl);
+      // For private buckets, we return the file path instead of public URL
+      // The file path can be used later to create signed URLs when needed
+      return right(fileName);
     } catch (e) {
       log('Error uploading baby photo: $e');
-      return left(ServerFailure('Failed to upload baby photo'));
+      if (e.toString().contains('already exists')) {
+        return left(ServerFailure('File already exists. Please try again.'));
+      }
+      return left(
+        ServerFailure('Failed to upload baby photo: ${e.toString()}'),
+      );
     }
   }
 
+  // New method to get a signed URL for private files (temporary access)
+  @override
+  Future<Either<Failures, String>> getSignedImageUrl(String filePath) async {
+    try {
+      final currentUser = auth.currentUser;
+      if (currentUser == null) {
+        return left(ServerFailure('User not authenticated'));
+      }
+
+      // Create a signed URL that expires in 1 hour
+      final signedUrl = await supabase.storage
+          .from('baby-photos')
+          .createSignedUrl(filePath, 3600); // 3600 seconds = 1 hour
+
+      return right(signedUrl);
+    } catch (e) {
+      log('Error creating signed URL: $e');
+      return left(ServerFailure('Failed to get image URL'));
+    }
+  }
+
+  // Method to delete an image from private storage
+  @override
+  Future<Either<Failures, void>> deleteBabyPhoto(String filePath) async {
+    try {
+      final currentUser = auth.currentUser;
+      if (currentUser == null) {
+        return left(ServerFailure('User not authenticated'));
+      }
+
+      // Verify user owns this file (security check)
+      if (!filePath.startsWith('user_${currentUser.uid}/')) {
+        return left(ServerFailure('Unauthorized: Cannot delete file'));
+      }
+
+      await supabase.storage.from('baby-photos').remove([filePath]);
+
+      return right(null);
+    } catch (e) {
+      log('Error deleting photo: $e');
+      return left(ServerFailure('Failed to delete photo'));
+    }
+  }
+
+  // Rest of your existing methods remain the same...
   @override
   Future<Either<Failures, void>> saveQuestionnaireData({
     required String userId,
     required BabyQuestionnaireEntity questionnaireData,
   }) async {
     try {
-      // Check if user is authenticated
       final currentUser = auth.currentUser;
       if (currentUser == null) {
         return left(ServerFailure('User not authenticated'));
       }
 
-      // Verify user is trying to save their own data
       if (currentUser.uid != userId) {
         return left(ServerFailure('Unauthorized access'));
       }
 
       final model = BabyQuestionnaireModel.fromEntity(questionnaireData);
-
       await firestore
           .collection('baby_questionnaires')
           .doc(userId)
@@ -78,19 +130,16 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
     required String userId,
   }) async {
     try {
-      // Check if user is authenticated
       final currentUser = auth.currentUser;
       if (currentUser == null) {
         return left(ServerFailure('User not authenticated'));
       }
 
-      // Verify user is trying to access their own data
       if (currentUser.uid != userId) {
         return left(ServerFailure('Unauthorized access'));
       }
 
       log('Fetching questionnaire data for user: $userId');
-
       final docSnapshot =
           await firestore.collection('baby_questionnaires').doc(userId).get();
 
@@ -115,14 +164,12 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
     required String userId,
   }) async {
     try {
-      // Check if user is authenticated
       final currentUser = auth.currentUser;
       if (currentUser == null) {
         log('User not authenticated when checking questionnaire completion');
         return left(ServerFailure('User not authenticated'));
       }
 
-      // Verify user is checking their own data
       if (currentUser.uid != userId) {
         log(
           'Unauthorized access attempt for user: $userId by ${currentUser.uid}',
@@ -131,7 +178,6 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
       }
 
       log('Checking questionnaire completion for user: $userId');
-
       final docSnapshot =
           await firestore.collection('baby_questionnaires').doc(userId).get();
 
