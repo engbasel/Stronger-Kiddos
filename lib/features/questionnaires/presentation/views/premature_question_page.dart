@@ -19,7 +19,7 @@ class _PrematureQuestionPageState extends State<PrematureQuestionPage> {
   bool? wasPremature;
   int selectedWeeks = 7;
 
-  final List<int> weeksOptions = [6, 7, 8];
+  final List<int> weeksOptions = List<int>.generate(15, (index) => index + 1);
 
   void _onNext() {
     if (wasPremature != null) {

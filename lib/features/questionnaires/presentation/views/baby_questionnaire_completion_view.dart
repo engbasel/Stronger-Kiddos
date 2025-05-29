@@ -1,3 +1,9 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/custom_button.dart';
+import '../../../home/presentation/Views/main_navigation_view.dart';
+
 class BabyQuestionnaireCompletionView extends StatelessWidget {
   const BabyQuestionnaireCompletionView({super.key});
 

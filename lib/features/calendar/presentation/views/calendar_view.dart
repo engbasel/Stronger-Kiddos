@@ -12,20 +12,14 @@ class CalendarView extends StatelessWidget {
         children: [
           const Text(
             'Calendar',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
           _buildCalendarWidget(),
           const SizedBox(height: 20),
           const Text(
             'Upcoming Events',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           _buildEventItem('Doctor Appointment', 'June 5, 2025', '10:00 AM'),
@@ -99,14 +93,18 @@ class CalendarView extends StatelessWidget {
                 return Container(
                   margin: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: isHighlighted ? const Color(0xFFbad7ac) : Colors.transparent,
+                    color:
+                        isHighlighted
+                            ? const Color(0xFFbad7ac)
+                            : Colors.transparent,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: Text(
                       '$day',
                       style: TextStyle(
-                        fontWeight: isHighlighted ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            isHighlighted ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -128,7 +126,7 @@ class CalendarView extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: .1),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
@@ -143,10 +141,7 @@ class CalendarView extends StatelessWidget {
               color: Color(0xFFbad7ac),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.event,
-              color: Color(0xFF3e5e42),
-            ),
+            child: const Icon(Icons.event, color: Color(0xFF3e5e42)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -162,18 +157,12 @@ class CalendarView extends StatelessWidget {
                 ),
                 Text(
                   '$date • $time',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                 ),
               ],
             ),
           ),
-          const Icon(
-            Icons.more_vert,
-            color: Colors.grey,
-          ),
+          const Icon(Icons.more_vert, color: Colors.grey),
         ],
       ),
     );

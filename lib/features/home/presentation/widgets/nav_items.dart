@@ -22,7 +22,7 @@ class BuildBottomNavItem extends StatelessWidget {
     // Using the original colors from the code sample
     final selectedBgColor = const Color(0xFF3e5e42);
     final selectedTextColor = const Color(0xFFbad7ac);
-    
+
     return GestureDetector(
       onTap: () => onTap(index),
       child: Container(
@@ -41,7 +41,7 @@ class BuildBottomNavItem extends StatelessWidget {
               height: 24,
             ),
             // Only show label if selected
-            if (isSelected) ...[  
+            if (isSelected) ...[
               const SizedBox(width: 8),
               Text(
                 label,
