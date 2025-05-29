@@ -27,7 +27,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   final ImagePicker _picker = ImagePicker();
 
   DateTime? _selectedDate;
-  String _selectedGender = '';
+  String selectedGender = 'Girl';
   String? _selectedRelationship;
   File? _selectedImage;
 
@@ -66,10 +66,10 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
               ),
               const SizedBox(height: 30.0),
               GenderSelectionWidget(
-                selectedGender: _selectedGender,
+                selectedGender: selectedGender,
                 onGenderSelected: (gender) {
                   setState(() {
-                    _selectedGender = gender;
+                    selectedGender = gender;
                   });
                 },
               ),
@@ -138,7 +138,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
       return false;
     }
 
-    if (_selectedGender.isEmpty) {
+    if (selectedGender.isEmpty) {
       _showSnackBar('Please select gender');
       return false;
     }
@@ -157,7 +157,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
       _selectedDate!,
       _selectedRelationship!,
     );
-    widget.questionnaireCubit.updateGender(_selectedGender);
+    widget.questionnaireCubit.updateGender(selectedGender);
   }
 
   void _navigateToNextPage() {
