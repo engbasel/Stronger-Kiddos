@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 
 class BabyPhotoUploadWidget extends StatelessWidget {
   final File? selectedImage;
+  final bool isUploading;
+  final bool isUploaded;
   final VoidCallback onTap;
 
   const BabyPhotoUploadWidget({
     super.key,
     required this.selectedImage,
+    required this.isUploading,
+    required this.isUploaded,
     required this.onTap,
   });
 
@@ -16,7 +20,7 @@ class BabyPhotoUploadWidget extends StatelessWidget {
     return Column(
       children: [
         GestureDetector(
-          onTap: onTap,
+          onTap: isUploading ? null : onTap,
           child: Container(
             width: 120.0,
             height: 120.0,
@@ -25,21 +29,55 @@ class BabyPhotoUploadWidget extends StatelessWidget {
               color: const Color(0xFFE0E0E0),
               border: Border.all(color: const Color(0xFFD3D3D3), width: 2.0),
             ),
-            child:
-                selectedImage != null
-                    ? ClipOval(
-                      child: Image.file(selectedImage!, fit: BoxFit.cover),
-                    )
-                    : const _EmptyPhotoPlaceholder(),
+            child: _buildImageContent(),
           ),
         ),
         const SizedBox(height: 10.0),
         Text(
-          selectedImage == null ? 'Add photo (optional)' : 'Photo selected',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+          _getStatusText(),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: _getStatusColor(),
+          ),
         ),
       ],
     );
+  }
+
+  Widget _buildImageContent() {
+    if (isUploading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 3,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+        ),
+      );
+    } else if (selectedImage != null) {
+      return ClipOval(child: Image.file(selectedImage!, fit: BoxFit.cover));
+    } else {
+      return const _EmptyPhotoPlaceholder();
+    }
+  }
+
+  String _getStatusText() {
+    if (isUploading) {
+      return 'Uploading...';
+    } else if (selectedImage != null) {
+      return 'Photo selected';
+    } else {
+      return 'Add photo (optional)';
+    }
+  }
+
+  Color _getStatusColor() {
+    if (isUploading) {
+      return Colors.orange;
+    } else if (isUploaded) {
+      return Colors.green;
+    } else {
+      return Colors.black87;
+    }
   }
 }
 

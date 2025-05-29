@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/services/firebase_auth_service.dart';
@@ -11,9 +10,8 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
   final BabyQuestionnaireRepo questionnaireRepo;
   final FirebaseAuthService authService;
 
-  // State variables
-  String? babyPhotoPath; // Changed from URL to path for private storage
-  String? babyPhotoSignedUrl; // For displaying the image
+  // State variables (keep these public for direct access)
+  String? babyPhotoUrl;
   String babyName = '';
   DateTime? dateOfBirth;
   String relationship = '';
@@ -56,45 +54,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     });
   }
 
-  Future<void> uploadBabyPhoto(File imageFile) async {
-    emit(BabyPhotoUploading());
-
-    final result = await questionnaireRepo.uploadBabyPhoto(imageFile);
-
-    result.fold((failure) => emit(BabyQuestionnaireError(failure.message)), (
-      photoPath,
-    ) async {
-      babyPhotoPath = photoPath;
-
-      // Get signed URL for display
-      final urlResult = await questionnaireRepo.getSignedImageUrl(photoPath);
-      urlResult.fold(
-        (failure) => emit(
-          BabyQuestionnaireError(
-            'Photo uploaded but failed to get display URL',
-          ),
-        ),
-        (signedUrl) {
-          babyPhotoSignedUrl = signedUrl;
-          emit(BabyPhotoUploaded(photoPath, signedUrl));
-        },
-      );
-    });
-  }
-
-  Future<void> refreshPhotoUrl() async {
-    if (babyPhotoPath != null) {
-      final result = await questionnaireRepo.getSignedImageUrl(babyPhotoPath!);
-      result.fold(
-        (failure) =>
-            emit(BabyQuestionnaireError('Failed to refresh photo URL')),
-        (signedUrl) {
-          babyPhotoSignedUrl = signedUrl;
-          emit(BabyPhotoUploaded(babyPhotoPath!, signedUrl));
-        },
-      );
-    }
-  }
+  // REMOVED: uploadBabyPhoto method - now handled directly in UI
 
   void updateBasicInfo(String name, DateTime birthDate, String rel) {
     babyName = name;
@@ -150,7 +110,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     }
 
     final questionnaireData = BabyQuestionnaireEntity(
-      babyPhotoUrl: babyPhotoPath, // Store the path, not the signed URL
+      babyPhotoUrl: babyPhotoUrl,
       babyName: babyName,
       dateOfBirth: dateOfBirth!,
       relationship: relationship,

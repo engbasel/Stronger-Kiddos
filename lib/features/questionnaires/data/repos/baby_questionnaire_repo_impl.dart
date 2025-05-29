@@ -2,17 +2,17 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:developer';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/services/supabase_storage.dart';
 import '../models/baby_questionnaire_model.dart';
 import '../../domain/entities/baby_questionnaire_entity.dart';
 import '../../domain/repos/baby_questionnaire_repo.dart';
 
 class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
-  SupabaseClient get supabase => Supabase.instance.client;
   FirebaseAuth get auth => FirebaseAuth.instance;
   FirebaseFirestore get firestore => FirebaseFirestore.instance;
+  final SupabaseStorageService _storageService = SupabaseStorageService();
 
   @override
   Future<Either<Failures, String>> uploadBabyPhoto(File imageFile) async {
@@ -23,33 +23,25 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('User not authenticated'));
       }
 
-      // Create folder structure: user_<id>/filename.jpg
       final userId = currentUser.uid;
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'user_$userId/baby_photo_$timestamp.jpg';
+      log('Uploading photo for user: $userId');
 
-      // Upload to PRIVATE bucket
-      await supabase.storage
-          .from(
-            'baby-photos',
-          ) // Make sure this bucket is set to private in Supabase dashboard
-          .upload(fileName, imageFile);
+      // Use the updated upload method
+      final photoUrl = await _storageService.uploadFile(
+        imageFile,
+        'user_$userId',
+      );
 
-      // For private buckets, we return the file path instead of public URL
-      // The file path can be used later to create signed URLs when needed
-      return right(fileName);
+      log('Photo uploaded successfully: $photoUrl');
+      return right(photoUrl);
     } catch (e) {
       log('Error uploading baby photo: $e');
-      if (e.toString().contains('already exists')) {
-        return left(ServerFailure('File already exists. Please try again.'));
-      }
       return left(
         ServerFailure('Failed to upload baby photo: ${e.toString()}'),
       );
     }
   }
 
-  // New method to get a signed URL for private files (temporary access)
   @override
   Future<Either<Failures, String>> getSignedImageUrl(String filePath) async {
     try {
@@ -58,11 +50,13 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('User not authenticated'));
       }
 
-      // Create a signed URL that expires in 1 hour
-      final signedUrl = await supabase.storage
-          .from('baby-photos')
-          .createSignedUrl(filePath, 3600); // 3600 seconds = 1 hour
+      // If it's already a public URL, return it as is
+      if (filePath.startsWith('http')) {
+        return right(filePath);
+      }
 
+      // For private files, create signed URL
+      final signedUrl = await _storageService.getSignedUrl(filePath);
       return right(signedUrl);
     } catch (e) {
       log('Error creating signed URL: $e');
@@ -70,7 +64,6 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
     }
   }
 
-  // Method to delete an image from private storage
   @override
   Future<Either<Failures, void>> deleteBabyPhoto(String filePath) async {
     try {
@@ -79,13 +72,23 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('User not authenticated'));
       }
 
+      // Extract file path from URL if needed
+      String pathToDelete = filePath;
+      if (filePath.startsWith('http')) {
+        // Extract path from URL if it's a full URL
+        final uri = Uri.parse(filePath);
+        final pathSegments = uri.pathSegments;
+        if (pathSegments.length > 2) {
+          pathToDelete = pathSegments.sublist(2).join('/');
+        }
+      }
+
       // Verify user owns this file (security check)
-      if (!filePath.startsWith('user_${currentUser.uid}/')) {
+      if (!pathToDelete.startsWith('user_${currentUser.uid}/')) {
         return left(ServerFailure('Unauthorized: Cannot delete file'));
       }
 
-      await supabase.storage.from('baby-photos').remove([filePath]);
-
+      await _storageService.deleteFile(pathToDelete);
       return right(null);
     } catch (e) {
       log('Error deleting photo: $e');
@@ -93,7 +96,6 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
     }
   }
 
-  // Rest of your existing methods remain the same...
   @override
   Future<Either<Failures, void>> saveQuestionnaireData({
     required String userId,

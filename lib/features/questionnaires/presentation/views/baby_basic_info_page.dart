@@ -27,9 +27,13 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   final ImagePicker _picker = ImagePicker();
 
   DateTime? _selectedDate;
-  String selectedGender = 'Girl';
+  String _selectedGender = 'Girl';
   String? _selectedRelationship;
   File? _selectedImage;
+
+  // Image upload state (separate from BLoC)
+  bool _isUploadingImage = false;
+  bool _imageUploaded = false;
 
   static const List<String> _relationships = [
     'Mother',
@@ -62,14 +66,16 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
             children: [
               BabyPhotoUploadWidget(
                 selectedImage: _selectedImage,
+                isUploading: _isUploadingImage,
+                isUploaded: _imageUploaded,
                 onTap: _pickImage,
               ),
               const SizedBox(height: 30.0),
               GenderSelectionWidget(
-                selectedGender: selectedGender,
+                selectedGender: _selectedGender,
                 onGenderSelected: (gender) {
                   setState(() {
-                    selectedGender = gender;
+                    _selectedGender = gender;
                   });
                 },
               ),
@@ -111,13 +117,65 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _selectedImage = File(image.path);
-      });
+    if (_isUploadingImage) return; // Prevent multiple uploads
 
-      await widget.questionnaireCubit.uploadBabyPhoto(_selectedImage!);
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+          _isUploadingImage = true;
+          _imageUploaded = false;
+        });
+
+        await _uploadImageInBackground();
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Failed to pick image: $e');
+      }
+    }
+  }
+
+  Future<void> _uploadImageInBackground() async {
+    try {
+      final result = await widget.questionnaireCubit.questionnaireRepo
+          .uploadBabyPhoto(_selectedImage!);
+
+      result.fold(
+        (failure) {
+          if (mounted) {
+            setState(() {
+              _isUploadingImage = false;
+              _imageUploaded = false;
+            });
+            _showSnackBar('Upload failed: ${failure.message}');
+          }
+        },
+        (photoUrl) {
+          if (mounted) {
+            setState(() {
+              _isUploadingImage = false;
+              _imageUploaded = true;
+            });
+            // Store the URL in cubit
+            widget.questionnaireCubit.babyPhotoUrl = photoUrl;
+            _showSnackBar('Photo uploaded successfully!');
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUploadingImage = false;
+          _imageUploaded = false;
+        });
+        _showSnackBar('Upload error: $e');
+      }
     }
   }
 
@@ -138,7 +196,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
       return false;
     }
 
-    if (selectedGender.isEmpty) {
+    if (_selectedGender.isEmpty) {
       _showSnackBar('Please select gender');
       return false;
     }
@@ -157,7 +215,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
       _selectedDate!,
       _selectedRelationship!,
     );
-    widget.questionnaireCubit.updateGender(selectedGender);
+    widget.questionnaireCubit.updateGender(_selectedGender);
   }
 
   void _navigateToNextPage() {

@@ -19,18 +19,6 @@ class BabyQuestionnaireSaving extends BabyQuestionnaireState {}
 
 class BabyQuestionnaireSubmitSuccess extends BabyQuestionnaireState {}
 
-class BabyPhotoUploading extends BabyQuestionnaireState {}
-
-class BabyPhotoUploaded extends BabyQuestionnaireState {
-  final String photoPath;
-  final String signedUrl;
-
-  const BabyPhotoUploaded(this.photoPath, this.signedUrl);
-
-  @override
-  List<Object?> get props => [photoPath, signedUrl];
-}
-
 class BabyQuestionnaireError extends BabyQuestionnaireState {
   final String message;
 
