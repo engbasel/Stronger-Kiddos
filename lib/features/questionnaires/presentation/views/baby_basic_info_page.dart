@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../../core/utils/app_colors.dart';
-import '../../../../core/utils/app_text_style.dart';
 import '../../../../core/utils/form_validation.dart';
 import '../../../../core/utils/page_rout_builder.dart';
 import '../manager/baby_questionnaire_cubit/baby_questionnaire_cubit.dart';
+import '../widgets/baby_basic_info_page.dart';
 import '../widgets/baby_question_page.dart';
+import '../widgets/custom_text_field_widget.dart';
+import '../widgets/gender_selection_widget.dart';
+import '../widgets/custom_date_picker_widget.dart';
+import '../widgets/custom_dropdown_widget.dart';
 import 'premature_question_page.dart';
 
 class BabyBasicInfoPage extends StatefulWidget {
@@ -21,15 +24,14 @@ class BabyBasicInfoPage extends StatefulWidget {
 class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
   DateTime? _selectedDate;
   String _selectedGender = '';
   String? _selectedRelationship;
   File? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
 
-  // List of relationships
-  final List<String> relationships = [
+  static const List<String> _relationships = [
     'Mother',
     'Father',
     'Grandfather',
@@ -47,86 +49,6 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _selectedImage = File(image.path);
-      });
-
-      // Upload image if selected
-      await widget.questionnaireCubit.uploadBabyPhoto(_selectedImage!);
-    }
-  }
-
-  Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 365)),
-      firstDate: DateTime.now().subtract(const Duration(days: 365 * 5)),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.fabBackgroundColor,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
-
-  void _onNext() {
-    if (_formKey.currentState?.validate() ?? false) {
-      if (_selectedDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select date of birth')),
-        );
-        return;
-      }
-
-      if (_selectedGender.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Please select gender')));
-        return;
-      }
-
-      if (_selectedRelationship == null || _selectedRelationship!.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select your relationship to the child'),
-          ),
-        );
-        return;
-      }
-
-      // Update basic info (image is optional)
-      widget.questionnaireCubit.updateBasicInfo(
-        _nameController.text.trim(),
-        _selectedDate!,
-        _selectedRelationship!,
-      );
-
-      widget.questionnaireCubit.updateGender(_selectedGender);
-
-      Navigator.push(
-        context,
-        buildPageRoute(
-          PrematureQuestionPage(questionnaireCubit: widget.questionnaireCubit),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BabyQuestionPageScaffold(
@@ -138,313 +60,118 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Photo Upload Section - Large Circle
-              GestureDetector(
+              BabyPhotoUploadWidget(
+                selectedImage: _selectedImage,
                 onTap: _pickImage,
-                child: Container(
-                  width: 120.0,
-                  height: 120.0,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFE0E0E0),
-                    border: Border.all(
-                      color: const Color(0xFFD3D3D3),
-                      width: 2.0,
-                    ),
-                  ),
-                  child:
-                      _selectedImage != null
-                          ? ClipOval(
-                            child: Image.file(
-                              _selectedImage!,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                          : Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              const Icon(
-                                Icons.camera_alt_outlined,
-                                size: 60.0,
-                                color: Color(0xFF999da3),
-                              ),
-                              Positioned(
-                                bottom: 10.0,
-                                right: 10.0,
-                                child: Container(
-                                  width: 30.0,
-                                  height: 30.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Color(0xFFD3D3D3),
-                                  ),
-                                  child: const Icon(
-                                    Icons.add,
-                                    color: Color(0xFF757575),
-                                    size: 18.0,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                ),
               ),
-
-              const SizedBox(height: 10.0),
-
-              // Add photo text (indicate optional)
-              Text(
-                _selectedImage == null
-                    ? 'Add photo (optional)'
-                    : 'Photo selected',
-                style: TextStyles.regular16,
-              ),
-
               const SizedBox(height: 30.0),
-
-              // Gender Selection - Single Row Design
-              Container(
-                height: 50.0,
-                decoration: BoxDecoration(
-                  color: const Color(0xff7c9471),
-                  borderRadius: BorderRadius.circular(25.0),
-                  border: Border.all(
-                    color: const Color(0xFFD3D3D3),
-                    width: 1.0,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Girl Option
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedGender = 'Girl'),
-                        child: Container(
-                          height: 50.0,
-                          decoration: BoxDecoration(
-                            color:
-                                _selectedGender == 'Girl'
-                                    ? const Color(0xFF3a542e)
-                                    : const Color(0xFF7c9471),
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(25.0),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.face,
-                                size: 18.0,
-                                color:
-                                    _selectedGender == 'Girl'
-                                        ? Colors.white
-                                        : const Color(0xFFd0d5dd),
-                              ),
-                              const SizedBox(width: 8.0),
-                              Text(
-                                'Girl',
-                                style: TextStyle(
-                                  color:
-                                      _selectedGender == 'Girl'
-                                          ? Colors.white
-                                          : const Color(0xFFd0d5dd),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14.0,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Boy Option
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedGender = 'Boy'),
-                        child: Container(
-                          height: 50.0,
-                          decoration: BoxDecoration(
-                            color:
-                                _selectedGender == 'Boy'
-                                    ? const Color(0xFF3a542e)
-                                    : const Color(0xFF7c9471),
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(25.0),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.face,
-                                size: 18.0,
-                                color:
-                                    _selectedGender == 'Boy'
-                                        ? Colors.white
-                                        : const Color(0xFFd0d5dd),
-                              ),
-                              const SizedBox(width: 8.0),
-                              Text(
-                                'Boy',
-                                style: TextStyle(
-                                  color:
-                                      _selectedGender == 'Boy'
-                                          ? Colors.white
-                                          : const Color(0xFFd0d5dd),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14.0,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              GenderSelectionWidget(
+                selectedGender: _selectedGender,
+                onGenderSelected: (gender) {
+                  setState(() {
+                    _selectedGender = gender;
+                  });
+                },
               ),
-
               const SizedBox(height: 30.0),
-
-              // Name Field
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'What can we call your baby?',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
-                ),
-              ),
-              const SizedBox(height: 8.0),
-              TextFormField(
+              CustomTextFieldWidget(
                 controller: _nameController,
-                decoration: InputDecoration(
-                  hintText: 'Name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Color(0xFFD3D3D3)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Color(0xFFD3D3D3)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(
-                      color: AppColors.fabBackgroundColor,
-                    ),
-                  ),
-                ),
-                validator: (value) => FormValidation.validateName(value),
+                label: 'What can we call your baby?',
+                placeholder: 'Name',
+                validator: FormValidation.validateName,
               ),
-
               const SizedBox(height: 24.0),
-
-              // Date of Birth
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Date of birth',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
-                ),
+              CustomDatePickerWidget(
+                selectedDate: _selectedDate,
+                onDateSelected: (date) {
+                  setState(() {
+                    _selectedDate = date;
+                  });
+                },
+                label: 'Date of birth',
               ),
-              const SizedBox(height: 8.0),
-              GestureDetector(
-                onTap: _selectDate,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 16.0,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFD3D3D3)),
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _selectedDate != null
-                            ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                            : 'Select Date',
-                        style: TextStyle(
-                          color:
-                              _selectedDate != null
-                                  ? const Color(0xFF212121)
-                                  : const Color(0xFF757575),
-                          fontSize: 16.0,
-                        ),
-                      ),
-                      const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Color(0xFF757575),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 24.0),
-
-              // I am the child's - Dropdown Section
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'I am the child\'s',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
-                ),
+              CustomDropdownWidget(
+                selectedValue: _selectedRelationship,
+                items: _relationships,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedRelationship = value;
+                  });
+                },
+                label: 'I am the child\'s',
+                placeholder: 'Select your relationship',
               ),
-              const SizedBox(height: 8.0),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFD3D3D3)),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedRelationship,
-                    hint: const Text(
-                      'Select your relationship',
-                      style: TextStyle(
-                        color: Color(0xFF757575),
-                        fontSize: 16.0,
-                      ),
-                    ),
-                    isExpanded: true,
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Color(0xFF757575),
-                    ),
-                    items:
-                        relationships.map((String relationship) {
-                          return DropdownMenuItem<String>(
-                            value: relationship,
-                            child: Text(
-                              relationship,
-                              style: const TextStyle(
-                                color: Color(0xFF212121),
-                                fontSize: 16.0,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedRelationship = newValue;
-                      });
-                    },
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 20.0),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+      });
+
+      await widget.questionnaireCubit.uploadBabyPhoto(_selectedImage!);
+    }
+  }
+
+  void _onNext() {
+    if (!_validateForm()) return;
+
+    _updateQuestionnaireData();
+    _navigateToNextPage();
+  }
+
+  bool _validateForm() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return false;
+    }
+
+    if (_selectedDate == null) {
+      _showSnackBar('Please select date of birth');
+      return false;
+    }
+
+    if (_selectedGender.isEmpty) {
+      _showSnackBar('Please select gender');
+      return false;
+    }
+
+    if (_selectedRelationship == null || _selectedRelationship!.isEmpty) {
+      _showSnackBar('Please select your relationship to the child');
+      return false;
+    }
+
+    return true;
+  }
+
+  void _updateQuestionnaireData() {
+    widget.questionnaireCubit.updateBasicInfo(
+      _nameController.text.trim(),
+      _selectedDate!,
+      _selectedRelationship!,
+    );
+    widget.questionnaireCubit.updateGender(_selectedGender);
+  }
+
+  void _navigateToNextPage() {
+    Navigator.push(
+      context,
+      buildPageRoute(
+        PrematureQuestionPage(questionnaireCubit: widget.questionnaireCubit),
+      ),
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
