@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  cached_network_image: ^3.4.1
   card_swiper: ^3.0.1
   cloud_firestore: ^5.6.6
   connectivity_plus: ^6.1.4
@@ -94,6 +95,7 @@ flutter:
     - assets/images/png/
     - assets/images/png/buttom_nav_bar/
     - assets/fonts/
+    - assets/images/svg/
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -123,13 +125,12 @@ flutter:
       fonts:
         - asset: assets/fonts/Quicksand-Bold.ttf
           weight: 400
-        - asset:  assets/fonts/Quicksand-Light.ttf
+        - asset: assets/fonts/Quicksand-Light.ttf
           weight: 300
         - asset: assets/fonts/Quicksand-Medium.ttf
           weight: 400
         - asset: assets/fonts/Quicksand-SemiBold.ttf
           weight: 600
-
 
 flutter_assets:
   assets_path: assets/images/
@@ -147,4 +148,5 @@ flutter_launcher_icons:
     image_path: "assets/png/logo_app.png"
     background_color: "#ffffff"
     theme_color: "#000000"
+
 # /

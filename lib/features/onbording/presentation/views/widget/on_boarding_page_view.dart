@@ -12,19 +12,19 @@ class OnBoardingPageView extends StatelessWidget {
       controller: pageController,
       children: [
         PageViewItem(
-          image: Assets.onboarding_step_one,
+          image: Assets.imagesPngOnboardingImageOne,
           titel: "Expert Care, Happy Movement ",
           subtitle:
               'Helping your child move, grow, and thrive with expert pediatric physiotherapy',
         ),
         PageViewItem(
-          image: Assets.onboarding_step_three,
+          image: Assets.imagesPngOnboardingImageTwo,
           titel: 'Tailored Exercises',
           subtitle:
               'Therapist-designed programs tailored to your baby needs fun and effective',
         ),
         PageViewItem(
-          image: Assets.onboarding_step_two,
+          image: Assets.imagesPngOnboardingImageThree,
           titel: 'See Every Step Forward',
           subtitle:
               'Monitor your baby’s progress, receive reminders all in one simple app',

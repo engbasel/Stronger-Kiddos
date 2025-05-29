@@ -1,8 +1,7 @@
-// ignore_for_file: sized_box_for_whitespace
-
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
-import 'build_bottom_navItem.dart';
+
+import 'nav_items.dart';
 
 class BottomNavBarSection extends StatelessWidget {
   final int selectedIndex;
@@ -13,13 +12,19 @@ class BottomNavBarSection extends StatelessWidget {
     required this.selectedIndex,
     required this.onItemTapped,
   });
-  
+
   // Define the image paths and labels
   static const List<Map<String, String>> _navItems = [
     {'icon': 'assets/images/png/buttom_nav_bar/baby.png', 'label': 'Home'},
     {'icon': 'assets/images/png/buttom_nav_bar/person.png', 'label': 'Profile'},
-    {'icon': 'assets/images/png/buttom_nav_bar/calender.png', 'label': 'Calendar'},
-    {'icon': 'assets/images/png/buttom_nav_bar/person.png', 'label': 'Settings'},
+    {
+      'icon': 'assets/images/png/buttom_nav_bar/calender.png',
+      'label': 'Calendar',
+    },
+    {
+      'icon': 'assets/images/png/buttom_nav_bar/person.png',
+      'label': 'Settings',
+    },
   ];
 
   @override
@@ -38,7 +43,7 @@ class BottomNavBarSection extends StatelessWidget {
       child: Column(
         children: [
           // This is your actual navigation content
-          Container(
+          SizedBox(
             height: 60,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
