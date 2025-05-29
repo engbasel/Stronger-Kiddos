@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
+import 'package:strongerkiddos/features/home/presentation/views/main_navigation_view.dart';
 import '../../../../../app_constants.dart';
 import '../../../../../core/services/firebase_auth_service.dart';
 import '../../../../../core/services/get_it_service.dart';
 import '../../../../../core/services/shared_preferences_sengleton.dart';
 import '../../../../../core/utils/app_text_style.dart';
 import '../../../../auth/presentation/views/login_view.dart';
-import '../../../../home/presentation/Views/home_view.dart';
 import '../../../../onbording/presentation/views/on_boarding_view.dart';
 import '../../../../questionnaires/domain/repos/baby_questionnaire_repo.dart';
 import '../../../../questionnaires/presentation/views/baby_questionnaire_controller_view.dart';
@@ -154,7 +154,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
       } else {
         if (!mounted) return;
 
-        Navigator.pushReplacementNamed(context, HomeView.routeName);
+        Navigator.pushReplacementNamed(context, MainNavigationView.routeName);
       }
     } else {
       // User needs to complete questionnaire - direct to questionnaire without showing home

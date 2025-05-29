@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
 import '../../../../core/helper/failuer_top_snak_bar.dart';
 import '../../../../core/helper/scccess_top_snak_bar.dart';
 import '../../../../core/services/firebase_auth_service.dart';
 import '../../../../core/services/get_it_service.dart';
 import '../../../../core/widgets/custom_progrss_hud.dart';
+import '../../../../features/home/presentation/views/main_navigation_view.dart';
 import '../manager/baby_questionnaire_cubit/baby_questionnaire_cubit.dart';
 import '../manager/baby_questionnaire_cubit/baby_questionnaire_state.dart';
 import 'baby_basic_info_page.dart';
@@ -38,13 +38,13 @@ class BabyQuestionnaireControllerContent extends StatelessWidget {
         if (state is BabyQuestionnaireError) {
           failuerTopSnackBar(context, state.message);
         } else if (state is BabyQuestionnaireCompleted) {
-          Navigator.pushReplacementNamed(context, HomeView.routeName);
+          Navigator.pushReplacementNamed(context, MainNavigationView.routeName);
         } else if (state is BabyQuestionnaireSubmitSuccess) {
           succesTopSnackBar(
             context,
             'Thank you for completing the questionnaire!',
           );
-          Navigator.pushReplacementNamed(context, HomeView.routeName);
+          Navigator.pushReplacementNamed(context, MainNavigationView.routeName);
         }
       },
       builder: (context, state) {

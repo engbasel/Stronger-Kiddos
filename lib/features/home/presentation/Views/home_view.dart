@@ -1,9 +1,7 @@
 // lib/features/home/presentation/Views/home_view.dart
 import 'package:flutter/material.dart';
-import 'package:strongerkiddos/core/utils/app_colors.dart';
-import 'package:strongerkiddos/features/home/presentation/widgets/home_view_body.dart';
 import '../../../../core/services/auth_guard.dart';
-import '../widgets/bottom_nav_bar_section.dart';
+import 'main_navigation_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -42,11 +40,7 @@ class _HomeViewState extends State<HomeView> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(
-      bottomNavigationBar: BottomNavBarSection(),
-      body: SafeArea(bottom: false, child: HomeviewBody()),
-      backgroundColor: AppColors.backgroundColor,
-    );
+    // Navigate to the main navigation view which handles the bottom navigation
+    return const MainNavigationView();
   }
 }
-// starting main home View featuer

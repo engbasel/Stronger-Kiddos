@@ -1,8 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
-import '../../../../core/utils/app_colors.dart';
-import '../../../../core/widgets/custom_button.dart';
-
 class BabyQuestionnaireCompletionView extends StatelessWidget {
   const BabyQuestionnaireCompletionView({super.key});
 
@@ -37,7 +32,10 @@ class BabyQuestionnaireCompletionView extends StatelessWidget {
               const SizedBox(height: 48),
               CustomButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, HomeView.routeName);
+                  Navigator.pushReplacementNamed(
+                    context,
+                    MainNavigationView.routeName,
+                  );
                 },
                 text: 'Go to Home',
                 backgroundColor: AppColors.fabBackgroundColor,

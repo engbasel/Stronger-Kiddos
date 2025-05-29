@@ -1,24 +1,26 @@
-// ignore_for_file: deprecated_member_use, sized_box_for_whitespace
+// ignore_for_file: sized_box_for_whitespace
 
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/core/utils/app_colors.dart';
+import 'build_bottom_navItem.dart';
 
 class BottomNavBarSection extends StatelessWidget {
-  // ignore: use_super_parameters
-  const BottomNavBarSection({Key? key}) : super(key: key);
+  final int selectedIndex;
+  final Function(int) onItemTapped;
 
-  Widget _buildBottomNavItem(IconData icon, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.orange : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Icon(
-        icon,
-        color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
-      ),
-    );
-  }
+  const BottomNavBarSection({
+    super.key,
+    required this.selectedIndex,
+    required this.onItemTapped,
+  });
+  
+  // Define the image paths and labels
+  static const List<Map<String, String>> _navItems = [
+    {'icon': 'assets/images/png/buttom_nav_bar/baby.png', 'label': 'Home'},
+    {'icon': 'assets/images/png/buttom_nav_bar/person.png', 'label': 'Profile'},
+    {'icon': 'assets/images/png/buttom_nav_bar/calender.png', 'label': 'Calendar'},
+    {'icon': 'assets/images/png/buttom_nav_bar/person.png', 'label': 'Settings'},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class BottomNavBarSection extends StatelessWidget {
       height: 60 + bottomPadding,
       width: double.infinity, // Ensure full width
       decoration: const BoxDecoration(
-        color: Color(0xFF2D3953),
+        color: AppColors.bottomNavColor,
         borderRadius: BorderRadius.zero, // Remove any border radius
       ),
       child: Column(
@@ -40,16 +42,19 @@ class BottomNavBarSection extends StatelessWidget {
             height: 60,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildBottomNavItem(Icons.home, true),
-                _buildBottomNavItem(Icons.search, false),
-                _buildBottomNavItem(Icons.message, false),
-                _buildBottomNavItem(Icons.person, false),
-              ],
+              children: List.generate(_navItems.length, (index) {
+                return BuildBottomNavItem(
+                  iconPath: _navItems[index]['icon']!,
+                  label: _navItems[index]['label']!,
+                  index: index,
+                  selectedIndex: selectedIndex,
+                  onTap: onItemTapped,
+                );
+              }),
             ),
           ),
           // This empty container fills the safe area with your background color
-          Container(height: bottomPadding, color: Color(0xFF2D3953)),
+          Container(height: bottomPadding, color: AppColors.bottomNavColor),
         ],
       ),
     );
