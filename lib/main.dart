@@ -9,12 +9,21 @@ import 'stronger_siddos_app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase first
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize SharedPreferences
   await Prefs.init();
-  setupGetit();
+
+  // Initialize Supabase BEFORE setupGetit
   await Supabase.initialize(
     url: AppConstants.supabaseUrl,
     anonKey: AppConstants.anonKey,
   );
+
+  // Setup GetIt AFTER Supabase initialization
+  setupGetit();
+
   runApp(const StrongerKiddos());
 }

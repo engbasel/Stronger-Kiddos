@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/core/utils/app_colors.dart';
 
+import '../../../../../core/utils/app_text_style.dart';
+
 class SkipWidget extends StatelessWidget {
   const SkipWidget({
     super.key,
@@ -59,14 +61,7 @@ class SkipWidget extends StatelessWidget {
                 opacity: 0.3,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    'Skip',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  child: Text('Skip', style: TextStyles.medium15),
                 ),
               ),
             ),

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class CheckboxOption extends StatelessWidget {
+class BabyCheckboxOption extends StatelessWidget {
   final String text;
   final bool isSelected;
   final Function(bool) onChanged;
 
-  const CheckboxOption({
+  const BabyCheckboxOption({
     super.key,
     required this.text,
     required this.isSelected,
@@ -25,6 +25,8 @@ class CheckboxOption extends StatelessWidget {
             width: 1.5,
           ),
           borderRadius: BorderRadius.circular(12),
+          color:
+              isSelected ? Colors.orange.withValues(alpha: .05) : Colors.white,
         ),
         child: Row(
           children: [
@@ -46,6 +48,7 @@ class CheckboxOption extends StatelessWidget {
                 text,
                 style: TextStyle(
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                  fontSize: 16,
                 ),
               ),
             ),

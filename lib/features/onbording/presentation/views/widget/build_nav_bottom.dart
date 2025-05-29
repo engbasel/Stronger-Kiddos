@@ -101,8 +101,6 @@ Widget buildNavigationBar(
                   child: Text(
                     "Next",
                     style: TextStyles.bold16.copyWith(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 15,
                       color: AppColors.fabBackgroundColor,
                     ),
                   ),

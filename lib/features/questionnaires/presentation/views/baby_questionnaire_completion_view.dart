@@ -1,13 +1,12 @@
-// lib/features/questionnaire/presentation/views/questionnaire_completion_view.dart
 import 'package:flutter/material.dart';
+import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/custom_button.dart';
-import '../../../../features/home/presentation/Views/home_view.dart';
 
-class QuestionnaireCompletionView extends StatelessWidget {
-  const QuestionnaireCompletionView({super.key});
+class BabyQuestionnaireCompletionView extends StatelessWidget {
+  const BabyQuestionnaireCompletionView({super.key});
 
-  static const String routeName = '/questionnaire-completed';
+  static const String routeName = '/baby-questionnaire-completed';
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +18,7 @@ class QuestionnaireCompletionView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircleAvatar(
+              const CircleAvatar(
                 backgroundColor: Colors.green,
                 radius: 40,
                 child: Icon(Icons.check, color: Colors.white, size: 50),

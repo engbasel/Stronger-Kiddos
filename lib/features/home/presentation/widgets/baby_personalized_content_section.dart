@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../questionnaire/domain/entities/questionnaire_entity.dart';
 
-class PersonalizedContentSection extends StatelessWidget {
-  final QuestionnaireEntity questionnaireData;
+import '../../../questionnaires/domain/entities/baby_questionnaire_entity.dart';
 
-  const PersonalizedContentSection({
+class BabyPersonalizedContentSection extends StatelessWidget {
+  final BabyQuestionnaireEntity questionnaireData;
+
+  const BabyPersonalizedContentSection({
     super.key,
     required this.questionnaireData,
   });
@@ -16,18 +17,21 @@ class PersonalizedContentSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildChildSummaryCard(),
+            _buildBabySummaryCard(),
             const SizedBox(height: 20),
             _buildRecommendedActivitiesSection(),
             const SizedBox(height: 20),
-            _buildConcernAreaCards(),
+            _buildCareAreasCards(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildChildSummaryCard() {
+  Widget _buildBabySummaryCard() {
+    final age = DateTime.now().difference(questionnaireData.dateOfBirth).inDays;
+    final ageInMonths = (age / 30).round();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -45,28 +49,65 @@ class PersonalizedContentSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "${questionnaireData.childName}'s Profile",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              if (questionnaireData.babyPhotoUrl != null)
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: NetworkImage(
+                    questionnaireData.babyPhotoUrl!,
+                  ),
+                )
+              else
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.orange.withValues(alpha: .2),
+                  child: Icon(
+                    questionnaireData.gender == 'Boy' ? Icons.boy : Icons.girl,
+                    color: Colors.orange,
+                    size: 30,
+                  ),
+                ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${questionnaireData.babyName}'s Profile",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "${questionnaireData.gender} • $ageInMonths months old",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _buildProfileRow(
             icon: Icons.cake,
-            label: "Age",
-            value: "${questionnaireData.childAgeMonths} months",
-          ),
-          _buildProfileRow(
-            icon: Icons.person,
-            label: "Gender",
-            value: questionnaireData.gender,
+            label: "Born",
+            value:
+                "${questionnaireData.dateOfBirth.day}/${questionnaireData.dateOfBirth.month}/${questionnaireData.dateOfBirth.year}",
           ),
           if (questionnaireData.wasPremature &&
               questionnaireData.weeksPremature != null)
             _buildProfileRow(
               icon: Icons.access_time,
-              label: "Born",
-              value: "${questionnaireData.weeksPremature} weeks premature",
+              label: "Premature",
+              value: "${questionnaireData.weeksPremature} weeks early",
             ),
+          _buildProfileRow(
+            icon: Icons.schedule,
+            label: "Floor Time",
+            value: questionnaireData.floorTimeDaily,
+          ),
         ],
       ),
     );
@@ -84,15 +125,14 @@ class PersonalizedContentSection extends StatelessWidget {
           Icon(icon, size: 20, color: Colors.orange),
           const SizedBox(width: 12),
           Text("$label: ", style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(value),
+          Expanded(child: Text(value)),
         ],
       ),
     );
   }
 
   Widget _buildRecommendedActivitiesSection() {
-    // Determine age-appropriate and condition-specific activities
-    final List<Map<String, dynamic>> activities = _getRecommendedActivities();
+    final activities = _getRecommendedActivities();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,22 +161,24 @@ class PersonalizedContentSection extends StatelessWidget {
   }
 
   List<Map<String, dynamic>> _getRecommendedActivities() {
+    final age = DateTime.now().difference(questionnaireData.dateOfBirth).inDays;
+    final ageInMonths = (age / 30).round();
     final List<Map<String, dynamic>> activities = [];
 
     // Age-appropriate activities
-    if (questionnaireData.childAgeMonths <= 3) {
+    if (ageInMonths <= 3) {
       activities.add({
         'title': 'Tummy Time',
         'description': 'Start with short sessions to build neck strength',
         'icon': Icons.pregnant_woman,
       });
-    } else if (questionnaireData.childAgeMonths <= 6) {
+    } else if (ageInMonths <= 6) {
       activities.add({
         'title': 'Roll Practice',
         'description': 'Help your baby learn to roll front to back',
         'icon': Icons.rotate_90_degrees_ccw,
       });
-    } else if (questionnaireData.childAgeMonths <= 9) {
+    } else if (ageInMonths <= 9) {
       activities.add({
         'title': 'Sitting Practice',
         'description': 'Support your baby in sitting position',
@@ -164,15 +206,6 @@ class PersonalizedContentSection extends StatelessWidget {
         'title': 'Repositioning',
         'description': 'Techniques to prevent flat spots on the head',
         'icon': Icons.share_location,
-      });
-    }
-
-    // Add based on concern areas
-    if (questionnaireData.concernAreas.contains('Tummy Time')) {
-      activities.add({
-        'title': 'Fun Tummy Time',
-        'description': 'Make tummy time enjoyable with props and toys',
-        'icon': Icons.toys,
       });
     }
 
@@ -221,8 +254,9 @@ class PersonalizedContentSection extends StatelessWidget {
     );
   }
 
-  Widget _buildConcernAreaCards() {
-    if (questionnaireData.concernAreas.isEmpty) {
+  Widget _buildCareAreasCards() {
+    if (questionnaireData.diagnosedConditions.isEmpty ||
+        questionnaireData.diagnosedConditions.contains('None')) {
       return const SizedBox.shrink();
     }
 
@@ -234,7 +268,7 @@ class PersonalizedContentSection extends StatelessWidget {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
-        ...questionnaireData.concernAreas.take(3).map((concern) {
+        ...questionnaireData.diagnosedConditions.take(3).map((condition) {
           return Container(
             width: double.infinity,
             margin: const EdgeInsets.only(bottom: 12),
@@ -259,7 +293,10 @@ class PersonalizedContentSection extends StatelessWidget {
                     color: Colors.orange.withValues(alpha: .1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(_getConcernIcon(concern), color: Colors.orange),
+                  child: Icon(
+                    _getConditionIcon(condition),
+                    color: Colors.orange,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -267,7 +304,7 @@ class PersonalizedContentSection extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        concern,
+                        condition,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -294,22 +331,20 @@ class PersonalizedContentSection extends StatelessWidget {
     );
   }
 
-  IconData _getConcernIcon(String concern) {
-    switch (concern) {
-      case 'Tummy Time':
-        return Icons.pregnant_woman;
-      case 'Torticollis Flat Head / Plagiocephaly':
+  IconData _getConditionIcon(String condition) {
+    switch (condition.toLowerCase()) {
+      case 'torticollis':
         return Icons.accessibility_new;
-      case 'Rolling':
-        return Icons.rotate_90_degrees_ccw;
-      case 'Sitting':
-        return Icons.chair;
-      case 'Crawling':
-        return Icons.directions_walk;
-      case 'Standing / Cruising / Walking':
-        return Icons.directions_run;
-      default:
+      case 'plagiocephaly':
         return Icons.child_care;
+      case 'down syndrome':
+        return Icons.favorite;
+      case 'cp':
+        return Icons.wheelchair_pickup;
+      case 'developmental delay':
+        return Icons.timeline;
+      default:
+        return Icons.medical_services;
     }
   }
 }

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
 
-class QuestionPageScaffold extends StatelessWidget {
+class BabyQuestionPageScaffold extends StatelessWidget {
   final String questionText;
   final Widget child;
   final VoidCallback onNext;
   final bool showNextButton;
   final bool isLastQuestion;
 
-  const QuestionPageScaffold({
+  const BabyQuestionPageScaffold({
     super.key,
     required this.questionText,
     required this.child,
@@ -38,7 +38,7 @@ class QuestionPageScaffold extends StatelessWidget {
               child: Text(
                 questionText,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -65,7 +65,7 @@ class QuestionPageScaffold extends StatelessWidget {
                     ),
                     onPressed: onNext,
                     child: Text(
-                      isLastQuestion ? 'Finish' : 'Next',
+                      isLastQuestion ? 'Nest' : 'Nest',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
