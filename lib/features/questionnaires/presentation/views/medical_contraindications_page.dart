@@ -59,66 +59,68 @@ class _MedicalContraindicationsPageState
       showNextButton:
           hasContraindications != null &&
           (hasContraindications == false || _detailsController.text.isNotEmpty),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSelectableTile(
-                  "Yes",
-                  hasContraindications == true,
-                  () {
-                    setState(() {
-                      hasContraindications = true;
-                    });
-                  },
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 350),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSelectableTile(
+                    "Yes",
+                    hasContraindications == true,
+                    () {
+                      setState(() {
+                        hasContraindications = true;
+                      });
+                    },
+                  ),
                 ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildSelectableTile(
+                    "No",
+                    hasContraindications == false,
+                    () {
+                      setState(() {
+                        hasContraindications = false;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            if (hasContraindications == true) ...[
+              const SizedBox(height: 24),
+              const Text(
+                "If yes please describe",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildSelectableTile(
-                  "No",
-                  hasContraindications == false,
-                  () {
-                    setState(() {
-                      hasContraindications = false;
-                    });
-                  },
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _detailsController,
+                decoration: InputDecoration(
+                  hintText:
+                      "e.g., cardiac issues, hip instability, seizures, etc.",
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
                 ),
+                onChanged: (_) => setState(() {}),
+                maxLines: 3,
               ),
             ],
-          ),
-          if (hasContraindications == true) ...[
-            const SizedBox(height: 24),
-            const Text(
-              "If yes please describe",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _detailsController,
-              decoration: InputDecoration(
-                hintText:
-                    "e.g., cardiac issues, hip instability, seizures, etc.",
-                filled: true,
-                fillColor: Colors.grey.shade50,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-              ),
-              onChanged: (_) => setState(() {}),
-              maxLines: 3,
-            ),
+            const SizedBox(height: 20),
           ],
-          const SizedBox(height: 20),
-        ],
+        ),
       ),
     );
   }
@@ -134,7 +136,8 @@ class _MedicalContraindicationsPageState
       decoration: BoxDecoration(
         color: isSelected ? Colors.green.shade50 : Colors.white,
         border: Border.all(
-          color: isSelected ? Colors.green : Colors.grey.shade300,
+          color:
+              isSelected ? AppColors.fabBackgroundColor : Colors.grey.shade300,
           width: 1.5,
         ),
         borderRadius: BorderRadius.circular(12),
@@ -152,14 +155,17 @@ class _MedicalContraindicationsPageState
           label,
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.green.shade700 : Colors.black87,
+            color: isSelected ? AppColors.fabBackgroundColor : Colors.black87,
           ),
         ),
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         trailing:
             isSelected
-                ? const Icon(Icons.check_circle, color: Colors.green)
+                ? const Icon(
+                  Icons.check_circle,
+                  color: AppColors.fabBackgroundColor,
+                )
                 : null,
       ),
     );

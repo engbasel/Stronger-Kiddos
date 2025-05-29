@@ -41,7 +41,7 @@ class _CareProvidersPageState extends State<CareProvidersPage> {
       showNextButton: true,
       child: Column(
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 375),
           ...providers.map((provider) {
             final isSelected = selectedProviders.contains(provider);
             return Padding(
@@ -63,7 +63,10 @@ class _CareProvidersPageState extends State<CareProvidersPage> {
                   decoration: BoxDecoration(
                     color: isSelected ? Colors.green.shade50 : Colors.white,
                     border: Border.all(
-                      color: isSelected ? Colors.green : Colors.grey.shade300,
+                      color:
+                          isSelected
+                              ? AppColors.fabBackgroundColor
+                              : Colors.grey.shade300,
                       width: 1.5,
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -83,7 +86,9 @@ class _CareProvidersPageState extends State<CareProvidersPage> {
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         color:
-                            isSelected ? Colors.green.shade700 : Colors.black87,
+                            isSelected
+                                ? AppColors.fabBackgroundColor
+                                : Colors.black87,
                       ),
                     ),
                     trailing: Checkbox(
@@ -97,7 +102,7 @@ class _CareProvidersPageState extends State<CareProvidersPage> {
                           }
                         });
                       },
-                      activeColor: Colors.green,
+                      activeColor: AppColors.fabBackgroundColor,
                     ),
                   ),
                 ),

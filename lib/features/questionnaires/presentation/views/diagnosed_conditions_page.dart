@@ -77,7 +77,10 @@ class _DiagnosedConditionsPageState extends State<DiagnosedConditionsPage> {
                     decoration: BoxDecoration(
                       color: isSelected ? Colors.green.shade50 : Colors.white,
                       border: Border.all(
-                        color: isSelected ? Colors.green : Colors.grey.shade300,
+                        color:
+                            isSelected
+                                ? AppColors.fabBackgroundColor
+                                : Colors.grey.shade300,
                         width: 1.5,
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -98,7 +101,7 @@ class _DiagnosedConditionsPageState extends State<DiagnosedConditionsPage> {
                           fontWeight: FontWeight.w500,
                           color:
                               isSelected
-                                  ? Colors.green.shade700
+                                  ? AppColors.fabBackgroundColor
                                   : Colors.black87,
                         ),
                       ),
@@ -107,7 +110,7 @@ class _DiagnosedConditionsPageState extends State<DiagnosedConditionsPage> {
                         onChanged:
                             (selected) =>
                                 _handleSelection(condition, selected!),
-                        activeColor: Colors.green,
+                        activeColor: AppColors.fabBackgroundColor,
                       ),
                     ),
                   ),
