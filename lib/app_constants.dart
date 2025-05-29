@@ -29,4 +29,6 @@ class AppConstants {
   static const String supabaseUrl = 'https://euvlssawtizmdamkjhfh.supabase.co';
   static const String anonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1dmxzc2F3dGl6bWRhbWtqaGZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzMTEwMTQsImV4cCI6MjA2MTg4NzAxNH0.3C4qDEJ7N5fH2FRu9PEJVYfhqkTMTISWJoKob-QWz-c';
+  static const String sAnonKey =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1dmxzc2F3dGl6bWRhbWtqaGZoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjMxMTAxNCwiZXhwIjoyMDYxODg3MDE0fQ.yp3jeOHAQOH79zRVqsHxbMC7Ah8ppciaU6XrRy0A7iM';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:strongerkiddos/app_constants.dart';
+import 'package:strongerkiddos/core/services/supabase_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/services/get_it_service.dart';
@@ -19,8 +20,12 @@ Future<void> main() async {
   // Initialize Supabase BEFORE setupGetit
   await Supabase.initialize(
     url: AppConstants.supabaseUrl,
-    anonKey: AppConstants.anonKey,
+    anonKey: AppConstants.sAnonKey,
   );
+
+  // Initialize SupabaseStorageService with the Supabase client
+  SupabaseStorageService.initialize(Supabase.instance);
+  await SupabaseStorageService.createBuckets('baby-photos');
 
   // Setup GetIt AFTER Supabase initialization
   setupGetit();
