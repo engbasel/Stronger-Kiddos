@@ -4,18 +4,24 @@ import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/services/supabase_storage.dart';
+import '../../../../core/services/storage_service.dart';
 import '../models/baby_questionnaire_model.dart';
 import '../../domain/entities/baby_questionnaire_entity.dart';
 import '../../domain/repos/baby_questionnaire_repo.dart';
 
 class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
+  final StorageService storageService;
+
+  BabyQuestionnaireRepoImpl({required this.storageService});
+
   FirebaseAuth get auth => FirebaseAuth.instance;
   FirebaseFirestore get firestore => FirebaseFirestore.instance;
-  final SupabaseStorageService _storageService = SupabaseStorageService();
 
   @override
-  Future<Either<Failures, String>> uploadBabyPhoto(File imageFile) async {
+  Future<Either<Failures, String>> uploadBabyPhoto({
+    required File imageFile,
+    required String userId,
+  }) async {
     try {
       // Check if user is authenticated
       final currentUser = auth.currentUser;
@@ -23,17 +29,20 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('User not authenticated'));
       }
 
-      final userId = currentUser.uid;
-      log('Uploading photo for user: $userId');
+      if (currentUser.uid != userId) {
+        return left(ServerFailure('Unauthorized access'));
+      }
 
-      // Use the updated upload method
-      final photoUrl = await _storageService.uploadFile(
+      log('Uploading baby photo for user: $userId');
+
+      // Use the storage service to upload baby photo
+      final imageUrl = await storageService.uploadFile(
         imageFile,
-        'user_$userId',
+        'babies/photos/$userId',
       );
 
-      log('Photo uploaded successfully: $photoUrl');
-      return right(photoUrl);
+      log('Baby photo uploaded successfully. URL: $imageUrl');
+      return right(imageUrl);
     } catch (e) {
       log('Error uploading baby photo: $e');
       return left(
@@ -43,56 +52,104 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
   }
 
   @override
-  Future<Either<Failures, String>> getSignedImageUrl(String filePath) async {
+  Future<Either<Failures, String?>> getBabyPhotoUrl({
+    required String userId,
+  }) async {
     try {
       final currentUser = auth.currentUser;
       if (currentUser == null) {
         return left(ServerFailure('User not authenticated'));
       }
 
-      // If it's already a public URL, return it as is
-      if (filePath.startsWith('http')) {
-        return right(filePath);
+      if (currentUser.uid != userId) {
+        return left(ServerFailure('Unauthorized access'));
       }
 
-      // For private files, create signed URL
-      final signedUrl = await _storageService.getSignedUrl(filePath);
-      return right(signedUrl);
+      // Try to get the photo URL from questionnaire data first
+      final questionnaireResult = await getQuestionnaireData(userId: userId);
+
+      return questionnaireResult.fold(
+        (failure) => right(null), // Return null if no questionnaire found
+        (questionnaire) => right(questionnaire.babyPhotoUrl),
+      );
     } catch (e) {
-      log('Error creating signed URL: $e');
-      return left(ServerFailure('Failed to get image URL'));
+      log('Error getting baby photo URL: $e');
+      return left(
+        ServerFailure('Failed to get baby photo URL: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failures, void>> deleteBabyPhoto(String filePath) async {
+  Future<Either<Failures, void>> deleteBabyPhoto({
+    required String userId,
+  }) async {
     try {
       final currentUser = auth.currentUser;
       if (currentUser == null) {
         return left(ServerFailure('User not authenticated'));
       }
 
-      // Extract file path from URL if needed
-      String pathToDelete = filePath;
-      if (filePath.startsWith('http')) {
-        // Extract path from URL if it's a full URL
-        final uri = Uri.parse(filePath);
-        final pathSegments = uri.pathSegments;
-        if (pathSegments.length > 2) {
-          pathToDelete = pathSegments.sublist(2).join('/');
-        }
+      if (currentUser.uid != userId) {
+        return left(ServerFailure('Unauthorized access'));
       }
 
-      // Verify user owns this file (security check)
-      if (!pathToDelete.startsWith('user_${currentUser.uid}/')) {
-        return left(ServerFailure('Unauthorized: Cannot delete file'));
-      }
+      // Note: For now, we'll just remove the photo URL from questionnaire data
+      // The actual file deletion can be implemented if needed
 
-      await _storageService.deleteFile(pathToDelete);
-      return right(null);
+      // Get current questionnaire data
+      final questionnaireResult = await getQuestionnaireData(userId: userId);
+
+      return questionnaireResult.fold((failure) => left(failure), (
+        questionnaire,
+      ) async {
+        // Update questionnaire with null photo URL
+        final updatedQuestionnaire = BabyQuestionnaireEntity(
+          babyPhotoUrl: null, // Remove photo URL
+          babyName: questionnaire.babyName,
+          dateOfBirth: questionnaire.dateOfBirth,
+          relationship: questionnaire.relationship,
+          gender: questionnaire.gender,
+          wasPremature: questionnaire.wasPremature,
+          weeksPremature: questionnaire.weeksPremature,
+          diagnosedConditions: questionnaire.diagnosedConditions,
+          careProviders: questionnaire.careProviders,
+          hasMedicalContraindications:
+              questionnaire.hasMedicalContraindications,
+          contraindicationsDescription:
+              questionnaire.contraindicationsDescription,
+          floorTimeDaily: questionnaire.floorTimeDaily,
+          containerTimeDaily: questionnaire.containerTimeDaily,
+          completedAt: questionnaire.completedAt,
+        );
+
+        final updateResult = await updateQuestionnaireData(
+          userId: userId,
+          questionnaireData: updatedQuestionnaire,
+        );
+
+        return updateResult;
+      });
     } catch (e) {
-      log('Error deleting photo: $e');
-      return left(ServerFailure('Failed to delete photo'));
+      log('Error deleting baby photo: $e');
+      return left(
+        ServerFailure('Failed to delete baby photo: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failures, bool>> hasBabyPhoto({required String userId}) async {
+    try {
+      final photoUrlResult = await getBabyPhotoUrl(userId: userId);
+
+      return photoUrlResult.fold(
+        (failure) => right(false),
+        (photoUrl) => right(photoUrl != null && photoUrl.isNotEmpty),
+      );
+    } catch (e) {
+      log('Error checking if baby photo exists: $e');
+      return right(false);
     }
   }
 
@@ -193,6 +250,37 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         ServerFailure(
           'Failed to check questionnaire completion: ${e.toString()}',
         ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failures, void>> updateQuestionnaireData({
+    required String userId,
+    required BabyQuestionnaireEntity questionnaireData,
+  }) async {
+    try {
+      final currentUser = auth.currentUser;
+      if (currentUser == null) {
+        return left(ServerFailure('User not authenticated'));
+      }
+
+      if (currentUser.uid != userId) {
+        return left(ServerFailure('Unauthorized access'));
+      }
+
+      final model = BabyQuestionnaireModel.fromEntity(questionnaireData);
+      await firestore
+          .collection('baby_questionnaires')
+          .doc(userId)
+          .update(model.toJson());
+
+      log('Questionnaire data updated successfully for user: $userId');
+      return right(null);
+    } catch (e) {
+      log('Error updating questionnaire data: $e');
+      return left(
+        ServerFailure('Failed to update questionnaire data: ${e.toString()}'),
       );
     }
   }

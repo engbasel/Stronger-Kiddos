@@ -4,6 +4,7 @@ import 'package:strongerkiddos/features/auth/presentation/views/otp_vericifactio
 import 'package:strongerkiddos/features/auth/presentation/views/successfully_verified_view.dart';
 import 'package:strongerkiddos/features/home/presentation/Views/home_view.dart';
 import 'package:strongerkiddos/features/home/presentation/views/main_navigation_view.dart';
+import 'package:strongerkiddos/features/profile/presentation/views/profile_view.dart';
 import '../../features/auth/presentation/views/email_verification_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/phone_signup_view.dart';
@@ -30,6 +31,8 @@ Route<dynamic> onGenerateRoute(RouteSettings setting) {
       return buildPageRoute(const PhoneSignupView());
     case HomeView.routeName:
       return buildPageRoute(const HomeView());
+    case ProfileView.routeName:
+      return buildPageRoute(const ProfileView());
     case BabyQuestionnaireControllerView.routeName:
       return buildPageRoute(const BabyQuestionnaireControllerView());
     case OtpVerificationView.routeName:

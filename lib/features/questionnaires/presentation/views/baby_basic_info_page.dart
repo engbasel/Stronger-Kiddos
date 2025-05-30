@@ -1,9 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/helper/failuer_top_snak_bar.dart';
+import '../../../../core/helper/scccess_top_snak_bar.dart';
 import '../../../../core/utils/form_validation.dart';
 import '../../../../core/utils/page_rout_builder.dart';
 import '../manager/baby_questionnaire_cubit/baby_questionnaire_cubit.dart';
+import '../manager/baby_questionnaire_cubit/baby_questionnaire_state.dart';
 import '../widgets/baby_basic_info_page.dart';
 import '../widgets/baby_question_page.dart';
 import '../widgets/custom_text_field_widget.dart';
@@ -27,13 +31,12 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   final ImagePicker _picker = ImagePicker();
 
   DateTime? _selectedDate;
-  String _selectedGender = 'Girl';
+  String _selectedGender = '';
   String? _selectedRelationship;
   File? _selectedImage;
-
-  // Image upload state (separate from BLoC)
-  bool _isUploadingImage = false;
-  bool _imageUploaded = false;
+  String? _uploadedImageUrl;
+  bool _isUploading = false;
+  bool _isUploaded = false;
 
   static const List<String> _relationships = [
     'Mother',
@@ -48,6 +51,33 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadExistingData();
+  }
+
+  void _loadExistingData() {
+    // Load existing data from cubit if available
+    final cubit = widget.questionnaireCubit;
+    if (cubit.babyName.isNotEmpty) {
+      _nameController.text = cubit.babyName;
+    }
+    if (cubit.dateOfBirth != null) {
+      _selectedDate = cubit.dateOfBirth;
+    }
+    if (cubit.gender.isNotEmpty) {
+      _selectedGender = cubit.gender;
+    }
+    if (cubit.relationship.isNotEmpty) {
+      _selectedRelationship = cubit.relationship;
+    }
+    if (cubit.babyPhotoUrl != null) {
+      _uploadedImageUrl = cubit.babyPhotoUrl;
+      _isUploaded = true;
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
@@ -55,126 +85,218 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BabyQuestionPageScaffold(
-      questionText: "Tell us about your baby",
-      onNext: _onNext,
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              BabyPhotoUploadWidget(
-                selectedImage: _selectedImage,
-                isUploading: _isUploadingImage,
-                isUploaded: _imageUploaded,
-                onTap: _pickImage,
-              ),
-              const SizedBox(height: 30.0),
-              GenderSelectionWidget(
-                selectedGender: _selectedGender,
-                onGenderSelected: (gender) {
-                  setState(() {
-                    _selectedGender = gender;
-                  });
-                },
-              ),
-              const SizedBox(height: 30.0),
-              CustomTextFieldWidget(
-                controller: _nameController,
-                label: 'What can we call your baby?',
-                placeholder: 'Name',
-                validator: FormValidation.validateName,
-              ),
-              const SizedBox(height: 24.0),
-              CustomDatePickerWidget(
-                selectedDate: _selectedDate,
-                onDateSelected: (date) {
-                  setState(() {
-                    _selectedDate = date;
-                  });
-                },
-                label: 'Date of birth',
-              ),
-              const SizedBox(height: 24.0),
-              CustomDropdownWidget(
-                selectedValue: _selectedRelationship,
-                items: _relationships,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedRelationship = value;
-                  });
-                },
-                label: 'I am the child\'s',
-                placeholder: 'Select your relationship',
-              ),
-              const SizedBox(height: 20.0),
-            ],
+    return BlocListener<BabyQuestionnaireCubit, BabyQuestionnaireState>(
+      listener: (context, state) {
+        if (state is BabyPhotoUploading) {
+          setState(() {
+            _isUploading = true;
+          });
+        } else if (state is BabyPhotoUploaded) {
+          succesTopSnackBar(context, 'Baby photo uploaded successfully');
+          setState(() {
+            _uploadedImageUrl = state.photoUrl;
+            _selectedImage = null; // Clear local image after successful upload
+            _isUploading = false;
+            _isUploaded = true;
+          });
+        } else if (state is BabyPhotoDeleted) {
+          succesTopSnackBar(context, 'Baby photo deleted successfully');
+          setState(() {
+            _uploadedImageUrl = null;
+            _selectedImage = null;
+            _isUploading = false;
+            _isUploaded = false;
+          });
+        } else if (state is BabyQuestionnaireError) {
+          failuerTopSnackBar(context, state.message);
+          setState(() {
+            _isUploading = false;
+          });
+        }
+      },
+      child: BabyQuestionPageScaffold(
+        questionText: "Tell us about your baby",
+        onNext: _onNext,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                BabyPhotoUploadWidget(
+                  selectedImage: _selectedImage,
+                  uploadedImageUrl: _uploadedImageUrl,
+                  isUploading: _isUploading,
+                  isUploaded: _isUploaded,
+                  onTap: _showImageOptions,
+                  onDelete: _deleteBabyPhoto,
+                ),
+                const SizedBox(height: 30.0),
+                GenderSelectionWidget(
+                  selectedGender: _selectedGender,
+                  onGenderSelected: (gender) {
+                    setState(() {
+                      _selectedGender = gender;
+                    });
+                  },
+                ),
+                const SizedBox(height: 30.0),
+                CustomTextFieldWidget(
+                  controller: _nameController,
+                  label: 'What can we call your baby?',
+                  placeholder: 'Name',
+                  validator: FormValidation.validateName,
+                ),
+                const SizedBox(height: 24.0),
+                CustomDatePickerWidget(
+                  selectedDate: _selectedDate,
+                  onDateSelected: (date) {
+                    setState(() {
+                      _selectedDate = date;
+                    });
+                  },
+                  label: 'Date of birth',
+                ),
+                const SizedBox(height: 24.0),
+                CustomDropdownWidget(
+                  selectedValue: _selectedRelationship,
+                  items: _relationships,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedRelationship = value;
+                    });
+                  },
+                  label: 'I am the child\'s',
+                  placeholder: 'Select your relationship',
+                ),
+                const SizedBox(height: 20.0),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Future<void> _pickImage() async {
-    if (_isUploadingImage) return; // Prevent multiple uploads
+  void _showImageOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Baby Photo',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.photo_library, color: Colors.blue),
+                  ),
+                  title: const Text('Choose from Gallery'),
+                  subtitle: const Text('Select from your photo gallery'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.photo_camera, color: Colors.green),
+                  ),
+                  title: const Text('Take Photo'),
+                  subtitle: const Text('Capture with camera'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                if (_uploadedImageUrl != null || _selectedImage != null)
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.red,
+                      ),
+                    ),
+                    title: const Text('Remove Photo'),
+                    subtitle: const Text('Delete current photo'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _deleteBabyPhoto();
+                    },
+                  ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
+  Future<void> _pickImage(ImageSource source) async {
     try {
       final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 70,
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
       );
 
       if (image != null) {
         setState(() {
           _selectedImage = File(image.path);
-          _isUploadingImage = true;
-          _imageUploaded = false;
+          _isUploaded = false;
         });
 
-        await _uploadImageInBackground();
+        // Upload the image
+        await widget.questionnaireCubit.uploadBabyPhoto(_selectedImage!);
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar('Failed to pick image: $e');
+        failuerTopSnackBar(context, 'Failed to pick image: ${e.toString()}');
       }
     }
   }
 
-  Future<void> _uploadImageInBackground() async {
+  Future<void> _deleteBabyPhoto() async {
     try {
-      final result = await widget.questionnaireCubit.questionnaireRepo
-          .uploadBabyPhoto(_selectedImage!);
-
-      result.fold(
-        (failure) {
-          if (mounted) {
-            setState(() {
-              _isUploadingImage = false;
-              _imageUploaded = false;
-            });
-            _showSnackBar('Upload failed: ${failure.message}');
-          }
-        },
-        (photoUrl) {
-          if (mounted) {
-            setState(() {
-              _isUploadingImage = false;
-              _imageUploaded = true;
-            });
-            // Store the URL in cubit
-            widget.questionnaireCubit.babyPhotoUrl = photoUrl;
-            _showSnackBar('Photo uploaded successfully!');
-          }
-        },
-      );
+      await widget.questionnaireCubit.deleteBabyPhoto();
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isUploadingImage = false;
-          _imageUploaded = false;
-        });
-        _showSnackBar('Upload error: $e');
+        failuerTopSnackBar(context, 'Failed to delete photo: ${e.toString()}');
       }
     }
   }
@@ -228,8 +350,13 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 }

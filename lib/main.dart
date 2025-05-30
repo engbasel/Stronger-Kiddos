@@ -25,11 +25,15 @@ Future<void> main() async {
 
   // Initialize SupabaseStorageService with the Supabase client
   SupabaseStorageService.initialize(Supabase.instance);
-  await SupabaseStorageService.createBuckets('baby-photos');
+
+  // Create all required buckets
+  await SupabaseStorageService.createBuckets([
+    'baby-photos',
+    'user-profiles', // إضافة bucket جديد لصور البروفايل
+  ]);
 
   // Setup GetIt AFTER Supabase initialization
   setupGetit();
 
   runApp(const StrongerKiddos());
 }
-//
