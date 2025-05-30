@@ -37,7 +37,7 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
       log('Uploading baby photo for user: $userId');
 
       // Sanitize file name and construct a clean path
-      final fileName = path.basenameWithoutExtension(imageFile.path) + '.jpg';
+      final fileName = '${path.basenameWithoutExtension(imageFile.path)}.jpg';
       final storagePath = 'babies/photos/$userId/$fileName';
 
       // Use the storage service to upload baby photo
