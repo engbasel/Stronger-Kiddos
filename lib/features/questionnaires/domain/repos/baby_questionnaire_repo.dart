@@ -16,6 +16,16 @@ abstract class BabyQuestionnaireRepo {
 
   Future<Either<Failures, bool>> hasBabyPhoto({required String userId});
 
+  // NEW: Save only photo URL immediately after upload
+  Future<Either<Failures, void>> saveBabyPhotoUrl({
+    required String userId,
+    required String photoUrl,
+  });
+
+  // NEW: Get partial questionnaire data (for loading during restart)
+  Future<Either<Failures, BabyQuestionnaireEntity?>>
+  getPartialQuestionnaireData({required String userId});
+
   // Questionnaire data methods
   Future<Either<Failures, void>> saveQuestionnaireData({
     required String userId,

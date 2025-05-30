@@ -2,11 +2,10 @@ class UserEntity {
   final String id;
   final String name;
   final String email;
-  final String? photoUrl; // من Google Auth
+  final String? photoUrl; // صورة المستخدم الوحيدة (من Google أو مرفوعة يدوياً)
   final String? phoneNumber;
   final String? role;
   final DateTime? createdAt;
-  final String? profileImageUrl; // صورة البروفايل المحملة يدوياً
   final bool isEmailVerified;
   final String userStat;
 
@@ -16,18 +15,11 @@ class UserEntity {
     required this.email,
     this.role = 'user',
     this.createdAt,
-    this.photoUrl,
+    this.photoUrl, // حقل واحد فقط للصورة
     this.phoneNumber,
-    this.profileImageUrl,
     this.isEmailVerified = false,
     this.userStat = 'active',
   });
-
-  // طريقة لجلب أفضل صورة متاحة
-  String? get bestAvailableImageUrl {
-    // أولوية للصورة المحملة يدوياً، ثم صورة Google
-    return profileImageUrl?.isNotEmpty == true ? profileImageUrl : photoUrl;
-  }
 
   // نسخة محدثة من المستخدم
   UserEntity copyWith({
@@ -38,7 +30,6 @@ class UserEntity {
     String? phoneNumber,
     String? role,
     DateTime? createdAt,
-    String? profileImageUrl,
     bool? isEmailVerified,
     String? userStat,
   }) {
@@ -46,11 +37,10 @@ class UserEntity {
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
-      photoUrl: photoUrl ?? this.photoUrl,
+      photoUrl: photoUrl ?? this.photoUrl, // استخدام حقل واحد
       phoneNumber: phoneNumber ?? this.phoneNumber,
       role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
-      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       userStat: userStat ?? this.userStat,
     );
@@ -62,10 +52,9 @@ class UserEntity {
       'name': name,
       'email': email,
       'phoneNumber': phoneNumber,
-      'photoUrl': photoUrl,
+      'photoUrl': photoUrl, // حقل واحد فقط
       'role': role,
       'createdAt': createdAt?.toIso8601String(),
-      'profileImageUrl': profileImageUrl,
       'isEmailVerified': isEmailVerified,
       'userStat': userStat,
     };
@@ -77,11 +66,10 @@ class UserEntity {
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       phoneNumber: map['phoneNumber'],
-      photoUrl: map['photoUrl'],
+      photoUrl: map['photoUrl'], // حقل واحد فقط
       role: map['role'] ?? 'user',
       createdAt:
           map['createdAt'] != null ? DateTime.parse(map['createdAt']) : null,
-      profileImageUrl: map['profileImageUrl'],
       isEmailVerified: map['isEmailVerified'] ?? false,
       userStat: map['userStat'] ?? 'active',
     );

@@ -25,20 +25,18 @@ abstract class AuthRepo {
   Future<UserEntity> getUserData({required String uid});
   Future<void> updateUserData({required UserEntity user});
 
-  // Profile image methods
-  Future<Either<Failures, String>> uploadProfileImage({
+  // صورة المستخدم - حقل واحد فقط
+  Future<Either<Failures, String>> uploadUserPhoto({
     required File imageFile,
     required String userId,
   });
 
-  Future<Either<Failures, void>> deleteProfileImage({required String userId});
+  Future<Either<Failures, void>> deleteUserPhoto({required String userId});
 
-  Future<Either<Failures, UserEntity>> updateUserProfileImage({
+  Future<Either<Failures, UserEntity>> updateUserPhoto({
     required String userId,
-    required String? profileImageUrl,
+    required String? photoUrl,
   });
 
-  Future<Either<Failures, String?>> getUserProfileImageUrl({
-    required String userId,
-  });
+  Future<Either<Failures, String?>> getUserPhotoUrl({required String userId});
 }

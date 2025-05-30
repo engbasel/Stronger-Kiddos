@@ -91,6 +91,8 @@ class BabyPhotoUploadWidget extends StatelessWidget {
           fit: BoxFit.cover,
           width: 120,
           height: 120,
+          errorBuilder:
+              (context, error, stackTrace) => const _EmptyPhotoPlaceholder(),
         ),
       );
     }
@@ -130,9 +132,10 @@ class BabyPhotoUploadWidget extends StatelessWidget {
   Color _getStatusColor() {
     if (isUploading) {
       return Colors.orange;
-    } else if (isUploaded ||
-        (uploadedImageUrl != null && uploadedImageUrl!.isNotEmpty)) {
+    } else if (uploadedImageUrl != null && uploadedImageUrl!.isNotEmpty) {
       return Colors.green;
+    } else if (selectedImage != null) {
+      return Colors.blue;
     } else {
       return Colors.black87;
     }

@@ -6,11 +6,10 @@ class UserModel extends UserEntity {
     required super.id,
     required super.name,
     required super.email,
-    super.photoUrl,
+    super.photoUrl, // حقل واحد فقط للصورة
     super.phoneNumber,
     super.role,
     super.createdAt,
-    super.profileImageUrl,
     super.isEmailVerified,
     super.userStat,
   });
@@ -20,12 +19,11 @@ class UserModel extends UserEntity {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       email: json['email'] ?? '',
-      photoUrl: json['photoUrl'],
+      photoUrl: json['photoUrl'], // حقل واحد فقط
       phoneNumber: json['phoneNumber'],
       role: json['role'] ?? 'user',
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      profileImageUrl: json['profileImageUrl'],
       isEmailVerified: json['isEmailVerified'] ?? false,
       userStat: json['userStat'] ?? 'active',
     );
@@ -36,11 +34,10 @@ class UserModel extends UserEntity {
       'id': id,
       'name': name,
       'email': email,
-      'photoUrl': photoUrl,
+      'photoUrl': photoUrl, // حقل واحد فقط
       'phoneNumber': phoneNumber,
       'role': role,
       'createdAt': createdAt?.toIso8601String(),
-      'profileImageUrl': profileImageUrl,
       'isEmailVerified': isEmailVerified,
       'userStat': userStat,
     };
@@ -51,11 +48,10 @@ class UserModel extends UserEntity {
       id: user.id,
       name: user.name,
       email: user.email,
-      photoUrl: user.photoUrl,
+      photoUrl: user.photoUrl, // حقل واحد فقط
       phoneNumber: user.phoneNumber,
       role: user.role,
       createdAt: user.createdAt,
-      profileImageUrl: user.profileImageUrl,
       isEmailVerified: user.isEmailVerified,
       userStat: user.userStat,
     );
@@ -66,7 +62,7 @@ class UserModel extends UserEntity {
       id: user.uid,
       name: user.displayName ?? '',
       email: user.email ?? '',
-      photoUrl: user.photoURL,
+      photoUrl: user.photoURL, // استخدام صورة Google مباشرة
       phoneNumber: phoneNumber ?? user.phoneNumber,
       role: 'user',
       createdAt: DateTime.now(),
@@ -85,7 +81,6 @@ class UserModel extends UserEntity {
     String? phoneNumber,
     String? role,
     DateTime? createdAt,
-    String? profileImageUrl,
     bool? isEmailVerified,
     String? userStat,
   }) {
@@ -93,11 +88,10 @@ class UserModel extends UserEntity {
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
-      photoUrl: photoUrl ?? this.photoUrl,
+      photoUrl: photoUrl ?? this.photoUrl, // حقل واحد فقط
       phoneNumber: phoneNumber ?? this.phoneNumber,
       role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
-      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       userStat: userStat ?? this.userStat,
     );

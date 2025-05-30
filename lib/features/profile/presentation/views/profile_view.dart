@@ -11,6 +11,7 @@ import '../../../../core/widgets/custom_progrss_hud.dart';
 import '../../../../core/widgets/custom_text_form_field.dart';
 import '../../../auth/domain/repos/auth_repo.dart';
 import '../../../auth/domain/entities/user_entity.dart';
+import '../../../questionnaires/domain/repos/baby_questionnaire_repo.dart'; // إضافة
 import '../../../../core/services/firebase_auth_service.dart';
 import '../manager/profile_cubit.dart';
 import '../manager/profile_state.dart';
@@ -26,6 +27,7 @@ class ProfileView extends StatelessWidget {
           (context) => ProfileCubit(
             authRepo: getIt<AuthRepo>(),
             authService: getIt<FirebaseAuthService>(),
+            questionnaireRepo: getIt<BabyQuestionnaireRepo>(), // إضافة
           )..loadUserProfile(),
       child: const ProfileViewBody(),
     );
@@ -58,10 +60,13 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
       listener: (context, state) {
         if (state is ProfileError) {
           failuerTopSnackBar(context, state.message);
-        } else if (state is ProfileImageUploaded) {
-          succesTopSnackBar(context, 'Profile image updated successfully');
-        } else if (state is ProfileImageDeleted) {
-          succesTopSnackBar(context, 'Profile image deleted successfully');
+        } else if (state is ProfilePhotoUploaded) {
+          succesTopSnackBar(context, 'Photo updated successfully');
+          // إعلام المستخدم بأن صورة الطفل تم تحديثها أيضاً
+          _showPhotoSyncInfo(context);
+        } else if (state is ProfilePhotoDeleted) {
+          succesTopSnackBar(context, 'Photo deleted successfully');
+          _showPhotoSyncInfo(context);
         } else if (state is ProfileUpdated) {
           succesTopSnackBar(context, 'Profile updated successfully');
         } else if (state is ProfileLoaded) {
@@ -86,6 +91,17 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () => Navigator.pop(context),
             ),
+            actions: [
+              // زر لمزامنة صور الطفل
+              IconButton(
+                icon: const Icon(Icons.sync, color: Colors.grey),
+                onPressed: () {
+                  context.read<ProfileCubit>().refreshProfile();
+                  _showSyncMessage(context);
+                },
+                tooltip: 'Sync with baby photos',
+              ),
+            ],
           ),
           body: CustomProgrssHud(
             isLoading: _isLoading(state),
@@ -98,22 +114,22 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
 
   bool _isLoading(ProfileState state) {
     return state is ProfileLoading ||
-        state is ProfileImageUploading ||
-        state is ProfileImageDeleting ||
+        state is ProfilePhotoUploading ||
+        state is ProfilePhotoDeleting ||
         state is ProfileUpdating;
   }
 
   Widget _buildBody(BuildContext context, ProfileState state) {
     if (state is ProfileLoaded ||
-        state is ProfileImageUploaded ||
-        state is ProfileImageDeleted ||
+        state is ProfilePhotoUploaded ||
+        state is ProfilePhotoDeleted ||
         state is ProfileUpdated) {
       UserEntity user;
       if (state is ProfileLoaded) {
         user = state.user;
-      } else if (state is ProfileImageUploaded) {
+      } else if (state is ProfilePhotoUploaded) {
         user = state.user;
-      } else if (state is ProfileImageDeleted) {
+      } else if (state is ProfilePhotoDeleted) {
         user = state.user;
       } else {
         user = (state as ProfileUpdated).user;
@@ -125,7 +141,36 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
           key: _formKey,
           child: Column(
             children: [
-              _buildProfileImage(context, user),
+              _buildUserPhoto(context, user),
+              const SizedBox(height: 16),
+              // رسالة توضيحية
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.blue.shade600,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Your profile photo is shared with your baby\'s photo',
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 32),
               _buildUserInfoForm(user),
               const SizedBox(height: 32),
@@ -163,7 +208,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
     return const Center(child: CircularProgressIndicator());
   }
 
-  Widget _buildProfileImage(BuildContext context, UserEntity user) {
+  Widget _buildUserPhoto(BuildContext context, UserEntity user) {
     return Column(
       children: [
         Stack(
@@ -179,7 +224,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                   width: 3,
                 ),
               ),
-              child: ClipOval(child: _buildImageWidget(user)),
+              child: ClipOval(child: _buildPhotoWidget(user)),
             ),
             Positioned(
               bottom: 0,
@@ -190,7 +235,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                   color: AppColors.fabBackgroundColor,
                 ),
                 child: IconButton(
-                  onPressed: () => _showImageOptions(context),
+                  onPressed: () => _showPhotoOptions(context, user),
                   icon: const Icon(
                     Icons.camera_alt,
                     color: Colors.white,
@@ -215,12 +260,10 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
     );
   }
 
-  Widget _buildImageWidget(UserEntity user) {
-    final imageUrl = user.bestAvailableImageUrl;
-
-    if (imageUrl != null && imageUrl.isNotEmpty) {
+  Widget _buildPhotoWidget(UserEntity user) {
+    if (user.photoUrl != null && user.photoUrl!.isNotEmpty) {
       return Image.network(
-        imageUrl,
+        user.photoUrl!,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           return _buildPlaceholderIcon();
@@ -297,58 +340,88 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
     }
   }
 
-  void _showImageOptions(BuildContext context) {
+  void _showPhotoOptions(BuildContext context, UserEntity user) {
     showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (BuildContext context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Update Photo',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'This will update both your profile and baby photo',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
               ListTile(
-                leading: const Icon(Icons.photo_library),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.photo_library, color: Colors.blue),
+                ),
                 title: const Text('Choose from Gallery'),
+                subtitle: const Text('Select from your photos'),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
+                  _pickPhoto(ImageSource.gallery);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_camera),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.photo_camera, color: Colors.green),
+                ),
                 title: const Text('Take Photo'),
+                subtitle: const Text('Capture with camera'),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
+                  _pickPhoto(ImageSource.camera);
                 },
               ),
-              BlocBuilder<ProfileCubit, ProfileState>(
-                builder: (context, state) {
-                  if (state is ProfileLoaded ||
-                      state is ProfileImageUploaded ||
-                      state is ProfileUpdated) {
-                    UserEntity user;
-                    if (state is ProfileLoaded) {
-                      user = state.user;
-                    } else if (state is ProfileImageUploaded) {
-                      user = state.user;
-                    } else {
-                      user = (state as ProfileUpdated).user;
-                    }
-
-                    if (user.bestAvailableImageUrl != null) {
-                      return ListTile(
-                        leading: Icon(Icons.delete, color: Colors.red),
-                        title: Text('Remove Photo'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          context.read<ProfileCubit>().deleteProfileImage();
-                        },
-                      );
-                    }
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
+              if (user.photoUrl != null && user.photoUrl!.isNotEmpty)
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.delete_outline, color: Colors.red),
+                  ),
+                  title: const Text('Remove Photo'),
+                  subtitle: const Text('Delete current photo'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.read<ProfileCubit>().deleteUserPhoto();
+                  },
+                ),
+              const SizedBox(height: 20),
             ],
           ),
         );
@@ -356,7 +429,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
     );
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickPhoto(ImageSource source) async {
     try {
       final XFile? image = await _picker.pickImage(
         source: source,
@@ -368,13 +441,49 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
       if (image != null) {
         final File imageFile = File(image.path);
         if (mounted) {
-          context.read<ProfileCubit>().uploadProfileImage(imageFile);
+          context.read<ProfileCubit>().uploadUserPhoto(imageFile);
         }
       }
     } catch (e) {
       if (mounted) {
-        failuerTopSnackBar(context, 'Failed to pick image');
+        failuerTopSnackBar(context, 'Failed to pick photo');
       }
     }
+  }
+
+  void _showPhotoSyncInfo(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.sync, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Expanded(child: Text('Baby photo updated automatically')),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void _showSyncMessage(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.sync, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Expanded(child: Text('Syncing with baby photos...')),
+          ],
+        ),
+        backgroundColor: Colors.blue,
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 }

@@ -47,9 +47,11 @@ class SupabaseStorageService implements StorageService {
   @override
   Future<String> uploadFile(File file, String path) async {
     try {
-      String fileName = b.basename(file.path);
-      String extensionName = b.extension(file.path);
-      final String filePath = '$path/$fileName$extensionName';
+      // Extract the directory and file name separately
+      final directory =
+          path.contains('/') ? path.substring(0, path.lastIndexOf('/')) : '';
+      final fileName = b.basename(file.path);
+      final filePath = directory.isEmpty ? fileName : '$directory/$fileName';
 
       String bucketName;
 
@@ -64,7 +66,7 @@ class SupabaseStorageService implements StorageService {
 
       log('Uploading file to bucket: $bucketName, path: $filePath');
 
-      // Remove old file if exists (for profile images)
+      // Remove old file if exists (for profile images and baby photos)
       if (path.startsWith('users/profile-images') ||
           path.startsWith('babies/photos')) {
         try {

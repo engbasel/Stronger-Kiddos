@@ -8,7 +8,7 @@ import '../../../../core/utils/form_validation.dart';
 import '../../../../core/utils/page_rout_builder.dart';
 import '../manager/baby_questionnaire_cubit/baby_questionnaire_cubit.dart';
 import '../manager/baby_questionnaire_cubit/baby_questionnaire_state.dart';
-import '../widgets/baby_basic_info_page.dart';
+import '../widgets/baby_photo_upload_widget.dart';
 import '../widgets/baby_question_page.dart';
 import '../widgets/custom_text_field_widget.dart';
 import '../widgets/gender_selection_widget.dart';
@@ -37,6 +37,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   String? _uploadedImageUrl;
   bool _isUploading = false;
   bool _isUploaded = false;
+  bool _dataLoaded = false;
 
   static const List<String> _relationships = [
     'Mother',
@@ -57,24 +58,45 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   }
 
   void _loadExistingData() {
+    if (_dataLoaded) return;
+
     // Load existing data from cubit if available
     final cubit = widget.questionnaireCubit;
+
     if (cubit.babyName.isNotEmpty) {
       _nameController.text = cubit.babyName;
     }
+
     if (cubit.dateOfBirth != null) {
       _selectedDate = cubit.dateOfBirth;
     }
+
     if (cubit.gender.isNotEmpty) {
       _selectedGender = cubit.gender;
     }
+
     if (cubit.relationship.isNotEmpty) {
       _selectedRelationship = cubit.relationship;
     }
-    if (cubit.babyPhotoUrl != null) {
+
+    if (cubit.babyPhotoUrl != null && cubit.babyPhotoUrl!.isNotEmpty) {
       _uploadedImageUrl = cubit.babyPhotoUrl;
       _isUploaded = true;
     }
+
+    _dataLoaded = true;
+
+    // Force UI update
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ensure data is loaded when the widget is built
+    _loadExistingData();
   }
 
   @override
@@ -111,6 +133,11 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
           failuerTopSnackBar(context, state.message);
           setState(() {
             _isUploading = false;
+          });
+        } else if (state is BabyQuestionnaireReadyToStart) {
+          // Reload data when cubit state changes
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _loadExistingData();
           });
         }
       },
@@ -281,7 +308,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
           _isUploaded = false;
         });
 
-        // Upload the image
+        // Upload the image immediately
         await widget.questionnaireCubit.uploadBabyPhoto(_selectedImage!);
       }
     } catch (e) {

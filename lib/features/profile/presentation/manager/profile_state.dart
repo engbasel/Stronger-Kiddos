@@ -30,24 +30,25 @@ class ProfileError extends ProfileState {
   List<Object?> get props => [message];
 }
 
-class ProfileImageUploading extends ProfileState {}
+// حالات الصورة - محدثة
+class ProfilePhotoUploading extends ProfileState {}
 
-class ProfileImageUploaded extends ProfileState {
+class ProfilePhotoUploaded extends ProfileState {
   final UserEntity user;
-  final String imageUrl;
+  final String photoUrl;
 
-  const ProfileImageUploaded({required this.user, required this.imageUrl});
+  const ProfilePhotoUploaded({required this.user, required this.photoUrl});
 
   @override
-  List<Object?> get props => [user, imageUrl];
+  List<Object?> get props => [user, photoUrl];
 }
 
-class ProfileImageDeleting extends ProfileState {}
+class ProfilePhotoDeleting extends ProfileState {}
 
-class ProfileImageDeleted extends ProfileState {
+class ProfilePhotoDeleted extends ProfileState {
   final UserEntity user;
 
-  const ProfileImageDeleted({required this.user});
+  const ProfilePhotoDeleted({required this.user});
 
   @override
   List<Object?> get props => [user];

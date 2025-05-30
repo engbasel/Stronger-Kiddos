@@ -22,6 +22,7 @@ class BabyQuestionnaireControllerView extends StatelessWidget {
           (context) => BabyQuestionnaireCubit(
             questionnaireRepo: getIt.get(),
             authService: getIt.get<FirebaseAuthService>(),
+            authRepo: getIt.get(), // Added required authRepo argument
           )..checkQuestionnaireStatus(),
       child: const BabyQuestionnaireControllerContent(),
     );
@@ -49,20 +50,52 @@ class BabyQuestionnaireControllerContent extends StatelessWidget {
       },
       builder: (context, state) {
         return CustomProgrssHud(
-          // CLEAN: Only show loading for questionnaire operations, NOT image upload
-          isLoading:
-              state is BabyQuestionnaireLoading ||
-              state is BabyQuestionnaireSaving,
-          child:
-              state is BabyQuestionnaireReadyToStart
-                  ? BabyBasicInfoPage(
-                    questionnaireCubit: context.read<BabyQuestionnaireCubit>(),
-                  )
-                  : const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  ),
+          // 🎯 FIX: Only show loading for specific questionnaire operations
+          // Exclude photo upload states to prevent UI rebuild issues
+          isLoading: _shouldShowLoading(state),
+          child: _buildContent(context, state),
         );
       },
+    );
+  }
+
+  // 🎯 Helper method to determine when to show loading
+  bool _shouldShowLoading(BabyQuestionnaireState state) {
+    return state is BabyQuestionnaireLoading ||
+        state is BabyQuestionnaireSaving;
+    // ❌ Excluded: BabyPhotoUploading, BabyPhotoDeleting
+    // These will be handled locally in BabyBasicInfoPage
+  }
+
+  // 🎯 Helper method to build content based on state
+  Widget _buildContent(BuildContext context, BabyQuestionnaireState state) {
+    if (state is BabyQuestionnaireReadyToStart ||
+        state is BabyPhotoUploading || // ✅ Allow photo upload states
+        state is BabyPhotoUploaded || // ✅ Allow photo uploaded states
+        state is BabyPhotoDeleted || // ✅ Allow photo deleted states
+        state is BabyPhotoDeleting) {
+      // ✅ Allow photo deleting states
+      return BabyBasicInfoPage(
+        questionnaireCubit: context.read<BabyQuestionnaireCubit>(),
+      );
+    }
+
+    // Show loading for initial states
+    return const Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text(
+              'Loading questionnaire...',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
