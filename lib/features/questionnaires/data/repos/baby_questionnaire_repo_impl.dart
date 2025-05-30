@@ -8,7 +8,6 @@ import '../../../../core/services/storage_service.dart';
 import '../models/baby_questionnaire_model.dart';
 import '../../domain/entities/baby_questionnaire_entity.dart';
 import '../../domain/repos/baby_questionnaire_repo.dart';
-import 'package:path/path.dart' as path;
 
 class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
   final StorageService storageService;
@@ -36,12 +35,8 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
 
       log('Uploading baby photo for user: $userId');
 
-      // Sanitize file name and construct a clean path
-      final fileName = '${path.basenameWithoutExtension(imageFile.path)}.jpg';
-      final storagePath = 'babies/photos/$userId/$fileName';
-
-      // Use the storage service to upload baby photo
-      final imageUrl = await storageService.uploadFile(imageFile, storagePath);
+      // استخدام الطريقة الجديدة المخصصة لصور الأطفال
+      final imageUrl = await storageService.uploadBabyPhoto(imageFile, userId);
 
       log('Baby photo uploaded successfully. URL: $imageUrl');
 
@@ -201,6 +196,76 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
     }
   }
 
+  // 🎯 Helper method للتحقق من أن الdocument فاضي من البيانات المفيدة
+  bool _isDocumentEmptyOfUsefulData(Map<String, dynamic> data) {
+    // قائمة الحقول المهمة اللي لو موجودة يبقى فيه بيانات مفيدة
+    List<String> importantFields = [
+      'babyName',
+      'dateOfBirth',
+      'relationship',
+      'gender',
+      'wasPremature',
+      'weeksPremature',
+      'diagnosedConditions',
+      'careProviders',
+      'hasMedicalContraindications',
+      'contraindicationsDescription',
+      'floorTimeDaily',
+      'containerTimeDaily',
+    ];
+
+    for (String field in importantFields) {
+      if (data.containsKey(field) && data[field] != null) {
+        // تحقق إضافي للحقول اللي نوعها List
+        if (data[field] is List) {
+          if ((data[field] as List).isNotEmpty) {
+            return false; // فيه بيانات مفيدة
+          }
+        }
+        // تحقق إضافي للحقول اللي نوعها String
+        else if (data[field] is String) {
+          if ((data[field] as String).trim().isNotEmpty) {
+            return false; // فيه بيانات مفيدة
+          }
+        }
+        // تحقق للحقول اللي نوعها int
+        else if (data[field] is int) {
+          if (data[field] != 0) {
+            return false; // فيه بيانات مفيدة
+          }
+        }
+        // تحقق للحقول اللي نوعها bool
+        else if (data[field] is bool) {
+          // للحقول boolean، نعتبر أي قيمة (true أو false) بيانات مفيدة
+          return false;
+        }
+        // أي حقل آخر موجود ومش null
+        else {
+          return false; // فيه بيانات مفيدة
+        }
+      }
+    }
+
+    return true; // الdocument فاضي من البيانات المفيدة
+  }
+
+  // 🎯 Helper method محدثة لحذف أو تنظيف الdocument
+  Future<void> _cleanupDocumentAfterPhotoDelete({
+    required String userId,
+    required DocumentReference docRef,
+    required Map<String, dynamic> data,
+  }) async {
+    if (data['isPartial'] == true && _isDocumentEmptyOfUsefulData(data)) {
+      // احذف الdocument كله لأنه فاضي ومافيهوش غير الصورة
+      await docRef.delete();
+      log('Empty partial document deleted completely for user: $userId');
+    } else {
+      // احذف الصورة بس واسيب باقي البيانات
+      await docRef.update({'babyPhotoUrl': FieldValue.delete()});
+      log('Baby photo URL deleted from document for user: $userId');
+    }
+  }
+
   @override
   Future<Either<Failures, void>> deleteBabyPhoto({
     required String userId,
@@ -215,11 +280,33 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('Unauthorized access'));
       }
 
-      // Update the document to remove photo URL
-      final docRef = firestore.collection('baby_questionnaires').doc(userId);
-      await docRef.update({'babyPhotoUrl': FieldValue.delete()});
+      // 🎯 FIX: حذف الصورة من Supabase Storage أولاً
+      try {
+        await storageService.deleteBabyPhoto(userId);
+        log('Baby photo deleted from Supabase storage for user: $userId');
+      } catch (e) {
+        log('Warning: Failed to delete baby photo from storage: $e');
+        // نكمل العملية حتى لو فشل حذف الصورة من Storage
+      }
 
-      log('Baby photo URL deleted for user: $userId');
+      // التحقق من حالة الdocument قبل التعديل
+      final docRef = firestore.collection('baby_questionnaires').doc(userId);
+      final docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        log('Document does not exist for user: $userId');
+        return right(null);
+      }
+
+      final data = docSnapshot.data()!;
+
+      // 🎯 استخدام Helper method للتنظيف
+      await _cleanupDocumentAfterPhotoDelete(
+        userId: userId,
+        docRef: docRef,
+        data: data,
+      );
+
       return right(null);
     } catch (e) {
       log('Error deleting baby photo: $e');
@@ -232,6 +319,14 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
   @override
   Future<Either<Failures, bool>> hasBabyPhoto({required String userId}) async {
     try {
+      // استخدام الطريقة الجديدة من StorageService
+      final hasPhotoInStorage = await storageService.hasBabyPhoto(userId);
+
+      if (hasPhotoInStorage) {
+        return right(true);
+      }
+
+      // إذا مكانش موجود في Storage، نتحقق من Firestore كـ fallback
       final photoUrlResult = await getBabyPhotoUrl(userId: userId);
 
       return photoUrlResult.fold(
