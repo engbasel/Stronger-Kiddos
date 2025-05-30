@@ -300,56 +300,62 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
   void _showImageOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Choose from Gallery'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_camera),
-                title: const Text('Take Photo'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-              BlocBuilder<ProfileCubit, ProfileState>(
-                builder: (context, state) {
-                  if (state is ProfileLoaded ||
-                      state is ProfileImageUploaded ||
-                      state is ProfileUpdated) {
-                    UserEntity user;
-                    if (state is ProfileLoaded) {
-                      user = state.user;
-                    } else if (state is ProfileImageUploaded) {
-                      user = state.user;
-                    } else {
-                      user = (state as ProfileUpdated).user;
-                    }
+      isScrollControlled: true, // Ensure the sheet can expand if needed
+      builder: (BuildContext sheetContext) {
+        return BlocProvider.value(
+          value: context.read<ProfileCubit>(), // Pass the existing cubit
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Choose from Gallery'),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Take Photo'),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                BlocBuilder<ProfileCubit, ProfileState>(
+                  builder: (sheetContext, state) {
+                    if (state is ProfileLoaded ||
+                        state is ProfileImageUploaded ||
+                        state is ProfileUpdated) {
+                      UserEntity user;
+                      if (state is ProfileLoaded) {
+                        user = state.user;
+                      } else if (state is ProfileImageUploaded) {
+                        user = state.user;
+                      } else {
+                        user = (state as ProfileUpdated).user;
+                      }
 
-                    if (user.bestAvailableImageUrl != null) {
-                      return ListTile(
-                        leading: Icon(Icons.delete, color: Colors.red),
-                        title: Text('Remove Photo'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          context.read<ProfileCubit>().deleteProfileImage();
-                        },
-                      );
+                      if (user.bestAvailableImageUrl != null) {
+                        return ListTile(
+                          leading: Icon(Icons.delete, color: Colors.red),
+                          title: Text('Remove Photo'),
+                          onTap: () {
+                            Navigator.pop(sheetContext);
+                            sheetContext
+                                .read<ProfileCubit>()
+                                .deleteProfileImage();
+                          },
+                        );
+                      }
                     }
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            ],
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
