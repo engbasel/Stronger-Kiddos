@@ -23,7 +23,6 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
     required String userId,
   }) async {
     try {
-      // Check if user is authenticated
       final currentUser = auth.currentUser;
       if (currentUser == null) {
         return left(ServerFailure('User not authenticated'));
@@ -33,23 +32,34 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('Unauthorized access'));
       }
 
-      log('Uploading baby photo for user: $userId');
+      log('Starting baby photo upload for user: $userId');
 
-      // استخدام الطريقة الجديدة المخصصة لصور الأطفال
+      // 🔥 رفع الصورة لـ Supabase Storage (هيحذف القديمة ويرفع الجديدة)
       final imageUrl = await storageService.uploadBabyPhoto(imageFile, userId);
+      log('Baby photo uploaded to Supabase successfully. URL: $imageUrl');
 
-      log('Baby photo uploaded successfully. URL: $imageUrl');
+      // 🔥 التأكد من الحصول على آخر صورة من Supabase
+      final latestPhotoUrl = await storageService.getBabyPhotoUrl(userId);
+      final finalImageUrl = latestPhotoUrl ?? imageUrl;
 
-      // Save the photo URL to Firebase
+      log('Latest baby photo URL confirmed: $finalImageUrl');
+
+      // حفظ الرابط في baby_questionnaires
       final saveResult = await saveBabyPhotoUrl(
         userId: userId,
-        photoUrl: imageUrl,
+        photoUrl: finalImageUrl,
       );
       if (saveResult.isLeft()) {
-        log('Warning: Photo uploaded but failed to save URL to Firebase');
+        log(
+          'Warning: Photo uploaded but failed to save URL to baby_questionnaires',
+        );
       }
 
-      return right(imageUrl);
+      // 🔥 حفظ الرابط في users collection مع timestamp للتأكد من التحديث
+      await _updateUserProfilePhoto(userId: userId, photoUrl: finalImageUrl);
+
+      log('Baby photo process completed successfully for user: $userId');
+      return right(finalImageUrl);
     } catch (e) {
       log('Error uploading baby photo: $e');
       return left(
@@ -73,32 +83,73 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('Unauthorized access'));
       }
 
-      // Check if questionnaire document exists
       final docRef = firestore.collection('baby_questionnaires').doc(userId);
       final docSnapshot = await docRef.get();
 
+      final updateData = {
+        'babyPhotoUrl': photoUrl,
+        'photoUpdatedAt': FieldValue.serverTimestamp(), // 🔥 إضافة timestamp
+        'lastUpdated': FieldValue.serverTimestamp(),
+      };
+
       if (docSnapshot.exists) {
-        // Update existing document
-        await docRef.update({
-          'babyPhotoUrl': photoUrl,
-          'lastUpdated': FieldValue.serverTimestamp(),
-        });
+        await docRef.update(updateData);
+        log('Baby photo URL updated in existing document for user: $userId');
       } else {
-        // Create partial document with just the photo URL
-        await docRef.set({
-          'babyPhotoUrl': photoUrl,
-          'isPartial': true,
-          'lastUpdated': FieldValue.serverTimestamp(),
-        });
+        updateData['isPartial'] = true;
+        await docRef.set(updateData);
+        log('Baby photo URL saved in new partial document for user: $userId');
       }
 
-      log('Baby photo URL saved successfully for user: $userId');
       return right(null);
     } catch (e) {
       log('Error saving baby photo URL: $e');
       return left(
         ServerFailure('Failed to save baby photo URL: ${e.toString()}'),
       );
+    }
+  }
+
+  // 🔥 دالة محدثة لتحديث صورة المستخدم مع ضمان الحصول على آخر صورة
+  Future<void> _updateUserProfilePhoto({
+    required String userId,
+    required String? photoUrl,
+  }) async {
+    try {
+      final userDocRef = firestore.collection('users').doc(userId);
+
+      if (photoUrl != null) {
+        // 🔥 التحقق مرة أخرى من آخر صورة في Supabase قبل الحفظ
+        final latestPhotoUrl = await storageService.getBabyPhotoUrl(userId);
+        final finalPhotoUrl = latestPhotoUrl ?? photoUrl;
+
+        await userDocRef.update({
+          'photoUrl': finalPhotoUrl,
+          'photoUpdatedAt': FieldValue.serverTimestamp(), // 🔥 timestamp للتتبع
+          'lastUpdated': FieldValue.serverTimestamp(),
+        });
+        log('User profile photo updated successfully: $finalPhotoUrl');
+      } else {
+        await userDocRef.update({
+          'photoUrl': FieldValue.delete(),
+          'photoUpdatedAt': FieldValue.serverTimestamp(),
+          'lastUpdated': FieldValue.serverTimestamp(),
+        });
+        log('User profile photo deleted successfully');
+      }
+    } catch (e) {
+      log('Error updating user profile photo: $e');
+      // مانعملش throw عشان ماتأثرش على عملية الطفل
+    }
+  }
+
+  // 🔥 دالة جديدة للحصول على آخر صورة من Supabase مباشرة
+  Future<String?> _getLatestPhotoFromStorage(String userId) async {
+    try {
+      return await storageService.getBabyPhotoUrl(userId);
+    } catch (e) {
+      log('Error getting latest photo from storage: $e');
+      return null;
     }
   }
 
@@ -126,12 +177,14 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
 
       final data = docSnapshot.data()!;
 
-      // Check if it's a complete questionnaire or partial
+      // 🔥 التأكد من الحصول على آخر صورة من Supabase
+      final latestPhotoUrl = await _getLatestPhotoFromStorage(userId);
+      final finalPhotoUrl = latestPhotoUrl ?? data['babyPhotoUrl'];
+
       if (data['isPartial'] == true) {
-        // Return minimal entity with just available data
         return right(
           BabyQuestionnaireEntity(
-            babyPhotoUrl: data['babyPhotoUrl'],
+            babyPhotoUrl: finalPhotoUrl, // 🔥 استخدام آخر صورة
             babyName: data['babyName'] ?? '',
             dateOfBirth:
                 data['dateOfBirth'] != null
@@ -157,13 +210,15 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
           ),
         );
       } else {
-        // Return complete questionnaire
         final model = BabyQuestionnaireModel.fromJson(data);
-        return right(model.toEntity());
+        final entity = model.toEntity();
+        // 🔥 تحديث الصورة بآخر نسخة
+        final updatedEntity = entity.copyWith(babyPhotoUrl: finalPhotoUrl);
+        return right(updatedEntity);
       }
     } catch (e) {
       log('Error getting partial questionnaire data: $e');
-      return right(null); // Return null instead of error for partial data
+      return right(null);
     }
   }
 
@@ -181,11 +236,17 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('Unauthorized access'));
       }
 
-      // Try to get the photo URL from questionnaire data first
-      final partialResult = await getPartialQuestionnaireData(userId: userId);
+      // 🔥 الحصول على آخر صورة من Supabase مباشرة
+      final latestPhotoUrl = await _getLatestPhotoFromStorage(userId);
+      if (latestPhotoUrl != null) {
+        log('Latest baby photo URL from storage: $latestPhotoUrl');
+        return right(latestPhotoUrl);
+      }
 
+      // fallback: جرب من questionnaire data
+      final partialResult = await getPartialQuestionnaireData(userId: userId);
       return partialResult.fold(
-        (failure) => right(null), // Return null if no data found
+        (failure) => right(null),
         (questionnaire) => right(questionnaire?.babyPhotoUrl),
       );
     } catch (e) {
@@ -196,9 +257,7 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
     }
   }
 
-  //  Helper method للتحقق من أن الdocument فاضي من البيانات المفيدة
   bool _isDocumentEmptyOfUsefulData(Map<String, dynamic> data) {
-    // قائمة الحقول المهمة اللي لو موجودة يبقى فيه بيانات مفيدة
     List<String> importantFields = [
       'babyName',
       'dateOfBirth',
@@ -216,52 +275,41 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
 
     for (String field in importantFields) {
       if (data.containsKey(field) && data[field] != null) {
-        // تحقق إضافي للحقول اللي نوعها List
         if (data[field] is List) {
           if ((data[field] as List).isNotEmpty) {
-            return false; // فيه بيانات مفيدة
+            return false;
           }
-        }
-        // تحقق إضافي للحقول اللي نوعها String
-        else if (data[field] is String) {
+        } else if (data[field] is String) {
           if ((data[field] as String).trim().isNotEmpty) {
-            return false; // فيه بيانات مفيدة
+            return false;
           }
-        }
-        // تحقق للحقول اللي نوعها int
-        else if (data[field] is int) {
+        } else if (data[field] is int) {
           if (data[field] != 0) {
-            return false; // فيه بيانات مفيدة
+            return false;
           }
-        }
-        // تحقق للحقول اللي نوعها bool
-        else if (data[field] is bool) {
-          // للحقول boolean، نعتبر أي قيمة (true أو false) بيانات مفيدة
+        } else if (data[field] is bool) {
           return false;
-        }
-        // أي حقل آخر موجود ومش null
-        else {
-          return false; // فيه بيانات مفيدة
+        } else {
+          return false;
         }
       }
     }
-
-    return true; // الdocument فاضي من البيانات المفيدة
+    return true;
   }
 
-  // 🎯 Helper method محدثة لحذف أو تنظيف الdocument
   Future<void> _cleanupDocumentAfterPhotoDelete({
     required String userId,
     required DocumentReference docRef,
     required Map<String, dynamic> data,
   }) async {
     if (data['isPartial'] == true && _isDocumentEmptyOfUsefulData(data)) {
-      // احذف الdocument كله لأنه فاضي ومافيهوش غير الصورة
       await docRef.delete();
       log('Empty partial document deleted completely for user: $userId');
     } else {
-      // احذف الصورة بس واسيب باقي البيانات
-      await docRef.update({'babyPhotoUrl': FieldValue.delete()});
+      await docRef.update({
+        'babyPhotoUrl': FieldValue.delete(),
+        'photoUpdatedAt': FieldValue.serverTimestamp(),
+      });
       log('Baby photo URL deleted from document for user: $userId');
     }
   }
@@ -280,33 +328,33 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('Unauthorized access'));
       }
 
-      // 🎯 FIX: حذف الصورة من Supabase Storage أولاً
+      log('Starting baby photo deletion for user: $userId');
+
+      // 🔥 حذف الصورة من Supabase Storage أولاً
       try {
         await storageService.deleteBabyPhoto(userId);
         log('Baby photo deleted from Supabase storage for user: $userId');
       } catch (e) {
         log('Warning: Failed to delete baby photo from storage: $e');
-        // نكمل العملية حتى لو فشل حذف الصورة من Storage
       }
 
-      // التحقق من حالة الdocument قبل التعديل
+      // حذف من baby_questionnaires
       final docRef = firestore.collection('baby_questionnaires').doc(userId);
       final docSnapshot = await docRef.get();
 
-      if (!docSnapshot.exists) {
-        log('Document does not exist for user: $userId');
-        return right(null);
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data()!;
+        await _cleanupDocumentAfterPhotoDelete(
+          userId: userId,
+          docRef: docRef,
+          data: data,
+        );
       }
 
-      final data = docSnapshot.data()!;
+      // 🔥 حذف من users collection
+      await _updateUserProfilePhoto(userId: userId, photoUrl: null);
 
-      // 🎯 استخدام Helper method للتنظيف
-      await _cleanupDocumentAfterPhotoDelete(
-        userId: userId,
-        docRef: docRef,
-        data: data,
-      );
-
+      log('Baby photo deletion completed for user: $userId');
       return right(null);
     } catch (e) {
       log('Error deleting baby photo: $e');
@@ -319,16 +367,14 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
   @override
   Future<Either<Failures, bool>> hasBabyPhoto({required String userId}) async {
     try {
-      // استخدام الطريقة الجديدة من StorageService
+      // 🔥 التحقق من Supabase أولاً للحصول على أحدث المعلومات
       final hasPhotoInStorage = await storageService.hasBabyPhoto(userId);
-
       if (hasPhotoInStorage) {
         return right(true);
       }
 
-      // إذا مكانش موجود في Storage، نتحقق من Firestore كـ fallback
+      // fallback: التحقق من Firestore
       final photoUrlResult = await getBabyPhotoUrl(userId: userId);
-
       return photoUrlResult.fold(
         (failure) => right(false),
         (photoUrl) => right(photoUrl != null && photoUrl.isNotEmpty),
@@ -354,14 +400,28 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('Unauthorized access'));
       }
 
-      final model = BabyQuestionnaireModel.fromEntity(questionnaireData);
+      // 🔥 التأكد من الحصول على آخر صورة قبل الحفظ
+      final latestPhotoUrl = await _getLatestPhotoFromStorage(userId);
+      final finalQuestionnaireData = questionnaireData.copyWith(
+        babyPhotoUrl: latestPhotoUrl ?? questionnaireData.babyPhotoUrl,
+      );
+
+      final model = BabyQuestionnaireModel.fromEntity(finalQuestionnaireData);
       final data = model.toJson();
 
-      // Remove the partial flag and add completion timestamp
       data.remove('isPartial');
       data['completedAt'] = DateTime.now().toIso8601String();
+      data['photoUpdatedAt'] = FieldValue.serverTimestamp();
 
       await firestore.collection('baby_questionnaires').doc(userId).set(data);
+
+      // تحديث users collection
+      if (finalQuestionnaireData.babyPhotoUrl != null) {
+        await _updateUserProfilePhoto(
+          userId: userId,
+          photoUrl: finalQuestionnaireData.babyPhotoUrl,
+        );
+      }
 
       log('Complete questionnaire data saved successfully for user: $userId');
       return right(null);
@@ -396,10 +456,16 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('No questionnaire data found'));
       }
 
-      // Only return complete questionnaires (not partial)
       final data = docSnapshot.data()!;
       if (data['isPartial'] == true) {
         return left(ServerFailure('Questionnaire not completed yet'));
+      }
+
+      // 🔥 التأكد من آخر صورة
+      final latestPhotoUrl = await _getLatestPhotoFromStorage(userId);
+      if (latestPhotoUrl != null && latestPhotoUrl != data['babyPhotoUrl']) {
+        data['babyPhotoUrl'] = latestPhotoUrl;
+        log('Updated questionnaire data with latest photo URL');
       }
 
       final model = BabyQuestionnaireModel.fromJson(data);
@@ -439,7 +505,6 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return right(false);
       }
 
-      // Check if it's a completed questionnaire (not partial)
       final data = docSnapshot.data();
       final isCompleted = data != null && data['isPartial'] != true;
 
@@ -470,16 +535,30 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('Unauthorized access'));
       }
 
-      final model = BabyQuestionnaireModel.fromEntity(questionnaireData);
+      // 🔥 التأكد من آخر صورة
+      final latestPhotoUrl = await _getLatestPhotoFromStorage(userId);
+      final finalQuestionnaireData = questionnaireData.copyWith(
+        babyPhotoUrl: latestPhotoUrl ?? questionnaireData.babyPhotoUrl,
+      );
+
+      final model = BabyQuestionnaireModel.fromEntity(finalQuestionnaireData);
       final data = model.toJson();
 
-      // Keep it as complete questionnaire
       data.remove('isPartial');
+      data['photoUpdatedAt'] = FieldValue.serverTimestamp();
 
       await firestore
           .collection('baby_questionnaires')
           .doc(userId)
           .update(data);
+
+      // تحديث users collection
+      if (finalQuestionnaireData.babyPhotoUrl != null) {
+        await _updateUserProfilePhoto(
+          userId: userId,
+          photoUrl: finalQuestionnaireData.babyPhotoUrl,
+        );
+      }
 
       log('Questionnaire data updated successfully for user: $userId');
       return right(null);

@@ -33,6 +33,14 @@ class BabyPhotoUploadWidget extends StatelessWidget {
               shape: BoxShape.circle,
               color: const Color(0xFFE0E0E0),
               border: Border.all(color: const Color(0xFFD3D3D3), width: 2.0),
+              boxShadow: [
+                if (_hasImage() && !isUploading)
+                  BoxShadow(
+                    color: Colors.green.withValues(alpha: .3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+              ],
             ),
             child: _buildImageContent(),
           ),
@@ -52,7 +60,7 @@ class BabyPhotoUploadWidget extends StatelessWidget {
             if (_hasImage() && onDelete != null && !isUploading) ...[
               const SizedBox(width: 10),
               GestureDetector(
-                onTap: onDelete,
+                onTap: () => _showDeleteConfirmation(context),
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
@@ -75,37 +83,79 @@ class BabyPhotoUploadWidget extends StatelessWidget {
 
   Widget _buildImageContent() {
     if (isUploading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 3,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-        ),
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          const CircularProgressIndicator(
+            strokeWidth: 3,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .9),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              'Uploading...',
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
       );
     }
 
     // Priority: Local selected image > Uploaded image URL > Placeholder
     if (selectedImage != null) {
       return ClipOval(
-        child: Image.file(
-          selectedImage!,
-          fit: BoxFit.cover,
-          width: 120,
-          height: 120,
-          errorBuilder:
-              (context, error, stackTrace) => const _EmptyPhotoPlaceholder(),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.file(
+              selectedImage!,
+              fit: BoxFit.cover,
+              errorBuilder:
+                  (context, error, stackTrace) =>
+                      const _EmptyPhotoPlaceholder(),
+            ),
+            // تأثير بصري للصورة المختارة محلياً
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.blue, width: 2),
+              ),
+            ),
+          ],
         ),
       );
     }
 
     if (uploadedImageUrl != null && uploadedImageUrl!.isNotEmpty) {
       return ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: uploadedImageUrl!,
-          fit: BoxFit.cover,
-          width: 120,
-          height: 120,
-          placeholder: (context, url) => const _LoadingImagePlaceholder(),
-          errorWidget: (context, url, error) => const _EmptyPhotoPlaceholder(),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CachedNetworkImage(
+              imageUrl: uploadedImageUrl!,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => const _LoadingImagePlaceholder(),
+              errorWidget:
+                  (context, url, error) => const _EmptyPhotoPlaceholder(),
+            ),
+            // علامة التأكيد للصورة المرفوعة
+            Positioned(
+              bottom: 5,
+              right: 5,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, color: Colors.white, size: 14),
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -115,15 +165,15 @@ class BabyPhotoUploadWidget extends StatelessWidget {
 
   String _getStatusText() {
     if (isUploading) {
-      return 'Uploading...';
+      return 'Uploading to profile...';
     }
 
     if (uploadedImageUrl != null && uploadedImageUrl!.isNotEmpty) {
-      return 'Photo uploaded';
+      return 'Photo saved to profile';
     }
 
     if (selectedImage != null) {
-      return 'Photo selected';
+      return 'Photo selected, tap to upload';
     }
 
     return 'Add photo (optional)';
@@ -144,6 +194,34 @@ class BabyPhotoUploadWidget extends StatelessWidget {
   bool _hasImage() {
     return selectedImage != null ||
         (uploadedImageUrl != null && uploadedImageUrl!.isNotEmpty);
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Photo'),
+          content: const Text(
+            'Are you sure you want to delete this photo? This will also remove it from your profile.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onDelete?.call();
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
