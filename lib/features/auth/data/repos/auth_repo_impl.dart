@@ -155,7 +155,7 @@ class AuthRepoImpl extends AuthRepo {
           id: user.uid,
           name: user.displayName ?? '',
           email: user.email ?? '',
-          photoUrl: user.photoURL, // استخدام صورة Google مباشرة
+          photoUrl: user.photoURL,
           phoneNumber: phoneNumber,
           isEmailVerified: user.emailVerified,
           userStat: 'active',
@@ -243,27 +243,28 @@ class AuthRepoImpl extends AuthRepo {
     }
   }
 
+  // 🔥 تحديث مهم: تحسين updateUserPhoto method
   @override
   Future<Either<Failures, UserEntity>> updateUserPhoto({
     required String userId,
     required String? photoUrl,
   }) async {
     try {
-      // جلب بيانات المستخدم الحالية
+      log('Starting user photo update for user: $userId with URL: $photoUrl');
+
+      // جلب بيانات المستخدم الحالية من Firestore
       final currentUser = await getUserData(uid: userId);
 
       // تحديث الصورة
-      final updatedUser = currentUser.copyWith(
-        photoUrl: photoUrl, // حقل واحد فقط
-      );
+      final updatedUser = currentUser.copyWith(photoUrl: photoUrl);
 
-      // حفظ التحديث في قاعدة البيانات
+      // حفظ التحديث في قاعدة البيانات (Firestore)
       await updateUserData(user: updatedUser);
 
-      // تحديث البيانات المحفوظة محلياً
+      // تحديث البيانات المحفوظة محلياً في SharedPreferences
       await saveUserData(user: updatedUser);
 
-      log('User photo updated successfully');
+      log('User photo updated successfully in Firestore and local storage');
       return right(updatedUser);
     } catch (e) {
       log('Error updating user photo: $e');
@@ -278,7 +279,18 @@ class AuthRepoImpl extends AuthRepo {
     required String userId,
   }) async {
     try {
+      // جلب الرابط من Firestore أولاً
+      final userData = await getUserData(uid: userId);
+      final photoUrl = userData.photoUrl;
+
+      if (photoUrl != null && photoUrl.isNotEmpty) {
+        log('User photo URL retrieved from Firestore: $photoUrl');
+        return right(photoUrl);
+      }
+
+      // إذا مكانش موجود في Firestore، جرب Storage
       final imageUrl = await storageService.getUserProfileImageUrl(userId);
+      log('User photo URL retrieved from Storage: $imageUrl');
       return right(imageUrl);
     } catch (e) {
       log('Error getting user photo URL: $e');

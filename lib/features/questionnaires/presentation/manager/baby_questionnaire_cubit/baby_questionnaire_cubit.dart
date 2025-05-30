@@ -1,19 +1,20 @@
 // تحديث BabyQuestionnaireCubit لحفظ الصورة في بروفايل المستخدم أيضاً
 
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/services/firebase_auth_service.dart';
 import '../../../domain/entities/baby_questionnaire_entity.dart';
 import '../../../domain/repos/baby_questionnaire_repo.dart';
-import '../../../../auth/domain/repos/auth_repo.dart'; // إضافة AuthRepo
+import '../../../../auth/domain/repos/auth_repo.dart';
 import '../../views/baby_questionnaire_completion_view.dart';
 import 'baby_questionnaire_state.dart';
 
 class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
   final BabyQuestionnaireRepo questionnaireRepo;
   final FirebaseAuthService authService;
-  final AuthRepo authRepo; // إضافة AuthRepo
+  final AuthRepo authRepo;
 
   // State variables
   String? babyPhotoUrl;
@@ -33,7 +34,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
   BabyQuestionnaireCubit({
     required this.questionnaireRepo,
     required this.authService,
-    required this.authRepo, // إضافة AuthRepo
+    required this.authRepo,
   }) : super(BabyQuestionnaireInitial());
 
   Future<void> checkQuestionnaireStatus() async {
@@ -71,31 +72,37 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     }
 
     try {
-      // 1. رفع الصورة للطفل
+      // 1. رفع الصورة للطفل أولاً
       final babyPhotoResult = await questionnaireRepo.uploadBabyPhoto(
         imageFile: imageFile,
         userId: userId,
       );
 
-      babyPhotoResult.fold(
-        (failure) => emit(BabyQuestionnaireError(failure.message)),
+      await babyPhotoResult.fold(
+        (failure) async {
+          emit(BabyQuestionnaireError(failure.message));
+        },
         (photoUrl) async {
-          // 2. حفظ رابط الصورة في الطفل
+          // 2. حفظ رابط الصورة في متغير الطفل
           babyPhotoUrl = photoUrl;
 
           // 3. تحديث صورة بروفايل المستخدم بنفس الصورة
           final userPhotoResult = await authRepo.updateUserPhoto(
             userId: userId,
-            photoUrl: photoUrl, // نفس الصورة!
+            photoUrl: photoUrl,
           );
 
-          userPhotoResult.fold(
-            (failure) {
-              // إذا فشل تحديث البروفايل، ما زال الطفل محفوظ
+          await userPhotoResult.fold(
+            (failure) async {
+              // حتى لو فشل تحديث البروفايل، الطفل محفوظ
+              log(
+                'Warning: Failed to update user profile photo: ${failure.message}',
+              );
               emit(BabyPhotoUploaded(photoUrl));
             },
-            (updatedUser) {
+            (updatedUser) async {
               // نجح التحديث لكلاهما
+              log('Both baby photo and user profile updated successfully');
               emit(BabyPhotoUploaded(photoUrl));
             },
           );
@@ -117,29 +124,36 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     }
 
     try {
-      // 1. حذف صورة الطفل
+      // 1. حذف صورة الطفل من baby_questionnaires
       final deleteResult = await questionnaireRepo.deleteBabyPhoto(
         userId: userId,
       );
 
-      deleteResult.fold(
-        (failure) => emit(BabyQuestionnaireError(failure.message)),
+      await deleteResult.fold(
+        (failure) async {
+          emit(BabyQuestionnaireError(failure.message));
+        },
         (_) async {
-          // 2. حذف صورة البروفايل أيضاً
+          // 2. حذف صورة البروفايل من users collection
           final userPhotoResult = await authRepo.updateUserPhoto(
             userId: userId,
             photoUrl: null, // حذف الصورة
           );
 
+          // تحديث المتغير المحلي
           babyPhotoUrl = null;
 
-          userPhotoResult.fold(
-            (failure) {
-              // حتى لو فشل حذف البروفايل، الطفل محذوف
+          await userPhotoResult.fold(
+            (failure) async {
+              // حتى لو فشل حذف البروفايل، صورة الطفل محذوفة
+              log(
+                'Warning: Failed to delete user profile photo: ${failure.message}',
+              );
               emit(BabyPhotoDeleted());
             },
-            (updatedUser) {
+            (updatedUser) async {
               // نجح الحذف لكلاهما
+              log('Both baby photo and user profile deleted successfully');
               emit(BabyPhotoDeleted());
             },
           );
