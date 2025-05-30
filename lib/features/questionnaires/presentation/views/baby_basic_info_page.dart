@@ -31,7 +31,7 @@ class _BabyBasicInfoPageState extends State<BabyBasicInfoPage> {
   final ImagePicker _picker = ImagePicker();
 
   DateTime? _selectedDate;
-  String _selectedGender = '';
+  String _selectedGender = 'Girl';
   String? _selectedRelationship;
   File? _selectedImage;
   String? _uploadedImageUrl;
