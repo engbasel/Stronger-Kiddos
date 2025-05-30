@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +10,7 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/services/data_service.dart';
 import '../../../../core/services/firebase_auth_service.dart';
 import '../../../../core/services/shared_preferences_sengleton.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../core/utils/backend_endpoint.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repos/auth_repo.dart';
@@ -17,19 +19,20 @@ import '../models/user_model.dart';
 class AuthRepoImpl extends AuthRepo {
   final FirebaseAuthService firebaseAuthService;
   final DatabaseService databaseService;
+  final StorageService storageService;
 
   AuthRepoImpl({
     required this.databaseService,
     required this.firebaseAuthService,
+    required this.storageService,
   });
 
-  @override
   @override
   Future<Either<Failures, UserEntity>> createUserWithEmailAndPassword(
     String email,
     String password,
     String name, [
-    String? phoneNumber, // Add optional parameter
+    String? phoneNumber,
   ]) async {
     User? user;
 
@@ -42,7 +45,7 @@ class AuthRepoImpl extends AuthRepo {
         name: name,
         email: email,
         id: user.uid,
-        phoneNumber: phoneNumber, // Include phone number
+        phoneNumber: phoneNumber,
         createdAt: DateTime.now(),
         role: 'user',
       );
@@ -69,17 +72,11 @@ class AuthRepoImpl extends AuthRepo {
   }
 
   @override
-  @override
   Future<Either<Failures, void>> sendPasswordResetLink(String email) async {
     try {
-      // Directly use Firebase Auth - no need to check Firestore
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-
-      // Return success (email will only be sent if the account exists)
       return right(null);
     } on FirebaseAuthException catch (e) {
-      // These handle only technical errors (invalid email format, etc.),
-      // not whether the user exists or not
       if (e.code == 'invalid-email') {
         return left(ServerFailure('Invalid email format.'));
       } else if (e.code == 'too-many-requests') {
@@ -94,7 +91,6 @@ class AuthRepoImpl extends AuthRepo {
     }
   }
 
-  // Helper method to check if an email exists in the user database
   Future<bool> isEmailExists(String email) async {
     try {
       final usersCollection = FirebaseFirestore.instance.collection('users');
@@ -118,13 +114,11 @@ class AuthRepoImpl extends AuthRepo {
   }
 
   Future<void> saveUserData({required UserEntity user}) async {
-    var jsonData = jsonEncode(UserModel.fromEntity(user).toMap());
+    var jsonData = jsonEncode(UserModel.fromEntity(user).toJson());
     await Prefs.setString(AppConstants.kUserData, jsonData);
     log('User data saved successfully. UserData: $jsonData');
   }
 
-  @override
-  // In AuthRepoImpl.signInWithGoogle method
   @override
   Future<Either<Failures, UserEntity>> signInWithGoogle([
     String? phoneNumber,
@@ -143,23 +137,12 @@ class AuthRepoImpl extends AuthRepo {
       );
 
       if (isUserExist) {
-        // If user exists, fetch existing data and update phone number if needed
         var existingUser = await getUserData(uid: user.uid);
         if (phoneNumber != null &&
             (existingUser.phoneNumber == null ||
                 existingUser.phoneNumber!.isEmpty)) {
-          // Update user data with new phone number
-          var updatedUserEntity = UserEntity(
-            id: existingUser.id,
-            name: existingUser.name,
-            email: existingUser.email,
-            phoneNumber: phoneNumber, // Update phone number
-            role: existingUser.role,
-            createdAt: existingUser.createdAt,
-            photoUrl: existingUser.photoUrl,
-            profileImageUrl: existingUser.profileImageUrl,
-            isEmailVerified: existingUser.isEmailVerified,
-            userStat: existingUser.userStat,
+          var updatedUserEntity = existingUser.copyWith(
+            phoneNumber: phoneNumber,
           );
           await updateUserData(user: updatedUserEntity);
           await saveUserData(user: updatedUserEntity);
@@ -168,15 +151,16 @@ class AuthRepoImpl extends AuthRepo {
         await saveUserData(user: existingUser);
         return right(existingUser);
       } else {
-        // For new users, include the phone number
         userEntity = UserModel(
           id: user.uid,
           name: user.displayName ?? '',
           email: user.email ?? '',
           photoUrl: user.photoURL,
-          phoneNumber: phoneNumber, // Include the phone number
+          phoneNumber: phoneNumber,
           isEmailVerified: user.emailVerified,
           userStat: 'active',
+          createdAt: DateTime.now(),
+          role: 'user',
         );
         await addUserData(user: userEntity);
         await saveUserData(user: userEntity);
@@ -217,6 +201,90 @@ class AuthRepoImpl extends AuthRepo {
         'Exception in AuthRepoImpl.signInWithEmailAndPassword :${e.toString()}',
       );
       return left(ServerFailure('An error occurred. Please try again later.'));
+    }
+  }
+
+  // Profile image methods implementation
+  @override
+  Future<Either<Failures, String>> uploadProfileImage({
+    required File imageFile,
+    required String userId,
+  }) async {
+    try {
+      log('Starting profile image upload for user: $userId');
+
+      final imageUrl = await storageService.uploadUserProfileImage(
+        imageFile,
+        userId,
+      );
+
+      log('Profile image uploaded successfully. URL: $imageUrl');
+      return right(imageUrl);
+    } catch (e) {
+      log('Error uploading profile image: $e');
+      return left(
+        ServerFailure('Failed to upload profile image: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failures, void>> deleteProfileImage({
+    required String userId,
+  }) async {
+    try {
+      await storageService.deleteUserProfileImage(userId);
+      return right(null);
+    } catch (e) {
+      log('Error deleting profile image: $e');
+      return left(
+        ServerFailure('Failed to delete profile image: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failures, UserEntity>> updateUserProfileImage({
+    required String userId,
+    required String? profileImageUrl,
+  }) async {
+    try {
+      // جلب بيانات المستخدم الحالية
+      final currentUser = await getUserData(uid: userId);
+
+      // تحديث صورة البروفايل
+      final updatedUser = currentUser.copyWith(
+        profileImageUrl: profileImageUrl,
+      );
+
+      // حفظ التحديث في قاعدة البيانات
+      await updateUserData(user: updatedUser);
+
+      // تحديث البيانات المحفوظة محلياً
+      await saveUserData(user: updatedUser);
+
+      log('User profile image updated successfully');
+      return right(updatedUser);
+    } catch (e) {
+      log('Error updating user profile image: $e');
+      return left(
+        ServerFailure('Failed to update profile image: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failures, String?>> getUserProfileImageUrl({
+    required String userId,
+  }) async {
+    try {
+      final imageUrl = await storageService.getUserProfileImageUrl(userId);
+      return right(imageUrl);
+    } catch (e) {
+      log('Error getting user profile image URL: $e');
+      return left(
+        ServerFailure('Failed to get profile image URL: ${e.toString()}'),
+      );
     }
   }
 

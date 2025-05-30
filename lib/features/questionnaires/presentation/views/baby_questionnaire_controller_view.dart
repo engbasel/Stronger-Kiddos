@@ -49,10 +49,10 @@ class BabyQuestionnaireControllerContent extends StatelessWidget {
       },
       builder: (context, state) {
         return CustomProgrssHud(
+          // CLEAN: Only show loading for questionnaire operations, NOT image upload
           isLoading:
               state is BabyQuestionnaireLoading ||
-              state is BabyQuestionnaireSaving ||
-              state is BabyPhotoUploading,
+              state is BabyQuestionnaireSaving,
           child:
               state is BabyQuestionnaireReadyToStart
                   ? BabyBasicInfoPage(

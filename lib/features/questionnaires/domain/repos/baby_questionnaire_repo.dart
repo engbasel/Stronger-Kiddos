@@ -4,12 +4,19 @@ import '../../../../core/errors/failures.dart';
 import '../entities/baby_questionnaire_entity.dart';
 
 abstract class BabyQuestionnaireRepo {
-  Future<Either<Failures, String>> uploadBabyPhoto(File imageFile);
+  // Baby photo management methods
+  Future<Either<Failures, String>> uploadBabyPhoto({
+    required File imageFile,
+    required String userId,
+  });
 
-  // Add these new methods for private storage management
-  Future<Either<Failures, String>> getSignedImageUrl(String filePath);
-  Future<Either<Failures, void>> deleteBabyPhoto(String filePath);
+  Future<Either<Failures, String?>> getBabyPhotoUrl({required String userId});
 
+  Future<Either<Failures, void>> deleteBabyPhoto({required String userId});
+
+  Future<Either<Failures, bool>> hasBabyPhoto({required String userId});
+
+  // Questionnaire data methods
   Future<Either<Failures, void>> saveQuestionnaireData({
     required String userId,
     required BabyQuestionnaireEntity questionnaireData,
@@ -21,5 +28,10 @@ abstract class BabyQuestionnaireRepo {
 
   Future<Either<Failures, bool>> hasCompletedQuestionnaire({
     required String userId,
+  });
+
+  Future<Either<Failures, void>> updateQuestionnaireData({
+    required String userId,
+    required BabyQuestionnaireEntity questionnaireData,
   });
 }

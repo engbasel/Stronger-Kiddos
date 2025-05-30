@@ -22,8 +22,14 @@ void setupGetit() {
     AuthRepoImpl(
       firebaseAuthService: getIt<FirebaseAuthService>(),
       databaseService: getIt<DatabaseService>(),
+      storageService: getIt<StorageService>(), // إضافة StorageService
     ),
   );
 
-  getIt.registerSingleton<BabyQuestionnaireRepo>(BabyQuestionnaireRepoImpl());
+  getIt.registerSingleton<BabyQuestionnaireRepo>(
+    BabyQuestionnaireRepoImpl(
+      storageService:
+          getIt<StorageService>(), // إضافة StorageService dependency
+    ),
+  );
 }

@@ -22,25 +22,25 @@ class SupabaseStorageService implements StorageService {
     }
   }
 
-  static Future<void> createBuckets(String bucketName) async {
-    try {
-      // Check if bucket already exists
-      if (await _bucketExists(bucketName)) {
-        log('Bucket $bucketName already exists, skipping creation');
-        return;
+  static Future<void> createBuckets(List<String> bucketNames) async {
+    for (String bucketName in bucketNames) {
+      try {
+        // Check if bucket already exists
+        if (await _bucketExists(bucketName)) {
+          log('Bucket $bucketName already exists, skipping creation');
+          continue;
+        }
+        await _supabaseStorageService.client.storage.createBucket(bucketName);
+        log('Bucket $bucketName created successfully');
+      } on StorageException catch (e) {
+        if (e.message.contains('Duplicate') || e.statusCode == '409') {
+          log('Bucket $bucketName already exists');
+        } else {
+          log('Error creating bucket $bucketName: $e');
+        }
+      } catch (e) {
+        log('Unexpected error creating bucket $bucketName: $e');
       }
-      await _supabaseStorageService.client.storage.createBucket(bucketName);
-      log('Bucket $bucketName created successfully');
-    } on StorageException catch (e) {
-      if (e.message.contains('Duplicate') || e.statusCode == '409') {
-        log('Bucket $bucketName already exists');
-      } else {
-        log('Error creating bucket $bucketName: $e');
-        // Optionally rethrow for critical errors
-        // rethrow;
-      }
-    } catch (e) {
-      log('Unexpected error creating bucket $bucketName: $e');
     }
   }
 
@@ -51,19 +51,149 @@ class SupabaseStorageService implements StorageService {
       String extensionName = b.extension(file.path);
       final String filePath = '$path/$fileName$extensionName';
 
+      String bucketName;
+
+      // Determine bucket based on path
+      if (path.startsWith('users/profile-images')) {
+        bucketName = 'user-profiles';
+      } else if (path.startsWith('babies/photos')) {
+        bucketName = 'baby-photos';
+      } else {
+        bucketName = 'baby-photos'; // Default bucket
+      }
+
+      log('Uploading file to bucket: $bucketName, path: $filePath');
+
+      // Remove old file if exists (for profile images)
+      if (path.startsWith('users/profile-images') ||
+          path.startsWith('babies/photos')) {
+        try {
+          await _supabaseStorageService.client.storage.from(bucketName).remove([
+            filePath,
+          ]);
+          log('Old file removed: $filePath');
+        } catch (e) {
+          log('No old file to remove: $filePath');
+        }
+      }
+
       // Upload file
       await _supabaseStorageService.client.storage
-          .from('baby-photos')
-          .upload(filePath, file);
+          .from(bucketName)
+          .upload(
+            filePath,
+            file,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+          );
 
       // Get public URL
       final String publicUrl = _supabaseStorageService.client.storage
-          .from('baby-photos')
+          .from(bucketName)
+          .getPublicUrl(filePath);
+
+      log('File uploaded successfully. URL: $publicUrl');
+      return publicUrl;
+    } catch (e) {
+      log('Error uploading file: $e');
+      throw Exception('Failed to upload file: $e');
+    }
+  }
+
+  @override
+  Future<String> uploadUserProfileImage(File imageFile, String userId) async {
+    try {
+      // تحديد مسار الملف: users/profile-images/userId.jpg
+      final String filePath = 'users/profile-images/$userId.jpg';
+
+      log('Uploading profile image for user: $userId to path: $filePath');
+
+      // حذف الصورة القديمة إن وجدت
+      try {
+        await _supabaseStorageService.client.storage
+            .from('user-profiles')
+            .remove([filePath]);
+        log('Old profile image deleted for user: $userId');
+      } catch (e) {
+        log('No old image to delete for user: $userId');
+      }
+
+      // رفع الصورة الجديدة
+      await _supabaseStorageService.client.storage
+          .from('user-profiles')
+          .upload(
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(
+              cacheControl: '3600',
+              upsert: true, // يستبدل الصورة إذا كانت موجودة
+            ),
+          );
+
+      // جلب الرابط العام
+      final String publicUrl = _supabaseStorageService.client.storage
+          .from('user-profiles')
+          .getPublicUrl(filePath);
+
+      log('Profile image uploaded successfully. URL: $publicUrl');
+      return publicUrl;
+    } catch (e) {
+      log('Error uploading profile image: $e');
+      throw Exception('Failed to upload profile image: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteUserProfileImage(String userId) async {
+    try {
+      final String filePath = 'users/profile-images/$userId.jpg';
+
+      await _supabaseStorageService.client.storage.from('user-profiles').remove(
+        [filePath],
+      );
+
+      log('Profile image deleted for user: $userId');
+    } catch (e) {
+      log('Error deleting profile image: $e');
+      throw Exception('Failed to delete profile image: $e');
+    }
+  }
+
+  @override
+  Future<String?> getUserProfileImageUrl(String userId) async {
+    try {
+      final String filePath = 'users/profile-images/$userId.jpg';
+
+      // التحقق من وجود الملف
+      final fileExists = await hasUserProfileImage(userId);
+      if (!fileExists) return null;
+
+      // جلب الرابط العام
+      final String publicUrl = _supabaseStorageService.client.storage
+          .from('user-profiles')
           .getPublicUrl(filePath);
 
       return publicUrl;
     } catch (e) {
-      throw Exception('Failed to upload file: $e');
+      log('Error getting profile image URL: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> hasUserProfileImage(String userId) async {
+    try {
+      // محاولة جلب معلومات الملف
+      final files = await _supabaseStorageService.client.storage
+          .from('user-profiles')
+          .list(
+            path: 'users/profile-images',
+            searchOptions: SearchOptions(search: '$userId.jpg', limit: 1),
+          );
+
+      return files.isNotEmpty;
+    } catch (e) {
+      log('Error checking if profile image exists: $e');
+      return false;
     }
   }
 }
