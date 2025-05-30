@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../../core/utils/app_colors.dart';
+import '../../../../../core/utils/app_colors.dart';
 
 class ProfileImageWidget extends StatelessWidget {
-  final String? imageUrl;
+  final String? photoUrl; // حقل واحد فقط للصورة
   final double size;
   final VoidCallback? onTap;
   final bool showEditIcon;
@@ -12,7 +12,7 @@ class ProfileImageWidget extends StatelessWidget {
 
   const ProfileImageWidget({
     super.key,
-    this.imageUrl,
+    this.photoUrl, // حقل واحد فقط
     this.size = 60,
     this.onTap,
     this.showEditIcon = false,
@@ -58,9 +58,9 @@ class ProfileImageWidget extends StatelessWidget {
   }
 
   Widget _buildImageContent() {
-    if (imageUrl != null && imageUrl!.isNotEmpty) {
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
       return CachedNetworkImage(
-        imageUrl: imageUrl!,
+        imageUrl: photoUrl!,
         fit: BoxFit.cover,
         placeholder: (context, url) => _buildLoadingWidget(),
         errorWidget: (context, url, error) => _buildPlaceholderIcon(),

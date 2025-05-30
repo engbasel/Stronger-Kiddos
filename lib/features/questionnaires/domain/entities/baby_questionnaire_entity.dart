@@ -31,6 +31,43 @@ class BabyQuestionnaireEntity {
     required this.completedAt,
   });
 
+  // إضافة copyWith method
+  BabyQuestionnaireEntity copyWith({
+    String? babyPhotoUrl,
+    String? babyName,
+    DateTime? dateOfBirth,
+    String? relationship,
+    String? gender,
+    bool? wasPremature,
+    int? weeksPremature,
+    List<String>? diagnosedConditions,
+    List<String>? careProviders,
+    bool? hasMedicalContraindications,
+    String? contraindicationsDescription,
+    String? floorTimeDaily,
+    String? containerTimeDaily,
+    DateTime? completedAt,
+  }) {
+    return BabyQuestionnaireEntity(
+      babyPhotoUrl: babyPhotoUrl ?? this.babyPhotoUrl,
+      babyName: babyName ?? this.babyName,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      relationship: relationship ?? this.relationship,
+      gender: gender ?? this.gender,
+      wasPremature: wasPremature ?? this.wasPremature,
+      weeksPremature: weeksPremature ?? this.weeksPremature,
+      diagnosedConditions: diagnosedConditions ?? this.diagnosedConditions,
+      careProviders: careProviders ?? this.careProviders,
+      hasMedicalContraindications:
+          hasMedicalContraindications ?? this.hasMedicalContraindications,
+      contraindicationsDescription:
+          contraindicationsDescription ?? this.contraindicationsDescription,
+      floorTimeDaily: floorTimeDaily ?? this.floorTimeDaily,
+      containerTimeDaily: containerTimeDaily ?? this.containerTimeDaily,
+      completedAt: completedAt ?? this.completedAt,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'babyPhotoUrl': babyPhotoUrl,

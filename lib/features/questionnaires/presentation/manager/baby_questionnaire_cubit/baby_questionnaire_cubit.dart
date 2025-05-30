@@ -1,18 +1,22 @@
+// تحديث BabyQuestionnaireCubit لحفظ الصورة في بروفايل المستخدم أيضاً
+
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/services/firebase_auth_service.dart';
 import '../../../domain/entities/baby_questionnaire_entity.dart';
 import '../../../domain/repos/baby_questionnaire_repo.dart';
+import '../../../../auth/domain/repos/auth_repo.dart'; // إضافة AuthRepo
 import '../../views/baby_questionnaire_completion_view.dart';
 import 'baby_questionnaire_state.dart';
 
 class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
   final BabyQuestionnaireRepo questionnaireRepo;
   final FirebaseAuthService authService;
+  final AuthRepo authRepo; // إضافة AuthRepo
 
   // State variables
-  String? babyPhotoUrl; // Store the actual photo URL
+  String? babyPhotoUrl;
   String babyName = '';
   DateTime? dateOfBirth;
   String relationship = '';
@@ -29,6 +33,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
   BabyQuestionnaireCubit({
     required this.questionnaireRepo,
     required this.authService,
+    required this.authRepo, // إضافة AuthRepo
   }) : super(BabyQuestionnaireInitial());
 
   Future<void> checkQuestionnaireStatus() async {
@@ -55,6 +60,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     });
   }
 
+  // رفع صورة الطفل وتحديث بروفايل المستخدم
   Future<void> uploadBabyPhoto(File imageFile) async {
     emit(BabyPhotoUploading());
 
@@ -64,19 +70,43 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
       return;
     }
 
-    final result = await questionnaireRepo.uploadBabyPhoto(
-      imageFile: imageFile,
-      userId: userId,
-    );
+    try {
+      // 1. رفع الصورة للطفل
+      final babyPhotoResult = await questionnaireRepo.uploadBabyPhoto(
+        imageFile: imageFile,
+        userId: userId,
+      );
 
-    result.fold((failure) => emit(BabyQuestionnaireError(failure.message)), (
-      photoUrl,
-    ) {
-      babyPhotoUrl = photoUrl;
-      emit(BabyPhotoUploaded(photoUrl));
-    });
+      babyPhotoResult.fold(
+        (failure) => emit(BabyQuestionnaireError(failure.message)),
+        (photoUrl) async {
+          // 2. حفظ رابط الصورة في الطفل
+          babyPhotoUrl = photoUrl;
+
+          // 3. تحديث صورة بروفايل المستخدم بنفس الصورة
+          final userPhotoResult = await authRepo.updateUserPhoto(
+            userId: userId,
+            photoUrl: photoUrl, // نفس الصورة!
+          );
+
+          userPhotoResult.fold(
+            (failure) {
+              // إذا فشل تحديث البروفايل، ما زال الطفل محفوظ
+              emit(BabyPhotoUploaded(photoUrl));
+            },
+            (updatedUser) {
+              // نجح التحديث لكلاهما
+              emit(BabyPhotoUploaded(photoUrl));
+            },
+          );
+        },
+      );
+    } catch (e) {
+      emit(BabyQuestionnaireError('Failed to upload photo: ${e.toString()}'));
+    }
   }
 
+  // حذف صورة الطفل وصورة البروفايل
   Future<void> deleteBabyPhoto() async {
     emit(BabyPhotoDeleting());
 
@@ -86,14 +116,38 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
       return;
     }
 
-    final result = await questionnaireRepo.deleteBabyPhoto(userId: userId);
+    try {
+      // 1. حذف صورة الطفل
+      final deleteResult = await questionnaireRepo.deleteBabyPhoto(
+        userId: userId,
+      );
 
-    result.fold((failure) => emit(BabyQuestionnaireError(failure.message)), (
-      _,
-    ) {
-      babyPhotoUrl = null;
-      emit(BabyPhotoDeleted());
-    });
+      deleteResult.fold(
+        (failure) => emit(BabyQuestionnaireError(failure.message)),
+        (_) async {
+          // 2. حذف صورة البروفايل أيضاً
+          final userPhotoResult = await authRepo.updateUserPhoto(
+            userId: userId,
+            photoUrl: null, // حذف الصورة
+          );
+
+          babyPhotoUrl = null;
+
+          userPhotoResult.fold(
+            (failure) {
+              // حتى لو فشل حذف البروفايل، الطفل محذوف
+              emit(BabyPhotoDeleted());
+            },
+            (updatedUser) {
+              // نجح الحذف لكلاهما
+              emit(BabyPhotoDeleted());
+            },
+          );
+        },
+      );
+    } catch (e) {
+      emit(BabyQuestionnaireError('Failed to delete photo: ${e.toString()}'));
+    }
   }
 
   Future<void> loadExistingQuestionnaire() async {

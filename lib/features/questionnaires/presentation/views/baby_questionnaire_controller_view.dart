@@ -22,6 +22,7 @@ class BabyQuestionnaireControllerView extends StatelessWidget {
           (context) => BabyQuestionnaireCubit(
             questionnaireRepo: getIt.get(),
             authService: getIt.get<FirebaseAuthService>(),
+            authRepo: getIt.get(), // Added required authRepo argument
           )..checkQuestionnaireStatus(),
       child: const BabyQuestionnaireControllerContent(),
     );

@@ -155,7 +155,7 @@ class AuthRepoImpl extends AuthRepo {
           id: user.uid,
           name: user.displayName ?? '',
           email: user.email ?? '',
-          photoUrl: user.photoURL,
+          photoUrl: user.photoURL, // استخدام صورة Google مباشرة
           phoneNumber: phoneNumber,
           isEmailVerified: user.emailVerified,
           userStat: 'active',
@@ -204,57 +204,57 @@ class AuthRepoImpl extends AuthRepo {
     }
   }
 
-  // Profile image methods implementation
+  // صورة المستخدم - طرق محدثة
   @override
-  Future<Either<Failures, String>> uploadProfileImage({
+  Future<Either<Failures, String>> uploadUserPhoto({
     required File imageFile,
     required String userId,
   }) async {
     try {
-      log('Starting profile image upload for user: $userId');
+      log('Starting user photo upload for user: $userId');
 
       final imageUrl = await storageService.uploadUserProfileImage(
         imageFile,
         userId,
       );
 
-      log('Profile image uploaded successfully. URL: $imageUrl');
+      log('User photo uploaded successfully. URL: $imageUrl');
       return right(imageUrl);
     } catch (e) {
-      log('Error uploading profile image: $e');
+      log('Error uploading user photo: $e');
       return left(
-        ServerFailure('Failed to upload profile image: ${e.toString()}'),
+        ServerFailure('Failed to upload user photo: ${e.toString()}'),
       );
     }
   }
 
   @override
-  Future<Either<Failures, void>> deleteProfileImage({
+  Future<Either<Failures, void>> deleteUserPhoto({
     required String userId,
   }) async {
     try {
       await storageService.deleteUserProfileImage(userId);
       return right(null);
     } catch (e) {
-      log('Error deleting profile image: $e');
+      log('Error deleting user photo: $e');
       return left(
-        ServerFailure('Failed to delete profile image: ${e.toString()}'),
+        ServerFailure('Failed to delete user photo: ${e.toString()}'),
       );
     }
   }
 
   @override
-  Future<Either<Failures, UserEntity>> updateUserProfileImage({
+  Future<Either<Failures, UserEntity>> updateUserPhoto({
     required String userId,
-    required String? profileImageUrl,
+    required String? photoUrl,
   }) async {
     try {
       // جلب بيانات المستخدم الحالية
       final currentUser = await getUserData(uid: userId);
 
-      // تحديث صورة البروفايل
+      // تحديث الصورة
       final updatedUser = currentUser.copyWith(
-        profileImageUrl: profileImageUrl,
+        photoUrl: photoUrl, // حقل واحد فقط
       );
 
       // حفظ التحديث في قاعدة البيانات
@@ -263,27 +263,27 @@ class AuthRepoImpl extends AuthRepo {
       // تحديث البيانات المحفوظة محلياً
       await saveUserData(user: updatedUser);
 
-      log('User profile image updated successfully');
+      log('User photo updated successfully');
       return right(updatedUser);
     } catch (e) {
-      log('Error updating user profile image: $e');
+      log('Error updating user photo: $e');
       return left(
-        ServerFailure('Failed to update profile image: ${e.toString()}'),
+        ServerFailure('Failed to update user photo: ${e.toString()}'),
       );
     }
   }
 
   @override
-  Future<Either<Failures, String?>> getUserProfileImageUrl({
+  Future<Either<Failures, String?>> getUserPhotoUrl({
     required String userId,
   }) async {
     try {
       final imageUrl = await storageService.getUserProfileImageUrl(userId);
       return right(imageUrl);
     } catch (e) {
-      log('Error getting user profile image URL: $e');
+      log('Error getting user photo URL: $e');
       return left(
-        ServerFailure('Failed to get profile image URL: ${e.toString()}'),
+        ServerFailure('Failed to get user photo URL: ${e.toString()}'),
       );
     }
   }
