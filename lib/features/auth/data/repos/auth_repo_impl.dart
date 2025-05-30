@@ -204,7 +204,7 @@ class AuthRepoImpl extends AuthRepo {
     }
   }
 
-  // صورة المستخدم - طرق محدثة
+  // 🔥 تحديث طرق الصورة للمكان الموحد (babies/photos/)
   @override
   Future<Either<Failures, String>> uploadUserPhoto({
     required File imageFile,
@@ -213,12 +213,15 @@ class AuthRepoImpl extends AuthRepo {
     try {
       log('Starting user photo upload for user: $userId');
 
+      // 🔥 رفع الصورة للمستخدم (ستذهب إلى babies/photos/ - same as baby photos)
       final imageUrl = await storageService.uploadUserProfileImage(
         imageFile,
         userId,
       );
 
-      log('User photo uploaded successfully. URL: $imageUrl');
+      log(
+        'User photo uploaded successfully to unified location. URL: $imageUrl',
+      );
       return right(imageUrl);
     } catch (e) {
       log('Error uploading user photo: $e');
@@ -233,6 +236,7 @@ class AuthRepoImpl extends AuthRepo {
     required String userId,
   }) async {
     try {
+      // 🔥 حذف صورة المستخدم من المكان الموحد (babies/photos/)
       await storageService.deleteUserProfileImage(userId);
       return right(null);
     } catch (e) {
@@ -243,7 +247,6 @@ class AuthRepoImpl extends AuthRepo {
     }
   }
 
-  // 🔥 تحديث مهم: تحسين updateUserPhoto method
   @override
   Future<Either<Failures, UserEntity>> updateUserPhoto({
     required String userId,
@@ -288,9 +291,9 @@ class AuthRepoImpl extends AuthRepo {
         return right(photoUrl);
       }
 
-      // إذا مكانش موجود في Firestore، جرب Storage
+      // 🔥 إذا مكانش موجود في Firestore، جرب Storage (unified location)
       final imageUrl = await storageService.getUserProfileImageUrl(userId);
-      log('User photo URL retrieved from Storage: $imageUrl');
+      log('User photo URL retrieved from unified storage location: $imageUrl');
       return right(imageUrl);
     } catch (e) {
       log('Error getting user photo URL: $e');

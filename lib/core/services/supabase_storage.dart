@@ -53,30 +53,19 @@ class SupabaseStorageService implements StorageService {
       final fileName = b.basename(file.path);
       final filePath = directory.isEmpty ? fileName : '$directory/$fileName';
 
-      String bucketName;
-
-      // Determine bucket based on path
-      if (path.startsWith('users/profile-images')) {
-        bucketName = 'user-profiles';
-      } else if (path.startsWith('babies/photos')) {
-        bucketName = 'baby-photos';
-      } else {
-        bucketName = 'baby-photos'; // Default bucket
-      }
+      // ALL photos now go to baby-photos bucket
+      const String bucketName = 'baby-photos';
 
       log('Uploading file to bucket: $bucketName, path: $filePath');
 
-      // Remove old file if exists (for profile images and baby photos)
-      if (path.startsWith('users/profile-images') ||
-          path.startsWith('babies/photos')) {
-        try {
-          await _supabaseStorageService.client.storage.from(bucketName).remove([
-            filePath,
-          ]);
-          log('Old file removed: $filePath');
-        } catch (e) {
-          log('No old file to remove: $filePath');
-        }
+      // Remove old file if exists
+      try {
+        await _supabaseStorageService.client.storage.from(bucketName).remove([
+          filePath,
+        ]);
+        log('Old file removed: $filePath');
+      } catch (e) {
+        log('No old file to remove: $filePath');
       }
 
       // Upload file
@@ -104,18 +93,18 @@ class SupabaseStorageService implements StorageService {
   @override
   Future<String> uploadUserProfileImage(File imageFile, String userId) async {
     try {
-      // 🔥 إضافة timestamp للاسم عشان نضمن uniqueness
+      // 🔥 User profile images now go to the SAME location as baby photos
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final String filePath = 'users/profile-images/$userId-$timestamp.jpg';
+      final String filePath = 'babies/photos/$userId-$timestamp.jpg';
 
       log('Uploading profile image for user: $userId to path: $filePath');
 
-      // 🔥 حذف كل الصور القديمة للمستخدم ده
-      await _deleteAllUserProfileImages(userId);
+      // 🔥 حذف كل الصور القديمة للمستخدم (same location as baby photos)
+      await _deleteAllPhotosForUser(userId);
 
-      // رفع الصورة الجديدة
+      // رفع الصورة الجديدة - same location as baby photos
       await _supabaseStorageService.client.storage
-          .from('user-profiles')
+          .from('baby-photos')
           .upload(
             filePath,
             imageFile,
@@ -124,7 +113,7 @@ class SupabaseStorageService implements StorageService {
 
       // جلب الرابط العام
       final String publicUrl = _supabaseStorageService.client.storage
-          .from('user-profiles')
+          .from('baby-photos')
           .getPublicUrl(filePath);
 
       log('Profile image uploaded successfully. URL: $publicUrl');
@@ -135,28 +124,28 @@ class SupabaseStorageService implements StorageService {
     }
   }
 
-  // 🔥 دالة جديدة لحذف كل صور المستخدم القديمة
-  Future<void> _deleteAllUserProfileImages(String userId) async {
+  // 🔥 دالة موحدة لحذف كل صور المستخدم (profile + baby) من نفس المكان
+  Future<void> _deleteAllPhotosForUser(String userId) async {
     try {
       final files = await _supabaseStorageService.client.storage
-          .from('user-profiles')
-          .list(path: 'users/profile-images');
+          .from('baby-photos')
+          .list(path: 'babies/photos');
 
       // البحث عن كل الملفات اللي تبدأ بـ userId
       final userFiles =
           files
               .where((file) => file.name.startsWith('$userId-'))
-              .map((file) => 'users/profile-images/${file.name}')
+              .map((file) => 'babies/photos/${file.name}')
               .toList();
 
       if (userFiles.isNotEmpty) {
         await _supabaseStorageService.client.storage
-            .from('user-profiles')
+            .from('baby-photos')
             .remove(userFiles);
-        log('Deleted ${userFiles.length} old profile images for user: $userId');
+        log('Deleted ${userFiles.length} old photos for user: $userId');
       }
     } catch (e) {
-      log('Error deleting old profile images: $e');
+      log('Error deleting old photos: $e');
       // مانعملش throw عشان ماتأثرش على الرفع
     }
   }
@@ -164,21 +153,22 @@ class SupabaseStorageService implements StorageService {
   @override
   Future<void> deleteUserProfileImage(String userId) async {
     try {
-      await _deleteAllUserProfileImages(userId);
-      log('All profile images deleted for user: $userId');
+      // 🔥 حذف من نفس مكان صور الأطفال
+      await _deleteAllPhotosForUser(userId);
+      log('All photos deleted for user: $userId');
     } catch (e) {
-      log('Error deleting profile images: $e');
-      throw Exception('Failed to delete profile images: $e');
+      log('Error deleting photos: $e');
+      throw Exception('Failed to delete photos: $e');
     }
   }
 
   @override
   Future<String?> getUserProfileImageUrl(String userId) async {
     try {
-      // 🔥 البحث عن آخر صورة للمستخدم بناءً على timestamp
+      // 🔥 البحث عن آخر صورة للمستخدم من نفس مكان صور الأطفال
       final files = await _supabaseStorageService.client.storage
-          .from('user-profiles')
-          .list(path: 'users/profile-images');
+          .from('baby-photos')
+          .list(path: 'babies/photos');
 
       // البحث عن كل الملفات اللي تبدأ بـ userId وترتيبهم حسب timestamp
       final userFiles =
@@ -195,17 +185,17 @@ class SupabaseStorageService implements StorageService {
 
       // أخذ آخر ملف (الأحدث)
       final latestFile = userFiles.first;
-      final String filePath = 'users/profile-images/${latestFile.name}';
+      final String filePath = 'babies/photos/${latestFile.name}';
 
       // جلب الرابط العام
       final String publicUrl = _supabaseStorageService.client.storage
-          .from('user-profiles')
+          .from('baby-photos')
           .getPublicUrl(filePath);
 
-      log('Latest profile image URL for user $userId: $publicUrl');
+      log('Latest photo URL for user $userId: $publicUrl');
       return publicUrl;
     } catch (e) {
-      log('Error getting profile image URL: $e');
+      log('Error getting photo URL: $e');
       return null;
     }
   }
@@ -228,30 +218,31 @@ class SupabaseStorageService implements StorageService {
   @override
   Future<bool> hasUserProfileImage(String userId) async {
     try {
+      // 🔥 البحث في نفس مكان صور الأطفال
       final files = await _supabaseStorageService.client.storage
-          .from('user-profiles')
-          .list(path: 'users/profile-images');
+          .from('baby-photos')
+          .list(path: 'babies/photos');
 
       final userFiles = files.where((file) => file.name.startsWith('$userId-'));
       return userFiles.isNotEmpty;
     } catch (e) {
-      log('Error checking if profile image exists: $e');
+      log('Error checking if photo exists: $e');
       return false;
     }
   }
 
-  // 🔥 نفس التحديثات لصور الأطفال
+  // 🔥 صور الأطفال - نفس المكان والطرق
   @override
   Future<String> uploadBabyPhoto(File imageFile, String userId) async {
     try {
-      // إضافة timestamp للاسم
+      // 🔥 نفس المكان والطريقة تماماً مثل صور البروفايل
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final String filePath = 'babies/photos/$userId-$timestamp.jpg';
 
       log('Uploading baby photo for user: $userId to path: $filePath');
 
-      // حذف كل الصور القديمة للطفل
-      await _deleteAllBabyPhotos(userId);
+      // حذف كل الصور القديمة للمستخدم
+      await _deleteAllPhotosForUser(userId);
 
       // رفع الصورة الجديدة
       await _supabaseStorageService.client.storage
@@ -275,69 +266,23 @@ class SupabaseStorageService implements StorageService {
     }
   }
 
-  Future<void> _deleteAllBabyPhotos(String userId) async {
-    try {
-      final files = await _supabaseStorageService.client.storage
-          .from('baby-photos')
-          .list(path: 'babies/photos');
-
-      final userFiles =
-          files
-              .where((file) => file.name.startsWith('$userId-'))
-              .map((file) => 'babies/photos/${file.name}')
-              .toList();
-
-      if (userFiles.isNotEmpty) {
-        await _supabaseStorageService.client.storage
-            .from('baby-photos')
-            .remove(userFiles);
-        log('Deleted ${userFiles.length} old baby photos for user: $userId');
-      }
-    } catch (e) {
-      log('Error deleting old baby photos: $e');
-    }
-  }
-
   @override
   Future<void> deleteBabyPhoto(String userId) async {
     try {
-      await _deleteAllBabyPhotos(userId);
-      log('All baby photos deleted for user: $userId');
+      // 🔥 نفس دالة حذف صور البروفايل (unified)
+      await _deleteAllPhotosForUser(userId);
+      log('All photos deleted for user: $userId');
     } catch (e) {
-      log('Error deleting baby photos: $e');
-      throw Exception('Failed to delete baby photos: $e');
+      log('Error deleting photos: $e');
+      throw Exception('Failed to delete photos: $e');
     }
   }
 
   @override
   Future<String?> getBabyPhotoUrl(String userId) async {
     try {
-      // البحث عن آخر صورة طفل
-      final files = await _supabaseStorageService.client.storage
-          .from('baby-photos')
-          .list(path: 'babies/photos');
-
-      final userFiles =
-          files.where((file) => file.name.startsWith('$userId-')).toList();
-
-      if (userFiles.isEmpty) return null;
-
-      // ترتيب حسب timestamp
-      userFiles.sort((a, b) {
-        final timestampA = _extractTimestamp(a.name);
-        final timestampB = _extractTimestamp(b.name);
-        return timestampB.compareTo(timestampA);
-      });
-
-      final latestFile = userFiles.first;
-      final String filePath = 'babies/photos/${latestFile.name}';
-
-      final String publicUrl = _supabaseStorageService.client.storage
-          .from('baby-photos')
-          .getPublicUrl(filePath);
-
-      log('Latest baby photo URL for user $userId: $publicUrl');
-      return publicUrl;
+      // 🔥 نفس دالة جلب صور البروفايل (unified)
+      return await getUserProfileImageUrl(userId);
     } catch (e) {
       log('Error getting baby photo URL: $e');
       return null;
@@ -347,12 +292,8 @@ class SupabaseStorageService implements StorageService {
   @override
   Future<bool> hasBabyPhoto(String userId) async {
     try {
-      final files = await _supabaseStorageService.client.storage
-          .from('baby-photos')
-          .list(path: 'babies/photos');
-
-      final userFiles = files.where((file) => file.name.startsWith('$userId-'));
-      return userFiles.isNotEmpty;
+      // 🔥 نفس دالة التحقق من صور البروفايل (unified)
+      return await hasUserProfileImage(userId);
     } catch (e) {
       log('Error checking if baby photo exists: $e');
       return false;

@@ -34,15 +34,15 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
 
       log('Starting baby photo upload for user: $userId');
 
-      // 🔥 رفع الصورة لـ Supabase Storage (هيحذف القديمة ويرفع الجديدة)
+      // 🔥 رفع الصورة لـ baby-photos/babies/photos/ (same location as profile)
       final imageUrl = await storageService.uploadBabyPhoto(imageFile, userId);
-      log('Baby photo uploaded to Supabase successfully. URL: $imageUrl');
+      log('Baby photo uploaded successfully. URL: $imageUrl');
 
-      // 🔥 التأكد من الحصول على آخر صورة من Supabase
+      // 🔥 التأكد من الحصول على آخر صورة (same location for both)
       final latestPhotoUrl = await storageService.getBabyPhotoUrl(userId);
       final finalImageUrl = latestPhotoUrl ?? imageUrl;
 
-      log('Latest baby photo URL confirmed: $finalImageUrl');
+      log('Latest photo URL confirmed: $finalImageUrl');
 
       // حفظ الرابط في baby_questionnaires
       final saveResult = await saveBabyPhotoUrl(
@@ -55,16 +55,14 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         );
       }
 
-      // 🔥 حفظ الرابط في users collection مع timestamp للتأكد من التحديث
+      // 🔥 حفظ الرابط في users collection (same photo for both profile and baby)
       await _updateUserProfilePhoto(userId: userId, photoUrl: finalImageUrl);
 
-      log('Baby photo process completed successfully for user: $userId');
+      log('Photo process completed successfully for user: $userId');
       return right(finalImageUrl);
     } catch (e) {
-      log('Error uploading baby photo: $e');
-      return left(
-        ServerFailure('Failed to upload baby photo: ${e.toString()}'),
-      );
+      log('Error uploading photo: $e');
+      return left(ServerFailure('Failed to upload photo: ${e.toString()}'));
     }
   }
 
@@ -88,29 +86,27 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
 
       final updateData = {
         'babyPhotoUrl': photoUrl,
-        'photoUpdatedAt': FieldValue.serverTimestamp(), // 🔥 إضافة timestamp
+        'photoUpdatedAt': FieldValue.serverTimestamp(),
         'lastUpdated': FieldValue.serverTimestamp(),
       };
 
       if (docSnapshot.exists) {
         await docRef.update(updateData);
-        log('Baby photo URL updated in existing document for user: $userId');
+        log('Photo URL updated in existing document for user: $userId');
       } else {
         updateData['isPartial'] = true;
         await docRef.set(updateData);
-        log('Baby photo URL saved in new partial document for user: $userId');
+        log('Photo URL saved in new partial document for user: $userId');
       }
 
       return right(null);
     } catch (e) {
-      log('Error saving baby photo URL: $e');
-      return left(
-        ServerFailure('Failed to save baby photo URL: ${e.toString()}'),
-      );
+      log('Error saving photo URL: $e');
+      return left(ServerFailure('Failed to save photo URL: ${e.toString()}'));
     }
   }
 
-  // 🔥 دالة محدثة لتحديث صورة المستخدم مع ضمان الحصول على آخر صورة
+  // 🔥 دالة محدثة لتحديث صورة المستخدم (same location as baby photo)
   Future<void> _updateUserProfilePhoto({
     required String userId,
     required String? photoUrl,
@@ -119,13 +115,13 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
       final userDocRef = firestore.collection('users').doc(userId);
 
       if (photoUrl != null) {
-        // 🔥 التحقق مرة أخرى من آخر صورة في Supabase قبل الحفظ
+        // 🔥 التحقق مرة أخرى من آخر صورة (same location)
         final latestPhotoUrl = await storageService.getBabyPhotoUrl(userId);
         final finalPhotoUrl = latestPhotoUrl ?? photoUrl;
 
         await userDocRef.update({
           'photoUrl': finalPhotoUrl,
-          'photoUpdatedAt': FieldValue.serverTimestamp(), // 🔥 timestamp للتتبع
+          'photoUpdatedAt': FieldValue.serverTimestamp(),
           'lastUpdated': FieldValue.serverTimestamp(),
         });
         log('User profile photo updated successfully: $finalPhotoUrl');
@@ -143,7 +139,7 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
     }
   }
 
-  // 🔥 دالة جديدة للحصول على آخر صورة من Supabase مباشرة
+  // 🔥 دالة للحصول على آخر صورة (same location for both)
   Future<String?> _getLatestPhotoFromStorage(String userId) async {
     try {
       return await storageService.getBabyPhotoUrl(userId);
@@ -177,14 +173,14 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
 
       final data = docSnapshot.data()!;
 
-      // 🔥 التأكد من الحصول على آخر صورة من Supabase
+      // 🔥 التأكد من الحصول على آخر صورة (same location)
       final latestPhotoUrl = await _getLatestPhotoFromStorage(userId);
       final finalPhotoUrl = latestPhotoUrl ?? data['babyPhotoUrl'];
 
       if (data['isPartial'] == true) {
         return right(
           BabyQuestionnaireEntity(
-            babyPhotoUrl: finalPhotoUrl, // 🔥 استخدام آخر صورة
+            babyPhotoUrl: finalPhotoUrl,
             babyName: data['babyName'] ?? '',
             dateOfBirth:
                 data['dateOfBirth'] != null
@@ -236,10 +232,10 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('Unauthorized access'));
       }
 
-      // 🔥 الحصول على آخر صورة من Supabase مباشرة
+      // 🔥 الحصول على آخر صورة (same location as profile)
       final latestPhotoUrl = await _getLatestPhotoFromStorage(userId);
       if (latestPhotoUrl != null) {
-        log('Latest baby photo URL from storage: $latestPhotoUrl');
+        log('Latest photo URL from storage: $latestPhotoUrl');
         return right(latestPhotoUrl);
       }
 
@@ -250,10 +246,8 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         (questionnaire) => right(questionnaire?.babyPhotoUrl),
       );
     } catch (e) {
-      log('Error getting baby photo URL: $e');
-      return left(
-        ServerFailure('Failed to get baby photo URL: ${e.toString()}'),
-      );
+      log('Error getting photo URL: $e');
+      return left(ServerFailure('Failed to get photo URL: ${e.toString()}'));
     }
   }
 
@@ -310,7 +304,7 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         'babyPhotoUrl': FieldValue.delete(),
         'photoUpdatedAt': FieldValue.serverTimestamp(),
       });
-      log('Baby photo URL deleted from document for user: $userId');
+      log('Photo URL deleted from document for user: $userId');
     }
   }
 
@@ -328,14 +322,14 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         return left(ServerFailure('Unauthorized access'));
       }
 
-      log('Starting baby photo deletion for user: $userId');
+      log('Starting photo deletion for user: $userId');
 
-      // 🔥 حذف الصورة من Supabase Storage أولاً
+      // 🔥 حذف الصورة (same location for both profile and baby)
       try {
         await storageService.deleteBabyPhoto(userId);
-        log('Baby photo deleted from Supabase storage for user: $userId');
+        log('Photo deleted from storage for user: $userId');
       } catch (e) {
-        log('Warning: Failed to delete baby photo from storage: $e');
+        log('Warning: Failed to delete photo from storage: $e');
       }
 
       // حذف من baby_questionnaires
@@ -354,20 +348,18 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
       // 🔥 حذف من users collection
       await _updateUserProfilePhoto(userId: userId, photoUrl: null);
 
-      log('Baby photo deletion completed for user: $userId');
+      log('Photo deletion completed for user: $userId');
       return right(null);
     } catch (e) {
-      log('Error deleting baby photo: $e');
-      return left(
-        ServerFailure('Failed to delete baby photo: ${e.toString()}'),
-      );
+      log('Error deleting photo: $e');
+      return left(ServerFailure('Failed to delete photo: ${e.toString()}'));
     }
   }
 
   @override
   Future<Either<Failures, bool>> hasBabyPhoto({required String userId}) async {
     try {
-      // 🔥 التحقق من Supabase أولاً للحصول على أحدث المعلومات
+      // 🔥 التحقق من نفس المكان (unified location)
       final hasPhotoInStorage = await storageService.hasBabyPhoto(userId);
       if (hasPhotoInStorage) {
         return right(true);
@@ -380,7 +372,7 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
         (photoUrl) => right(photoUrl != null && photoUrl.isNotEmpty),
       );
     } catch (e) {
-      log('Error checking if baby photo exists: $e');
+      log('Error checking if photo exists: $e');
       return right(false);
     }
   }

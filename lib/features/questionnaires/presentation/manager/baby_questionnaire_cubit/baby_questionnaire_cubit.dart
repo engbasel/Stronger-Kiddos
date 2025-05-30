@@ -1,5 +1,3 @@
-// تحديث BabyQuestionnaireCubit لحفظ الصورة في بروفايل المستخدم أيضاً
-
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
@@ -61,7 +59,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     });
   }
 
-  // رفع صورة الطفل وتحديث بروفايل المستخدم
+  // 🔥 رفع صورة الطفل وتحديث بروفايل المستخدم (unified location: babies/photos/)
   Future<void> uploadBabyPhoto(File imageFile) async {
     emit(BabyPhotoUploading());
 
@@ -72,7 +70,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     }
 
     try {
-      // 1. رفع الصورة للطفل أولاً
+      // 1. رفع الصورة للطفل (ستذهب إلى babies/photos/ - unified location)
       final babyPhotoResult = await questionnaireRepo.uploadBabyPhoto(
         imageFile: imageFile,
         userId: userId,
@@ -86,7 +84,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
           // 2. حفظ رابط الصورة في متغير الطفل
           babyPhotoUrl = photoUrl;
 
-          // 3. تحديث صورة بروفايل المستخدم بنفس الصورة
+          // 3. تحديث صورة بروفايل المستخدم بنفس الصورة (same location, same photo)
           final userPhotoResult = await authRepo.updateUserPhoto(
             userId: userId,
             photoUrl: photoUrl,
@@ -101,8 +99,8 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
               emit(BabyPhotoUploaded(photoUrl));
             },
             (updatedUser) async {
-              // نجح التحديث لكلاهما
-              log('Both baby photo and user profile updated successfully');
+              // نجح التحديث لكلاهما (same photo in unified location)
+              log('Photo uploaded successfully to unified location and synced');
               emit(BabyPhotoUploaded(photoUrl));
             },
           );
@@ -113,7 +111,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     }
   }
 
-  // حذف صورة الطفل وصورة البروفايل
+  // 🔥 حذف صورة الطفل وصورة البروفايل (unified location: babies/photos/)
   Future<void> deleteBabyPhoto() async {
     emit(BabyPhotoDeleting());
 
@@ -124,7 +122,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     }
 
     try {
-      // 1. حذف صورة الطفل من baby_questionnaires
+      // 1. حذف الصورة من المكان الموحد (babies/photos/)
       final deleteResult = await questionnaireRepo.deleteBabyPhoto(
         userId: userId,
       );
@@ -134,7 +132,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
           emit(BabyQuestionnaireError(failure.message));
         },
         (_) async {
-          // 2. حذف صورة البروفايل من users collection
+          // 2. حذف صورة البروفايل من users collection (same photo)
           final userPhotoResult = await authRepo.updateUserPhoto(
             userId: userId,
             photoUrl: null, // حذف الصورة
@@ -152,8 +150,8 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
               emit(BabyPhotoDeleted());
             },
             (updatedUser) async {
-              // نجح الحذف لكلاهما
-              log('Both baby photo and user profile deleted successfully');
+              // نجح الحذف (unified location)
+              log('Photo deleted successfully from unified location');
               emit(BabyPhotoDeleted());
             },
           );
@@ -326,7 +324,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     });
   }
 
-  // Helper method to check if baby photo exists
+  // Helper method to check if photo exists (unified location)
   Future<bool> checkBabyPhotoExists() async {
     final userId = authService.currentUser?.uid;
     if (userId == null) return false;
@@ -335,7 +333,7 @@ class BabyQuestionnaireCubit extends Cubit<BabyQuestionnaireState> {
     return result.fold((failure) => false, (exists) => exists);
   }
 
-  // Helper method to get baby photo URL
+  // Helper method to get photo URL (unified location)
   Future<String?> getBabyPhotoUrl() async {
     final userId = authService.currentUser?.uid;
     if (userId == null) return null;

@@ -26,10 +26,9 @@ Future<void> main() async {
   // Initialize SupabaseStorageService with the Supabase client
   SupabaseStorageService.initialize(Supabase.instance);
 
-  // Create all required buckets
+  // Create only baby-photos bucket (unified for all photos)
   await SupabaseStorageService.createBuckets([
-    'baby-photos',
-    'user-profiles', // إضافة bucket جديد لصور البروفايل
+    'baby-photos', // All photos (user profile + baby) will use this bucket
   ]);
 
   // Setup GetIt AFTER Supabase initialization

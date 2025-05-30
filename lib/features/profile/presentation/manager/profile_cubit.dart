@@ -3,21 +3,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/firebase_auth_service.dart';
 import '../../../auth/domain/repos/auth_repo.dart';
 import '../../../questionnaires/domain/entities/baby_questionnaire_entity.dart';
-import '../../../questionnaires/domain/repos/baby_questionnaire_repo.dart'; // إضافة
+import '../../../questionnaires/domain/repos/baby_questionnaire_repo.dart';
 import 'profile_state.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
   final AuthRepo authRepo;
   final FirebaseAuthService authService;
-  final BabyQuestionnaireRepo questionnaireRepo; // إضافة
+  final BabyQuestionnaireRepo questionnaireRepo;
 
   ProfileCubit({
     required this.authRepo,
     required this.authService,
-    required this.questionnaireRepo, // إضافة
+    required this.questionnaireRepo,
   }) : super(ProfileInitial());
 
-  // جلب بيانات المستخدم مع التحقق من صورة الطفل
+  // 🔥 جلب بيانات المستخدم (unified photo location)
   Future<void> loadUserProfile() async {
     emit(ProfileLoading());
 
@@ -30,15 +30,12 @@ class ProfileCubit extends Cubit<ProfileState> {
 
       final userEntity = await authRepo.getUserData(uid: currentUser.uid);
 
-      // إذا لم تكن هناك صورة في البروفايل، جرب جلب صورة الطفل
+      // 🔥 التحقق من وجود صورة في المكان الموحد وتحديث البروفايل إذا لزم الأمر
       if (userEntity.photoUrl == null || userEntity.photoUrl!.isEmpty) {
-        await _syncBabyPhotoToProfile(currentUser.uid);
+        await _syncPhotoToProfile(currentUser.uid);
 
         // إعادة جلب البيانات بعد المزامنة
-        final updatedUserEntity = await authRepo.getUserData(
-          uid: currentUser.uid,
-        );
-        emit(ProfileLoaded(user: updatedUserEntity));
+        emit(ProfileLoaded(user: userEntity));
       } else {
         emit(ProfileLoaded(user: userEntity));
       }
@@ -47,24 +44,21 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  // مزامنة صورة الطفل مع البروفايل
-  Future<void> _syncBabyPhotoToProfile(String userId) async {
+  // 🔥 مزامنة الصورة مع البروفايل (same location for both)
+  Future<void> _syncPhotoToProfile(String userId) async {
     try {
-      final babyPhotoResult = await questionnaireRepo.getBabyPhotoUrl(
+      final photoResult = await questionnaireRepo.getBabyPhotoUrl(
         userId: userId,
       );
 
-      babyPhotoResult.fold(
+      photoResult.fold(
         (failure) {
-          // لا توجد صورة طفل، لا مشكلة
+          // لا توجد صورة، لا مشكلة
         },
-        (babyPhotoUrl) async {
-          if (babyPhotoUrl != null && babyPhotoUrl.isNotEmpty) {
-            // نسخ صورة الطفل إلى البروفايل
-            await authRepo.updateUserPhoto(
-              userId: userId,
-              photoUrl: babyPhotoUrl,
-            );
+        (photoUrl) async {
+          if (photoUrl != null && photoUrl.isNotEmpty) {
+            // تحديث المستخدم ليشير لنفس الصورة (same location)
+            await authRepo.updateUserPhoto(userId: userId, photoUrl: photoUrl);
           }
         },
       );
@@ -73,7 +67,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  // رفع صورة جديدة للمستخدم وتحديث صورة الطفل أيضاً
+  // 🔥 رفع صورة جديدة (ستذهب إلى المكان الموحد babies/photos/)
   Future<void> uploadUserPhoto(File imageFile) async {
     emit(ProfilePhotoUploading());
 
@@ -84,7 +78,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         return;
       }
 
-      // 1. رفع الصورة للمستخدم
+      // 1. رفع الصورة للمستخدم (ستذهب إلى babies/photos/ - unified location)
       final uploadResult = await authRepo.uploadUserPhoto(
         imageFile: imageFile,
         userId: currentUser.uid,
@@ -99,22 +93,21 @@ class ProfileCubit extends Cubit<ProfileState> {
           photoUrl: imageUrl,
         );
 
-        updateUserResult.fold(
-          (failure) => emit(ProfileError(failure.message)),
-          (updatedUser) async {
-            // 3. تحديث صورة الطفل أيضاً إذا كان هناك استبيان
-            await _updateBabyPhotoIfExists(currentUser.uid, imageUrl);
+        updateUserResult.fold((failure) => emit(ProfileError(failure.message)), (
+          updatedUser,
+        ) async {
+          // 3. تحديث صورة الطفل أيضاً إذا كان هناك استبيان (same photo, same location)
+          await _updateBabyPhotoIfExists(currentUser.uid, imageUrl);
 
-            emit(ProfilePhotoUploaded(user: updatedUser, photoUrl: imageUrl));
-          },
-        );
+          emit(ProfilePhotoUploaded(user: updatedUser, photoUrl: imageUrl));
+        });
       });
     } catch (e) {
       emit(ProfileError('Failed to upload photo: ${e.toString()}'));
     }
   }
 
-  // تحديث صورة الطفل إذا كان الاستبيان موجود
+  // 🔥 تحديث صورة الطفل إذا كان الاستبيان موجود (same location)
   Future<void> _updateBabyPhotoIfExists(String userId, String photoUrl) async {
     try {
       final hasQuestionnaireResult = await questionnaireRepo
@@ -135,7 +128,7 @@ class ProfileCubit extends Cubit<ProfileState> {
                 // فشل في جلب الاستبيان، لا مشكلة
               },
               (questionnaire) async {
-                // تحديث صورة الطفل
+                // تحديث صورة الطفل (same photo URL, same location)
                 final updatedQuestionnaire = questionnaire.copyWith(
                   babyPhotoUrl: photoUrl,
                 );
@@ -145,6 +138,12 @@ class ProfileCubit extends Cubit<ProfileState> {
                 );
               },
             );
+          } else {
+            // إذا لم يكن هناك استبيان كامل، جرب حفظ الصورة جزئياً
+            await questionnaireRepo.saveBabyPhotoUrl(
+              userId: userId,
+              photoUrl: photoUrl,
+            );
           }
         },
       );
@@ -153,7 +152,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  // حذف صورة المستخدم وصورة الطفل
+  // 🔥 حذف الصورة (من المكان الموحد babies/photos/)
   Future<void> deleteUserPhoto() async {
     emit(ProfilePhotoDeleting());
 
@@ -164,7 +163,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         return;
       }
 
-      // 1. حذف الصورة من التخزين
+      // 1. حذف الصورة من المكان الموحد (babies/photos/)
       final deleteResult = await authRepo.deleteUserPhoto(
         userId: currentUser.uid,
       );
@@ -181,8 +180,8 @@ class ProfileCubit extends Cubit<ProfileState> {
         updateUserResult.fold(
           (failure) => emit(ProfileError(failure.message)),
           (updatedUser) async {
-            // 3. حذف صورة الطفل أيضاً إذا كان هناك استبيان
-            await _updateBabyPhotoIfExists(currentUser.uid, '');
+            // 3. حذف صورة الطفل أيضاً إذا كان هناك استبيان (same location)
+            await _deleteBabyPhotoIfExists(currentUser.uid);
 
             emit(ProfilePhotoDeleted(user: updatedUser));
           },
@@ -190,6 +189,48 @@ class ProfileCubit extends Cubit<ProfileState> {
       });
     } catch (e) {
       emit(ProfileError('Failed to delete photo: ${e.toString()}'));
+    }
+  }
+
+  // 🔥 حذف صورة الطفل إذا كان موجود (same location as profile)
+  Future<void> _deleteBabyPhotoIfExists(String userId) async {
+    try {
+      final hasQuestionnaireResult = await questionnaireRepo
+          .hasCompletedQuestionnaire(userId: userId);
+
+      hasQuestionnaireResult.fold(
+        (failure) {
+          // فشل في التحقق، لا مشكلة
+        },
+        (hasQuestionnaire) async {
+          if (hasQuestionnaire) {
+            // الحصول على بيانات الاستبيان الحالية
+            final questionnaireResult = await questionnaireRepo
+                .getQuestionnaireData(userId: userId);
+
+            questionnaireResult.fold(
+              (failure) {
+                // فشل في جلب الاستبيان، لا مشكلة
+              },
+              (questionnaire) async {
+                // تحديث صورة الطفل لتكون فارغة
+                final updatedQuestionnaire = questionnaire.copyWith(
+                  babyPhotoUrl: null,
+                );
+                await questionnaireRepo.updateQuestionnaireData(
+                  userId: userId,
+                  questionnaireData: updatedQuestionnaire,
+                );
+              },
+            );
+          } else {
+            // إذا لم يكن هناك استبيان كامل، جرب حذف الصورة الجزئية
+            await questionnaireRepo.deleteBabyPhoto(userId: userId);
+          }
+        },
+      );
+    } catch (e) {
+      // فشل في الحذف، لا مشكلة
     }
   }
 
