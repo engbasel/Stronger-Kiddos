@@ -196,7 +196,7 @@ class BabyQuestionnaireRepoImpl implements BabyQuestionnaireRepo {
     }
   }
 
-  // 🎯 Helper method للتحقق من أن الdocument فاضي من البيانات المفيدة
+  //  Helper method للتحقق من أن الdocument فاضي من البيانات المفيدة
   bool _isDocumentEmptyOfUsefulData(Map<String, dynamic> data) {
     // قائمة الحقول المهمة اللي لو موجودة يبقى فيه بيانات مفيدة
     List<String> importantFields = [
