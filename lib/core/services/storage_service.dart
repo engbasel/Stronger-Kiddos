@@ -15,4 +15,17 @@ abstract class StorageService {
 
   // التحقق من وجود صورة بروفايل للمستخدم
   Future<bool> hasUserProfileImage(String userId);
+
+  // NEW: Baby photo management methods
+  // رفع صورة الطفل
+  Future<String> uploadBabyPhoto(File imageFile, String userId);
+
+  // حذف صورة الطفل
+  Future<void> deleteBabyPhoto(String userId);
+
+  // جلب رابط صورة الطفل
+  Future<String?> getBabyPhotoUrl(String userId);
+
+  // التحقق من وجود صورة للطفل
+  Future<bool> hasBabyPhoto(String userId);
 }

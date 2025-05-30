@@ -198,4 +198,103 @@ class SupabaseStorageService implements StorageService {
       return false;
     }
   }
+
+  // NEW: Baby photo methods
+  @override
+  Future<String> uploadBabyPhoto(File imageFile, String userId) async {
+    try {
+      // تحديد مسار الملف: babies/photos/userId.jpg (fixed filename)
+      final String filePath = 'babies/photos/$userId.jpg';
+
+      log('Uploading baby photo for user: $userId to path: $filePath');
+
+      // حذف الصورة القديمة إن وجدت
+      try {
+        await _supabaseStorageService.client.storage.from('baby-photos').remove(
+          [filePath],
+        );
+        log('Old baby photo deleted for user: $userId');
+      } catch (e) {
+        log('No old baby photo to delete for user: $userId');
+      }
+
+      // رفع الصورة الجديدة
+      await _supabaseStorageService.client.storage
+          .from('baby-photos')
+          .upload(
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(
+              cacheControl: '3600',
+              upsert: true, // يستبدل الصورة إذا كانت موجودة
+            ),
+          );
+
+      // جلب الرابط العام
+      final String publicUrl = _supabaseStorageService.client.storage
+          .from('baby-photos')
+          .getPublicUrl(filePath);
+
+      log('Baby photo uploaded successfully. URL: $publicUrl');
+      return publicUrl;
+    } catch (e) {
+      log('Error uploading baby photo: $e');
+      throw Exception('Failed to upload baby photo: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteBabyPhoto(String userId) async {
+    try {
+      final String filePath = 'babies/photos/$userId.jpg';
+
+      await _supabaseStorageService.client.storage.from('baby-photos').remove([
+        filePath,
+      ]);
+
+      log('Baby photo deleted from storage for user: $userId');
+    } catch (e) {
+      log('Error deleting baby photo: $e');
+      throw Exception('Failed to delete baby photo: $e');
+    }
+  }
+
+  @override
+  Future<String?> getBabyPhotoUrl(String userId) async {
+    try {
+      final String filePath = 'babies/photos/$userId.jpg';
+
+      // التحقق من وجود الملف
+      final fileExists = await hasBabyPhoto(userId);
+      if (!fileExists) return null;
+
+      // جلب الرابط العام
+      final String publicUrl = _supabaseStorageService.client.storage
+          .from('baby-photos')
+          .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (e) {
+      log('Error getting baby photo URL: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> hasBabyPhoto(String userId) async {
+    try {
+      // محاولة جلب معلومات الملف
+      final files = await _supabaseStorageService.client.storage
+          .from('baby-photos')
+          .list(
+            path: 'babies/photos',
+            searchOptions: SearchOptions(search: '$userId.jpg', limit: 1),
+          );
+
+      return files.isNotEmpty;
+    } catch (e) {
+      log('Error checking if baby photo exists: $e');
+      return false;
+    }
+  }
 }
